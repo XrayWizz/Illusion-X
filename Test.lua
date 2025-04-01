@@ -3,20 +3,28 @@ local CONFIG = {
     UPDATE_INTERVAL = 0.1,
     THEMES = {
         DARK = {
-            BACKGROUND_DARK = Color3.fromRGB(25, 25, 25),
-            BACKGROUND_MEDIUM = Color3.fromRGB(30, 30, 30),
-            BACKGROUND_LIGHT = Color3.fromRGB(35, 35, 35),
-            ACCENT = Color3.fromRGB(65, 105, 225),
+            BACKGROUND_DARK = Color3.fromRGB(18, 18, 18),
+            BACKGROUND_MEDIUM = Color3.fromRGB(24, 24, 24),
+            BACKGROUND_LIGHT = Color3.fromRGB(30, 30, 30),
+            ACCENT = Color3.fromRGB(70, 130, 240),
+            ACCENT_HOVER = Color3.fromRGB(90, 150, 255),
             TEXT_PRIMARY = Color3.fromRGB(255, 255, 255),
-            TEXT_SECONDARY = Color3.fromRGB(180, 180, 180),
+            TEXT_SECONDARY = Color3.fromRGB(200, 200, 200),
+            BORDER = Color3.fromRGB(40, 40, 40),
+            BUTTON_HOVER = Color3.fromRGB(35, 35, 35),
+            SHADOW = Color3.fromRGB(0, 0, 0),
         },
         LIGHT = {
-            BACKGROUND_DARK = Color3.fromRGB(240, 240, 240),
+            BACKGROUND_DARK = Color3.fromRGB(235, 235, 235),
             BACKGROUND_MEDIUM = Color3.fromRGB(245, 245, 245),
-            BACKGROUND_LIGHT = Color3.fromRGB(250, 250, 250),
-            ACCENT = Color3.fromRGB(65, 105, 225),
-            TEXT_PRIMARY = Color3.fromRGB(25, 25, 25),
-            TEXT_SECONDARY = Color3.fromRGB(75, 75, 75),
+            BACKGROUND_LIGHT = Color3.fromRGB(255, 255, 255),
+            ACCENT = Color3.fromRGB(50, 110, 220),
+            ACCENT_HOVER = Color3.fromRGB(70, 130, 240),
+            TEXT_PRIMARY = Color3.fromRGB(30, 30, 30),
+            TEXT_SECONDARY = Color3.fromRGB(80, 80, 80),
+            BORDER = Color3.fromRGB(220, 220, 220),
+            BUTTON_HOVER = Color3.fromRGB(240, 240, 240),
+            SHADOW = Color3.fromRGB(200, 200, 200),
         }
     },
     COLORS = {
@@ -56,12 +64,12 @@ local CONFIG = {
 -- Animation settings
 local MINIMIZE_SETTINGS = {
     NORMAL = {
-        Size = UDim2.new(0, CONFIG.SIZES.NORMAL.WIDTH, 0, CONFIG.SIZES.NORMAL.HEIGHT),
-        Position = UDim2.new(0.5, -CONFIG.SIZES.NORMAL.WIDTH/2, 0.5, -CONFIG.SIZES.NORMAL.HEIGHT/2)
+        Size = UDim2.new(0, CONFIG.SIZES.EXTRA_LARGE.WIDTH, 0, CONFIG.SIZES.EXTRA_LARGE.HEIGHT),
+        Position = UDim2.new(0.5, -CONFIG.SIZES.EXTRA_LARGE.WIDTH/2, 0.5, -CONFIG.SIZES.EXTRA_LARGE.HEIGHT/2)
     },
     MINIMIZED = {
-        Size = UDim2.new(0, CONFIG.SIZES.NORMAL.WIDTH, 0, 24),
-        Position = UDim2.new(0.5, -CONFIG.SIZES.NORMAL.WIDTH/2, 1, -34)
+        Size = UDim2.new(0, CONFIG.SIZES.EXTRA_LARGE.WIDTH, 0, 24),
+        Position = UDim2.new(0.5, -CONFIG.SIZES.EXTRA_LARGE.WIDTH/2, 0, 10)
     }
 }
 
@@ -113,8 +121,8 @@ local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_MEDIUM
-MainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
-MainFrame.Size = UDim2.new(0, 350, 0, 250)
+MainFrame.Size = MINIMIZE_SETTINGS.NORMAL.Size
+MainFrame.Position = MINIMIZE_SETTINGS.NORMAL.Position
 MainFrame.ClipsDescendants = true
 
 local mainCorner = createCorner(MainFrame, CONFIG.CORNER_RADIUS)
@@ -144,14 +152,14 @@ Title.TextXAlignment = Enum.TextXAlignment.Left
 local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Name = "MinimizeButton"
 MinimizeButton.Parent = TitleBar
-MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 185, 0)
+MinimizeButton.BackgroundColor3 = CONFIG.THEMES.DARK.BUTTON_HOVER
 MinimizeButton.Position = UDim2.new(1, -38, 0.5, -6)
 MinimizeButton.Size = UDim2.new(0, 12, 0, 12)
 MinimizeButton.Font = Enum.Font.GothamBold
 MinimizeButton.Text = "-"
 MinimizeButton.TextColor3 = CONFIG.THEMES.DARK.TEXT_PRIMARY
 MinimizeButton.TextSize = 12
-MinimizeButton.AutoButtonColor = true
+MinimizeButton.AutoButtonColor = false
 
 local minimizeCorner = createCorner(MinimizeButton, CONFIG.CORNER_RADIUS)
 
@@ -202,7 +210,7 @@ local function CreateMenuButton(text, order)
     button.Text = text
     button.TextColor3 = CONFIG.THEMES.DARK.TEXT_PRIMARY
     button.TextSize = 11
-    button.AutoButtonColor = true
+    button.AutoButtonColor = false
     
     local buttonCorner = createCorner(button, CONFIG.CORNER_RADIUS)
     
@@ -220,7 +228,7 @@ local function CreateMenuButton(text, order)
     button.MouseEnter:Connect(function()
         if button ~= selectedButton then
             TweenService:Create(button, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
-                BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_LIGHT
+                BackgroundColor3 = CONFIG.THEMES.DARK.BUTTON_HOVER
             }):Play()
         end
     end)
@@ -276,7 +284,7 @@ ContentFrame.Size = UDim2.new(1, -75, 1, -24)
 -- Menu Divider
 local MenuDivider = Instance.new("Frame")
 MenuDivider.Parent = MainFrame
-MenuDivider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+MenuDivider.BackgroundColor3 = CONFIG.THEMES.DARK.BORDER
 MenuDivider.Position = UDim2.new(0, 75, 0, 24)
 MenuDivider.Size = UDim2.new(0, 1, 1, -24)
 
@@ -764,86 +772,76 @@ local extraLargeButton = CreateSizeButton("Extra Large", UDim2.new(0, 8, 0, 68))
 
 -- Current theme and size
 local currentTheme = "DARK"
-local currentSize = "NORMAL"
+local currentSize = "EXTRA_LARGE"
 
 -- Theme switching function
 local function switchTheme(themeName)
-    currentTheme = themeName
     local theme = CONFIG.THEMES[themeName]
     
-    -- Update all color properties
-    local function updateColors(instance)
-        if instance:IsA("Frame") or instance:IsA("TextButton") then
-            if instance.BackgroundColor3 == CONFIG.THEMES[currentTheme == "DARK" and "LIGHT" or "DARK"].BACKGROUND_DARK then
-                TweenService:Create(instance, CONFIG.ANIMATION.TWEEN_INFO, {
-                    BackgroundColor3 = theme.BACKGROUND_DARK
-                }):Play()
-            elseif instance.BackgroundColor3 == CONFIG.THEMES[currentTheme == "DARK" and "LIGHT" or "DARK"].BACKGROUND_MEDIUM then
-                TweenService:Create(instance, CONFIG.ANIMATION.TWEEN_INFO, {
-                    BackgroundColor3 = theme.BACKGROUND_MEDIUM
-                }):Play()
-            elseif instance.BackgroundColor3 == CONFIG.THEMES[currentTheme == "DARK" and "LIGHT" or "DARK"].BACKGROUND_LIGHT then
-                TweenService:Create(instance, CONFIG.ANIMATION.TWEEN_INFO, {
-                    BackgroundColor3 = theme.BACKGROUND_LIGHT
-                }):Play()
+    -- Apply theme to main components
+    MainFrame.BackgroundColor3 = theme.BACKGROUND_MEDIUM
+    TitleBar.BackgroundColor3 = theme.BACKGROUND_LIGHT
+    MenuFrame.BackgroundColor3 = theme.BACKGROUND_LIGHT
+    menuTopCover.BackgroundColor3 = theme.BACKGROUND_LIGHT
+    MenuDivider.BackgroundColor3 = theme.BORDER
+    
+    -- Update text colors
+    Title.TextColor3 = theme.TEXT_PRIMARY
+    
+    -- Update all buttons
+    for _, button in ipairs(MainFrame:GetDescendants()) do
+        if button:IsA("TextButton") then
+            if button == MinimizeButton then
+                button.BackgroundColor3 = theme.BUTTON_HOVER
+            elseif button == CloseButton then
+                button.BackgroundColor3 = CONFIG.COLORS.NEGATIVE
+            else
+                button.BackgroundColor3 = theme.BACKGROUND_DARK
             end
-        end
-        
-        if instance:IsA("TextLabel") or instance:IsA("TextButton") then
-            if instance.TextColor3 == CONFIG.THEMES[currentTheme == "DARK" and "LIGHT" or "DARK"].TEXT_PRIMARY then
-                TweenService:Create(instance, CONFIG.ANIMATION.TWEEN_INFO, {
-                    TextColor3 = theme.TEXT_PRIMARY
-                }):Play()
-            elseif instance.TextColor3 == CONFIG.THEMES[currentTheme == "DARK" and "LIGHT" or "DARK"].TEXT_SECONDARY then
-                TweenService:Create(instance, CONFIG.ANIMATION.TWEEN_INFO, {
-                    TextColor3 = theme.TEXT_SECONDARY
-                }):Play()
-            end
-        end
-        
-        for _, child in ipairs(instance:GetChildren()) do
-            updateColors(child)
+            button.TextColor3 = theme.TEXT_PRIMARY
         end
     end
     
-    updateColors(ScreenGui)
-    -- Update active colors for future elements
-    CONFIG.COLORS = {
-        BACKGROUND_DARK = theme.BACKGROUND_DARK,
-        BACKGROUND_MEDIUM = theme.BACKGROUND_MEDIUM,
-        BACKGROUND_LIGHT = theme.BACKGROUND_LIGHT,
-        ACCENT = theme.ACCENT,
-        TEXT_PRIMARY = theme.TEXT_PRIMARY,
-        TEXT_SECONDARY = theme.TEXT_SECONDARY,
-        POSITIVE = CONFIG.COLORS.POSITIVE,
-        NEGATIVE = CONFIG.COLORS.NEGATIVE,
-        WARNING = CONFIG.COLORS.WARNING,
-    }
-end
-
--- Size switching function
-local function switchSize(sizeName)
-    currentSize = sizeName
-    local size = CONFIG.SIZES[sizeName]
-    local newSize = UDim2.new(0, size.WIDTH, 0, size.HEIGHT)
+    -- Update all text labels
+    for _, label in ipairs(MainFrame:GetDescendants()) do
+        if label:IsA("TextLabel") then
+            if label:GetAttribute("IsSecondary") then
+                label.TextColor3 = theme.TEXT_SECONDARY
+            else
+                label.TextColor3 = theme.TEXT_PRIMARY
+            end
+        end
+    end
     
-    -- Update normal size setting
-    MINIMIZE_SETTINGS.NORMAL.Size = newSize
-    MINIMIZE_SETTINGS.NORMAL.Position = UDim2.new(0.5, -size.WIDTH/2, 0.5, -size.HEIGHT/2)
+    -- Update content containers
+    ContentContainer.BackgroundColor3 = theme.BACKGROUND_DARK
+    SettingsContainer.BackgroundColor3 = theme.BACKGROUND_DARK
     
-    -- Update minimized position
-    MINIMIZE_SETTINGS.MINIMIZED.Position = UDim2.new(0.5, -size.WIDTH/2, 1, -34)
+    -- Add subtle shadow effect
+    local shadowFrame = MainFrame:FindFirstChild("Shadow") or Instance.new("Frame")
+    if not shadowFrame.Parent then
+        shadowFrame.Name = "Shadow"
+        shadowFrame.BackgroundColor3 = theme.SHADOW
+        shadowFrame.BackgroundTransparency = 0.7
+        shadowFrame.Position = UDim2.new(0, 2, 0, 2)
+        shadowFrame.Size = MainFrame.Size
+        shadowFrame.ZIndex = -1
+        createCorner(shadowFrame, CONFIG.CORNER_RADIUS)
+        shadowFrame.Parent = MainFrame
+    else
+        shadowFrame.BackgroundColor3 = theme.SHADOW
+    end
     
-    -- Animate to new size if not minimized
-    if not isMinimized then
-        TweenService:Create(MainFrame, CONFIG.ANIMATION.TWEEN_INFO, {
-            Size = newSize,
-            Position = MINIMIZE_SETTINGS.NORMAL.Position
-        }):Play()
+    -- Save theme preference
+    if pcall(function()
+        local success = writefile("theme_preference.txt", themeName)
+        return success
+    end) then
+        print("Theme preference saved")
     end
 end
 
--- Connect theme buttons
+-- Theme Button Handler
 darkButton.MouseButton1Click:Connect(function()
     switchTheme("DARK")
 end)
@@ -851,6 +849,40 @@ end)
 lightButton.MouseButton1Click:Connect(function()
     switchTheme("LIGHT")
 end)
+
+-- Size switching function
+local function switchSize(sizeName)
+    currentSize = sizeName
+    local size = CONFIG.SIZES[sizeName]
+    
+    -- Only update if not minimized
+    if not isMinimized then
+        MINIMIZE_SETTINGS.NORMAL.Size = UDim2.new(0, size.WIDTH, 0, size.HEIGHT)
+        MINIMIZE_SETTINGS.NORMAL.Position = UDim2.new(0.5, -size.WIDTH/2, 0.5, -size.HEIGHT/2)
+        
+        TweenService:Create(MainFrame, CONFIG.ANIMATION.TWEEN_INFO, {
+            Size = MINIMIZE_SETTINGS.NORMAL.Size,
+            Position = MINIMIZE_SETTINGS.NORMAL.Position
+        }):Play()
+    else
+        -- Update minimized width if size changes while minimized
+        MINIMIZE_SETTINGS.MINIMIZED.Size = UDim2.new(0, size.WIDTH, 0, 24)
+        MINIMIZE_SETTINGS.MINIMIZED.Position = UDim2.new(0.5, -size.WIDTH/2, 0, 10)
+        
+        TweenService:Create(MainFrame, CONFIG.ANIMATION.TWEEN_INFO, {
+            Size = MINIMIZE_SETTINGS.MINIMIZED.Size,
+            Position = MINIMIZE_SETTINGS.MINIMIZED.Position
+        }):Play()
+    end
+    
+    -- Save size preference
+    if pcall(function()
+        local success = writefile("size_preference.txt", sizeName)
+        return success
+    end) then
+        print("Size preference saved")
+    end
+end
 
 -- Connect size buttons
 smallButton.MouseButton1Click:Connect(function()
@@ -874,4 +906,30 @@ SettingsButton.MouseButton1Click:Connect(function()
     selectButton(SettingsButton)
     ContentContainer.Visible = false
     SettingsContainer.Visible = true
+end)
+
+-- Try to load saved theme preference
+pcall(function()
+    if isfile("theme_preference.txt") then
+        local savedTheme = readfile("theme_preference.txt")
+        if savedTheme == "DARK" or savedTheme == "LIGHT" then
+            switchTheme(savedTheme)
+            return
+        end
+    end
+    -- Default to dark theme if no preference found
+    switchTheme("DARK")
+end)
+
+-- Try to load saved size preference
+pcall(function()
+    if isfile("size_preference.txt") then
+        local savedSize = readfile("size_preference.txt")
+        if CONFIG.SIZES[savedSize] then
+            switchSize(savedSize)
+            return
+        end
+    end
+    -- Default to extra large size if no preference found
+    switchSize("EXTRA_LARGE")
 end)
