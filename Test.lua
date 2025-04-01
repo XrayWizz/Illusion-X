@@ -72,8 +72,9 @@ local expandInfo = TweenInfo.new(
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)  -- Smaller centered position
-MainFrame.Size = UDim2.new(0, 300, 0, 200)  -- More compact size
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+MainFrame.Size = UDim2.new(0, 300, 0, 200)
+MainFrame.ClipsDescendants = true  -- Prevent content from overflowing
 
 local mainCorner = Instance.new("UICorner")
 mainCorner.Parent = MainFrame
@@ -132,8 +133,32 @@ local closeCorner = Instance.new("UICorner")
 closeCorner.Parent = CloseButton
 closeCorner.CornerRadius = UDim.new(0, 4)
 
--- Make frame draggable function
-local function makeDraggable(frame)
+-- Content Frame Setup
+ContentFrame.Name = "ContentFrame"
+ContentFrame.Parent = MainFrame
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Position = UDim2.new(0, 85, 0, 28)
+ContentFrame.Size = UDim2.new(1, -90, 1, -32)
+ContentFrame.ClipsDescendants = true
+
+-- Create Scrolling Frame for Content
+local ScrollingFrame = Instance.new("ScrollingFrame")
+ScrollingFrame.Name = "ScrollingFrame"
+ScrollingFrame.Parent = ContentFrame
+ScrollingFrame.BackgroundTransparency = 1
+ScrollingFrame.Size = UDim2.new(1, -5, 1, 0)  -- Slightly smaller width for scrollbar
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)  -- Will be updated dynamically
+ScrollingFrame.ScrollBarThickness = 4
+ScrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+ScrollingFrame.ScrollBarImageTransparency = 0.5
+ScrollingFrame.BorderSizePixel = 0
+
+-- Stats Frame now goes inside ScrollingFrame
+StatsFrame.Parent = ScrollingFrame
+StatsFrame.Size = UDim2.new(1, -8, 1, 0)  -- Add padding for scrollbar
+
+-- Make only title bar draggable
+local function makeTitleBarDraggable()
     local dragToggle = nil
     local dragSpeed = 0.1
     local dragStart = nil
@@ -146,14 +171,14 @@ local function makeDraggable(frame)
         
         -- Create smooth drag animation
         local tweenInfo = TweenInfo.new(dragSpeed, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        TweenService:Create(frame, tweenInfo, {Position = position}):Play()
+        TweenService:Create(MainFrame, tweenInfo, {Position = position}):Play()
     end
 
-    frame.InputBegan:Connect(function(input)
+    TitleBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragToggle = true
             dragStart = input.Position
-            startPos = frame.Position
+            startPos = MainFrame.Position
             
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
@@ -163,7 +188,7 @@ local function makeDraggable(frame)
         end
     end)
 
-    frame.InputChanged:Connect(function(input)
+    TitleBar.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             dragInput = input
         end
@@ -176,49 +201,17 @@ local function makeDraggable(frame)
     end)
 end
 
--- Make both frames draggable
-makeDraggable(MainFrame)
-makeDraggable(BubbleButton)
-
--- Minimize and Expand Functions
-local function minimizeUI()
-    local currentPos = MainFrame.Position
-    local targetPos = BubbleButton.Position
-    
-    -- Create and play the minimize animation
-    local minimizeTween = TweenService:Create(MainFrame, minimizeInfo, {
-        Size = UDim2.new(0, 50, 0, 50),
-        Position = targetPos
-    })
-    
-    minimizeTween.Completed:Connect(function()
-        MainFrame.Visible = false
-        BubbleButton.Position = targetPos
-        BubbleButton.Visible = true
-    end)
-    
-    minimizeTween:Play()
+-- Function to update ScrollingFrame canvas size
+local function updateCanvasSize()
+    local contentSize = UIListLayout.AbsoluteContentSize
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y + 8)  -- Add padding
 end
 
-local function expandUI()
-    local currentPos = BubbleButton.Position
-    BubbleButton.Visible = false
-    MainFrame.Position = currentPos
-    MainFrame.Size = UDim2.new(0, 50, 0, 50)
-    MainFrame.Visible = true
-    
-    -- Create and play the expand animation
-    local expandTween = TweenService:Create(MainFrame, expandInfo, {
-        Size = UDim2.new(0, 300, 0, 200),
-        Position = UDim2.new(0.5, -150, 0.5, -100)
-    })
-    
-    expandTween:Play()
-end
+-- Connect the canvas size update
+UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvasSize)
 
--- Connect minimize and expand buttons
-MinimizeButton.MouseButton1Click:Connect(minimizeUI)
-BubbleButton.MouseButton1Click:Connect(expandUI)
+-- Initialize dragging
+makeTitleBarDraggable()
 
 -- Menu Frame (Left side)
 MenuFrame.Name = "MenuFrame"
@@ -243,13 +236,6 @@ MenuDivider.Parent = MainFrame
 MenuDivider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 MenuDivider.Position = UDim2.new(0, 80, 0, 24)
 MenuDivider.Size = UDim2.new(0, 1, 1, -24)
-
--- Content Frame (Right side)
-ContentFrame.Name = "ContentFrame"
-ContentFrame.Parent = MainFrame
-ContentFrame.BackgroundTransparency = 1
-ContentFrame.Position = UDim2.new(0, 85, 0, 28)  -- Adjusted for new menu width
-ContentFrame.Size = UDim2.new(1, -90, 1, -32)  -- Adjusted for new spacing
 
 -- Create Menu Button
 local function CreateMenuButton(name)
@@ -277,16 +263,6 @@ local menuButtons = {
     CreateMenuButton("Inventory"),
     CreateMenuButton("Settings")
 }
-
--- Stats Frame Setup
-StatsFrame.Parent = ContentFrame
-StatsFrame.BackgroundTransparency = 1
-StatsFrame.Size = UDim2.new(1, 0, 1, 0)
-StatsFrame.Visible = true
-
-UIListLayout.Parent = StatsFrame
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 4)  -- Less spacing between items
 
 -- Create Label Function
 local function CreateInfoLabel()
