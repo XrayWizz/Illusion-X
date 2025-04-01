@@ -15,10 +15,6 @@ local MenuFrame = Instance.new("Frame")
 local ContentFrame = Instance.new("Frame")
 local MenuDivider = Instance.new("Frame")
 
--- Bubble components
-local BubbleButton = Instance.new("ImageButton")
-local BubbleIcon = Instance.new("ImageLabel")
-
 -- Stats Frame Components
 local StatsFrame = Instance.new("Frame")
 local UIListLayout = Instance.new("UIListLayout")
@@ -34,39 +30,6 @@ local SwordLabel = Instance.new("TextLabel")
 -- GUI Setup
 ScreenGui.Parent = game.CoreGui
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
--- Bubble Setup
-BubbleButton.Name = "BubbleButton"
-BubbleButton.Parent = ScreenGui
-BubbleButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-BubbleButton.Position = UDim2.new(0.85, 0, 0.5, 0)
-BubbleButton.Size = UDim2.new(0, 50, 0, 50)
-BubbleButton.Visible = false
-BubbleButton.AutoButtonColor = true
-
-local bubbleCorner = Instance.new("UICorner")
-bubbleCorner.Parent = BubbleButton
-bubbleCorner.CornerRadius = UDim.new(1, 0)  -- Makes it perfectly circular
-
-BubbleIcon.Parent = BubbleButton
-BubbleIcon.BackgroundTransparency = 1
-BubbleIcon.Position = UDim2.new(0.5, -15, 0.5, -15)
-BubbleIcon.Size = UDim2.new(0, 30, 0, 30)
-BubbleIcon.Image = "rbxassetid://6034983772"  -- Pirate flag icon
-BubbleIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
-
--- Animation settings
-local minimizeInfo = TweenInfo.new(
-    0.3,  -- Time
-    Enum.EasingStyle.Back,  -- Style
-    Enum.EasingDirection.In  -- Direction
-)
-
-local expandInfo = TweenInfo.new(
-    0.3,  -- Time
-    Enum.EasingStyle.Back,  -- Style
-    Enum.EasingDirection.Out  -- Direction
-)
 
 -- Main Frame Setup
 MainFrame.Name = "MainFrame"
@@ -106,8 +69,8 @@ local buttonContainer = Instance.new("Frame")
 buttonContainer.Name = "ButtonContainer"
 buttonContainer.Parent = TitleBar
 buttonContainer.BackgroundTransparency = 1
-buttonContainer.Position = UDim2.new(1, -96, 0, 0)  -- Position from right
-buttonContainer.Size = UDim2.new(0, 96, 1, 0)  -- Fixed width for 3 buttons
+buttonContainer.Position = UDim2.new(1, -64, 0, 0)  -- Position from right
+buttonContainer.Size = UDim2.new(0, 64, 1, 0)  -- Fixed width for 2 buttons
 
 -- Update button creation function
 local function CreateTitleButton(icon, color)
@@ -146,15 +109,24 @@ end
 -- Create and position buttons
 MinimizeButton = CreateTitleButton("-", Color3.fromRGB(60, 60, 60))
 MinimizeButton.Parent = buttonContainer
-MinimizeButton.Position = UDim2.new(0, 8, 0.5, 0)
-
-BubbleButton = CreateTitleButton("□", Color3.fromRGB(60, 60, 60))
-BubbleButton.Parent = buttonContainer
-BubbleButton.Position = UDim2.new(0.5, 0, 0.5, 0)
+MinimizeButton.Position = UDim2.new(0, 12, 0.5, 0)
 
 CloseButton = CreateTitleButton("×", Color3.fromRGB(220, 50, 50))
 CloseButton.Parent = buttonContainer
-CloseButton.Position = UDim2.new(1, -8, 0.5, 0)
+CloseButton.Position = UDim2.new(1, -12, 0.5, 0)
+
+-- Animation settings
+local minimizeInfo = TweenInfo.new(
+    0.3,  -- Time
+    Enum.EasingStyle.Back,  -- Style
+    Enum.EasingDirection.In  -- Direction
+)
+
+local expandInfo = TweenInfo.new(
+    0.3,  -- Time
+    Enum.EasingStyle.Back,  -- Style
+    Enum.EasingDirection.Out  -- Direction
+)
 
 -- Content area adjustments
 MenuFrame.Position = UDim2.new(0, 0, 0, 32)  -- Match new title bar height
@@ -456,95 +428,84 @@ equipmentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSect
 -- Update Function
 local function updateStats()
     if LocalPlayer.Character then
-        local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-        if humanoid then
-            HealthLabel.Text = string.format("Health: %d/%d", humanoid.Health, humanoid.MaxHealth)
-        end
-    end
-    
-    -- Get player stats from leaderstats
-    local leaderstats = LocalPlayer:FindFirstChild("leaderstats")
-    if leaderstats then
-        local level = leaderstats:FindFirstChild("Level")
-        local beli = leaderstats:FindFirstChild("Beli")
-        local fragments = leaderstats:FindFirstChild("Fragments")
+        -- Level
+        local level = LocalPlayer:WaitForChild("leaderstats"):WaitForChild("Level")
+        LevelLabel.Text = tostring(level.Value)
         
-        if level then
-            LevelLabel.Text = string.format("Level: %s", level.Value)
-        end
-        if beli then
-            BelliLabel.Text = string.format("Beli: %s", beli.Value)
-        end
-        if fragments then
-            FragmentsLabel.Text = string.format("Fragments: %s", fragments.Value)
-        end
-    end
-    
-    -- Get fighting style info
-    local backpack = LocalPlayer:FindFirstChild("Backpack")
-    local character = LocalPlayer.Character
-    if backpack and character then
-        -- Check for fighting styles
-        local fightingStyles = {}
-        for _, item in pairs(backpack:GetChildren()) do
-            if item:FindFirstChild("FightingStyle") then
-                table.insert(fightingStyles, item.Name)
-            end
-        end
-        for _, item in pairs(character:GetChildren()) do
-            if item:FindFirstChild("FightingStyle") then
-                table.insert(fightingStyles, item.Name)
-            end
-        end
-        if #fightingStyles > 0 then
-            FightingStyleLabel.Text = string.format("Fighting Style: %s", table.concat(fightingStyles, ", "))
-        else
-            FightingStyleLabel.Text = "Fighting Style: None"
-        end
+        -- Health
+        local humanoid = LocalPlayer.Character:WaitForChild("Humanoid")
+        HealthLabel.Text = string.format("%d/%d", humanoid.Health, humanoid.MaxHealth)
         
-        -- Check for devil fruits
-        local devilFruits = {}
-        for _, item in pairs(backpack:GetChildren()) do
-            if item:FindFirstChild("DevilFruit") then
-                table.insert(devilFruits, item.Name)
-            end
-        end
-        for _, item in pairs(character:GetChildren()) do
-            if item:FindFirstChild("DevilFruit") then
-                table.insert(devilFruits, item.Name)
-            end
-        end
-        if #devilFruits > 0 then
-            DevilFruitLabel.Text = string.format("Devil Fruit: %s", table.concat(devilFruits, ", "))
-        else
-            DevilFruitLabel.Text = "Devil Fruit: None"
-        end
+        -- Beli
+        local beli = LocalPlayer:WaitForChild("leaderstats"):WaitForChild("Beli")
+        BelliLabel.Text = tostring(beli.Value)
         
-        -- Check for swords
-        local swords = {}
-        for _, item in pairs(backpack:GetChildren()) do
-            if item:FindFirstChild("SwordTool") then
-                table.insert(swords, item.Name)
+        -- Fragments
+        local fragments = LocalPlayer:WaitForChild("leaderstats"):WaitForChild("Fragments")
+        FragmentsLabel.Text = tostring(fragments.Value)
+        
+        -- Race
+        local race = LocalPlayer:WaitForChild("Data"):WaitForChild("Race")
+        RaceLabel.Text = tostring(race.Value)
+        
+        -- Get fighting style info
+        local backpack = LocalPlayer:FindFirstChild("Backpack")
+        local character = LocalPlayer.Character
+        if backpack and character then
+            -- Check for fighting styles
+            local fightingStyles = {}
+            for _, item in pairs(backpack:GetChildren()) do
+                if item:FindFirstChild("FightingStyle") then
+                    table.insert(fightingStyles, item.Name)
+                end
+            end
+            for _, item in pairs(character:GetChildren()) do
+                if item:FindFirstChild("FightingStyle") then
+                    table.insert(fightingStyles, item.Name)
+                end
+            end
+            if #fightingStyles > 0 then
+                FightingStyleLabel.Text = table.concat(fightingStyles, ", ")
+            else
+                FightingStyleLabel.Text = "None"
+            end
+            
+            -- Check for devil fruits
+            local devilFruits = {}
+            for _, item in pairs(backpack:GetChildren()) do
+                if item:FindFirstChild("DevilFruit") then
+                    table.insert(devilFruits, item.Name)
+                end
+            end
+            for _, item in pairs(character:GetChildren()) do
+                if item:FindFirstChild("DevilFruit") then
+                    table.insert(devilFruits, item.Name)
+                end
+            end
+            if #devilFruits > 0 then
+                DevilFruitLabel.Text = table.concat(devilFruits, ", ")
+            else
+                DevilFruitLabel.Text = "None"
+            end
+            
+            -- Check for swords
+            local swords = {}
+            for _, item in pairs(backpack:GetChildren()) do
+                if item:FindFirstChild("SwordName") then
+                    table.insert(swords, item.Name)
+                end
+            end
+            for _, item in pairs(character:GetChildren()) do
+                if item:FindFirstChild("SwordName") then
+                    table.insert(swords, item.Name)
+                end
+            end
+            if #swords > 0 then
+                SwordLabel.Text = table.concat(swords, ", ")
+            else
+                SwordLabel.Text = "None"
             end
         end
-        for _, item in pairs(character:GetChildren()) do
-            if item:FindFirstChild("SwordTool") then
-                table.insert(swords, item.Name)
-            end
-        end
-        if #swords > 0 then
-            SwordLabel.Text = string.format("Swords: %s", table.concat(swords, ", "))
-        else
-            SwordLabel.Text = "Swords: None"
-        end
-    end
-    
-    -- Get race info
-    local race = LocalPlayer:FindFirstChild("Race")
-    if race then
-        RaceLabel.Text = string.format("Race: %s", race.Value)
-    else
-        RaceLabel.Text = "Race: Unknown"
     end
 end
 
@@ -554,31 +515,6 @@ game:GetService("RunService").RenderStepped:Connect(updateStats)
 -- Close Button Handler
 CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
-end)
-
--- Menu Button Handlers
-menuButtons[1].BackgroundColor3 = Color3.fromRGB(65, 65, 65)  -- Active button
-menuButtons[1].MouseButton1Click:Connect(function()
-    StatsFrame.Visible = true
-    menuButtons[1].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
-    menuButtons[2].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-    menuButtons[3].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-end)
-
-menuButtons[2].MouseButton1Click:Connect(function()
-    StatsFrame.Visible = false
-    menuButtons[1].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-    menuButtons[2].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
-    menuButtons[3].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-    -- Add inventory frame logic here
-end)
-
-menuButtons[3].MouseButton1Click:Connect(function()
-    StatsFrame.Visible = false
-    menuButtons[1].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-    menuButtons[2].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-    menuButtons[3].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
-    -- Add settings frame logic here
 end)
 
 -- Menu Divider
