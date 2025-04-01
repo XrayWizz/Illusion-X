@@ -35,9 +35,9 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
-MainFrame.Size = UDim2.new(0, 400, 0, 300)
-MainFrame.ClipsDescendants = true  -- Prevent content from overflowing
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
+MainFrame.Size = UDim2.new(0, 350, 0, 250)
+MainFrame.ClipsDescendants = true
 
 local mainCorner = Instance.new("UICorner")
 mainCorner.Parent = MainFrame
@@ -47,7 +47,7 @@ mainCorner.CornerRadius = UDim.new(0, 8)
 TitleBar.Name = "TitleBar"
 TitleBar.Parent = MainFrame
 TitleBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-TitleBar.Size = UDim2.new(1, 0, 0, 32)  -- Increased from 24px
+TitleBar.Size = UDim2.new(1, 0, 0, 24)
 
 local titleBarCorner = Instance.new("UICorner")
 titleBarCorner.Parent = TitleBar
@@ -56,200 +56,54 @@ titleBarCorner.CornerRadius = UDim.new(0, 8)
 -- Title Text
 Title.Parent = TitleBar
 Title.BackgroundTransparency = 1
-Title.Position = UDim2.new(0, 12, 0, 0)
-Title.Size = UDim2.new(1, -100, 1, 0)
+Title.Position = UDim2.new(0, 8, 0, 0)
+Title.Size = UDim2.new(1, -60, 1, 0)
 Title.Font = Enum.Font.GothamBold
 Title.Text = "Blox Fruits Info"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 14  -- Slightly larger text
+Title.TextSize = 12
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Title Bar Buttons Container
-local buttonContainer = Instance.new("Frame")
-buttonContainer.Name = "ButtonContainer"
-buttonContainer.Parent = TitleBar
-buttonContainer.BackgroundTransparency = 1
-buttonContainer.Position = UDim2.new(1, -64, 0, 0)  -- Position from right
-buttonContainer.Size = UDim2.new(0, 64, 1, 0)  -- Fixed width for 2 buttons
+-- Minimize Button
+MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Parent = TitleBar
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 185, 0)
+MinimizeButton.Position = UDim2.new(1, -38, 0.5, -6)
+MinimizeButton.Size = UDim2.new(0, 12, 0, 12)
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.Text = "-"
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.TextSize = 12
+MinimizeButton.AutoButtonColor = true
 
--- Update button creation function
-local function CreateTitleButton(icon, color)
-    local button = Instance.new("TextButton")
-    button.BackgroundColor3 = color
-    button.Size = UDim2.new(0, 28, 0, 28)  -- Larger buttons
-    button.Position = UDim2.new(0.5, 0, 0.5, 0)
-    button.AnchorPoint = Vector2.new(0.5, 0.5)
-    button.Text = icon
-    button.TextSize = 14  -- Larger icons
-    button.Font = Enum.Font.GothamBold
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.AutoButtonColor = true
-    
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.Parent = button
-    buttonCorner.CornerRadius = UDim.new(0, 6)
-    
-    -- Hover effect
-    local originalColor = color
-    button.MouseEnter:Connect(function()
-        button.BackgroundColor3 = Color3.new(
-            math.min(color.R + 0.1, 1),
-            math.min(color.G + 0.1, 1),
-            math.min(color.B + 0.1, 1)
-        )
-    end)
-    
-    button.MouseLeave:Connect(function()
-        button.BackgroundColor3 = originalColor
-    end)
-    
-    return button
-end
+local minimizeCorner = Instance.new("UICorner")
+minimizeCorner.Parent = MinimizeButton
+minimizeCorner.CornerRadius = UDim.new(0, 4)
 
--- Create and position buttons
-MinimizeButton = CreateTitleButton("-", Color3.fromRGB(60, 60, 60))
-MinimizeButton.Parent = buttonContainer
-MinimizeButton.Position = UDim2.new(0, 12, 0.5, 0)
+-- Close Button
+CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = TitleBar
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
+CloseButton.Position = UDim2.new(1, -20, 0.5, -6)
+CloseButton.Size = UDim2.new(0, 12, 0, 12)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 12
+CloseButton.AutoButtonColor = true
 
-CloseButton = CreateTitleButton("×", Color3.fromRGB(220, 50, 50))
-CloseButton.Parent = buttonContainer
-CloseButton.Position = UDim2.new(1, -12, 0.5, 0)
+local closeCorner = Instance.new("UICorner")
+closeCorner.Parent = CloseButton
+closeCorner.CornerRadius = UDim.new(0, 4)
 
--- Animation settings
-local minimizeInfo = TweenInfo.new(
-    0.3,  -- Time
-    Enum.EasingStyle.Back,  -- Style
-    Enum.EasingDirection.In  -- Direction
-)
-
-local expandInfo = TweenInfo.new(
-    0.3,  -- Time
-    Enum.EasingStyle.Back,  -- Style
-    Enum.EasingDirection.Out  -- Direction
-)
-
--- Content area adjustments
-MenuFrame.Position = UDim2.new(0, 0, 0, 32)  -- Match new title bar height
-MenuFrame.Size = UDim2.new(0, 85, 1, -32)  -- Slightly wider menu
-
-ContentFrame.Position = UDim2.new(0, 85, 0, 32)  -- Match new positions
-ContentFrame.Size = UDim2.new(1, -85, 1, -32)
-
--- Info items size adjustment
-local function CreateInfoItem(label, defaultValue)
-    local container = Instance.new("Frame")
-    container.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    container.Size = UDim2.new(1, 0, 0, 32)  -- Increased height
-    
-    local containerCorner = Instance.new("UICorner")
-    containerCorner.Parent = container
-    containerCorner.CornerRadius = UDim.new(0, 4)
-    
-    -- Label
-    local labelText = Instance.new("TextLabel")
-    labelText.Parent = container
-    labelText.BackgroundTransparency = 1
-    labelText.Position = UDim2.new(0, 10, 0, 0)  -- More padding
-    labelText.Size = UDim2.new(0.4, -10, 1, 0)
-    labelText.Font = Enum.Font.GothamMedium
-    labelText.Text = label
-    labelText.TextColor3 = Color3.fromRGB(200, 200, 200)
-    labelText.TextSize = 12  -- Larger text
-    labelText.TextXAlignment = Enum.TextXAlignment.Left
-    
-    -- Value
-    local valueText = Instance.new("TextLabel")
-    valueText.Parent = container
-    valueText.BackgroundTransparency = 1
-    valueText.Position = UDim2.new(0.4, 4, 0, 0)
-    valueText.Size = UDim2.new(0.6, -14, 1, 0)
-    valueText.Font = Enum.Font.GothamSemibold
-    valueText.Text = defaultValue or "Loading..."
-    valueText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    valueText.TextSize = 12  -- Larger text
-    valueText.TextXAlignment = Enum.TextXAlignment.Right
-    
-    return container, valueText
-end
-
--- Create Scrolling Frame for Content
-local ScrollingFrame = Instance.new("ScrollingFrame")
-ScrollingFrame.Name = "ScrollingFrame"
-ScrollingFrame.Parent = ContentFrame
-ScrollingFrame.BackgroundTransparency = 1
-ScrollingFrame.Size = UDim2.new(1, -4, 1, 0)  -- Slightly smaller width for scrollbar
-ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)  -- Will be updated dynamically
-ScrollingFrame.ScrollBarThickness = 3
-ScrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
-ScrollingFrame.ScrollBarImageTransparency = 0.7
-ScrollingFrame.BorderSizePixel = 0
-
--- Stats Frame now goes inside ScrollingFrame
-StatsFrame.Parent = ScrollingFrame
-StatsFrame.Size = UDim2.new(1, -8, 1, 0)  -- Add padding for scrollbar
-
--- Make only title bar draggable
-local function makeTitleBarDraggable()
-    local dragToggle = nil
-    local dragSpeed = 0.1
-    local dragStart = nil
-    local startPos = nil
-
-    local function updateInput(input)
-        local delta = input.Position - dragStart
-        local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
-            startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        
-        -- Create smooth drag animation
-        local tweenInfo = TweenInfo.new(dragSpeed, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        TweenService:Create(MainFrame, tweenInfo, {Position = position}):Play()
-    end
-
-    TitleBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragToggle = true
-            dragStart = input.Position
-            startPos = MainFrame.Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragToggle = false
-                end
-            end)
-        end
-    end)
-
-    TitleBar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragToggle then
-            updateInput(input)
-        end
-    end)
-end
-
--- Function to update ScrollingFrame canvas size
-local function updateCanvasSize()
-    local contentSize = UIListLayout.AbsoluteContentSize
-    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y + 8)  -- Add padding
-end
-
--- Connect the canvas size update
-UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvasSize)
-
--- Initialize dragging
-makeTitleBarDraggable()
-
--- Menu Frame (Left side)
+-- Menu Frame
 MenuFrame.Name = "MenuFrame"
 MenuFrame.Parent = MainFrame
 MenuFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-MenuFrame.Position = UDim2.new(0, 0, 0, 32)
-MenuFrame.Size = UDim2.new(0, 85, 1, -32)
+MenuFrame.Position = UDim2.new(0, 0, 0, 24)
+MenuFrame.Size = UDim2.new(0, 75, 1, -24)
 
 -- Add corner radius to MenuFrame
 local menuCorner = Instance.new("UICorner")
@@ -265,246 +119,217 @@ menuTopCover.BorderSizePixel = 0
 menuTopCover.Position = UDim2.new(0, 0, 0, 0)
 menuTopCover.Size = UDim2.new(1, 0, 0, 10)
 
--- Create Info Item Function
-local function CreateInfoItem(label, defaultValue)
-    local container = Instance.new("Frame")
-    container.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    container.Size = UDim2.new(1, 0, 0, 32)
-    
-    local containerCorner = Instance.new("UICorner")
-    containerCorner.Parent = container
-    containerCorner.CornerRadius = UDim.new(0, 4)
-    
-    -- Label
-    local labelText = Instance.new("TextLabel")
-    labelText.Parent = container
-    labelText.BackgroundTransparency = 1
-    labelText.Position = UDim2.new(0, 10, 0, 0)
-    labelText.Size = UDim2.new(0.4, -10, 1, 0)
-    labelText.Font = Enum.Font.GothamMedium
-    labelText.Text = label
-    labelText.TextColor3 = Color3.fromRGB(200, 200, 200)
-    labelText.TextSize = 12
-    labelText.TextXAlignment = Enum.TextXAlignment.Left
-    
-    -- Value
-    local valueText = Instance.new("TextLabel")
-    valueText.Parent = container
-    valueText.BackgroundTransparency = 1
-    valueText.Position = UDim2.new(0.4, 4, 0, 0)
-    valueText.Size = UDim2.new(0.6, -14, 1, 0)
-    valueText.Font = Enum.Font.GothamSemibold
-    valueText.Text = defaultValue or "Loading..."
-    valueText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    valueText.TextSize = 12
-    valueText.TextXAlignment = Enum.TextXAlignment.Right
-    
-    return container, valueText
-end
+-- Content Frame
+ContentFrame.Name = "ContentFrame"
+ContentFrame.Parent = MainFrame
+ContentFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ContentFrame.Position = UDim2.new(0, 75, 0, 24)
+ContentFrame.Size = UDim2.new(1, -75, 1, -24)
 
--- Create Section Header Function
-local function CreateSectionHeader(text)
-    local header = Instance.new("Frame")
-    header.BackgroundTransparency = 1
-    header.Size = UDim2.new(1, 0, 0, 30)
-    
-    local headerLabel = Instance.new("TextLabel")
-    headerLabel.Parent = header
-    headerLabel.BackgroundTransparency = 1
-    headerLabel.Position = UDim2.new(0, 0, 0, 0)
-    headerLabel.Size = UDim2.new(1, 0, 1, 0)
-    headerLabel.Font = Enum.Font.GothamBlack
-    headerLabel.Text = text
-    headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    headerLabel.TextSize = 12
-    headerLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local underline = Instance.new("Frame")
-    underline.Parent = header
-    underline.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    underline.BorderSizePixel = 0
-    underline.Position = UDim2.new(0, 0, 1, -1)
-    underline.Size = UDim2.new(1, 0, 0, 1)
-    
-    return header
-end
+-- Stats Frame
+StatsFrame.Name = "StatsFrame"
+StatsFrame.Parent = ContentFrame
+StatsFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+StatsFrame.Size = UDim2.new(1, 0, 1, 0)
 
--- Create Section Function
-local function CreateSection()
-    local section = Instance.new("Frame")
-    section.BackgroundTransparency = 1
-    section.Size = UDim2.new(1, 0, 0, 0)
-    
-    local sectionList = Instance.new("UIListLayout")
-    sectionList.Parent = section
-    sectionList.SortOrder = Enum.SortOrder.LayoutOrder
-    sectionList.Padding = UDim.new(0, 4)
-    
-    return section, sectionList
-end
-
--- Create sections and items
-local basicInfoSection, basicInfoList = CreateSection()
-basicInfoSection.Parent = StatsFrame
-basicInfoSection.LayoutOrder = 1
-
-local basicHeader = CreateSectionHeader("BASIC INFORMATION")
-basicHeader.Parent = basicInfoSection
-basicHeader.LayoutOrder = 0
-
-local levelContainer, LevelLabel = CreateInfoItem("Level")
-levelContainer.Parent = basicInfoSection
-levelContainer.LayoutOrder = 1
-
-local raceContainer, RaceLabel = CreateInfoItem("Race")
-raceContainer.Parent = basicInfoSection
-raceContainer.LayoutOrder = 2
-
-local belliContainer, BelliLabel = CreateInfoItem("Beli")
-belliContainer.Parent = basicInfoSection
-belliContainer.LayoutOrder = 3
-
-local fragmentsContainer, FragmentsLabel = CreateInfoItem("Fragments")
-fragmentsContainer.Parent = basicInfoSection
-fragmentsContainer.LayoutOrder = 4
-
-local combatSection, combatList = CreateSection()
-combatSection.Parent = StatsFrame
-combatSection.LayoutOrder = 3
-
-local combatHeader = CreateSectionHeader("COMBAT STATS")
-combatHeader.Parent = combatSection
-combatHeader.LayoutOrder = 0
-
-local healthContainer, HealthLabel = CreateInfoItem("Health")
-healthContainer.Parent = combatSection
-healthContainer.LayoutOrder = 1
-
-local fightingStyleContainer, FightingStyleLabel = CreateInfoItem("Fighting Style")
-fightingStyleContainer.Parent = combatSection
-fightingStyleContainer.LayoutOrder = 2
-
-local devilFruitContainer, DevilFruitLabel = CreateInfoItem("Devil Fruit")
-devilFruitContainer.Parent = combatSection
-devilFruitContainer.LayoutOrder = 3
-
-local equipmentSection, equipmentList = CreateSection()
-equipmentSection.Parent = StatsFrame
-equipmentSection.LayoutOrder = 5
-
-local equipmentHeader = CreateSectionHeader("EQUIPMENT")
-equipmentHeader.Parent = equipmentSection
-equipmentHeader.LayoutOrder = 0
-
-local swordsContainer, SwordLabel = CreateInfoItem("Swords")
-swordsContainer.Parent = equipmentSection
-swordsContainer.LayoutOrder = 1
-
--- Section spacing
+-- UI List Layout
 UIListLayout.Parent = StatsFrame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 16)  -- More space between major sections
+UIListLayout.Padding = UDim.new(0, 4)
 
--- Update function
-local function updateSectionSizes()
-    local function updateSection(section, list)
-        local contentSize = list.AbsoluteContentSize
-        section.Size = UDim2.new(1, 0, 0, contentSize.Y)
-    end
-    
-    updateSection(basicInfoSection, basicInfoList)
-    updateSection(combatSection, combatList)
-    updateSection(equipmentSection, equipmentList)
-    
-    local totalSize = UIListLayout.AbsoluteContentSize
-    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, totalSize.Y + 16)
-end
+-- Level Label
+LevelLabel.Name = "LevelLabel"
+LevelLabel.Parent = StatsFrame
+LevelLabel.BackgroundTransparency = 1
+LevelLabel.Position = UDim2.new(0, 0, 0, 0)
+LevelLabel.Size = UDim2.new(1, 0, 0, 30)
+LevelLabel.Font = Enum.Font.GothamMedium
+LevelLabel.Text = "Level: 0"
+LevelLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+LevelLabel.TextSize = 12
+LevelLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Connect size updates
-basicInfoList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSizes)
-combatList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSizes)
-equipmentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSizes)
+-- Health Label
+HealthLabel.Name = "HealthLabel"
+HealthLabel.Parent = StatsFrame
+HealthLabel.BackgroundTransparency = 1
+HealthLabel.Position = UDim2.new(0, 0, 0, 30)
+HealthLabel.Size = UDim2.new(1, 0, 0, 30)
+HealthLabel.Font = Enum.Font.GothamMedium
+HealthLabel.Text = "Health: 0/0"
+HealthLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+HealthLabel.TextSize = 12
+HealthLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Belli Label
+BelliLabel.Name = "BelliLabel"
+BelliLabel.Parent = StatsFrame
+BelliLabel.BackgroundTransparency = 1
+BelliLabel.Position = UDim2.new(0, 0, 0, 60)
+BelliLabel.Size = UDim2.new(1, 0, 0, 30)
+BelliLabel.Font = Enum.Font.GothamMedium
+BelliLabel.Text = "Beli: 0"
+BelliLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+BelliLabel.TextSize = 12
+BelliLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Fragments Label
+FragmentsLabel.Name = "FragmentsLabel"
+FragmentsLabel.Parent = StatsFrame
+FragmentsLabel.BackgroundTransparency = 1
+FragmentsLabel.Position = UDim2.new(0, 0, 0, 90)
+FragmentsLabel.Size = UDim2.new(1, 0, 0, 30)
+FragmentsLabel.Font = Enum.Font.GothamMedium
+FragmentsLabel.Text = "Fragments: 0"
+FragmentsLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+FragmentsLabel.TextSize = 12
+FragmentsLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Fighting Style Label
+FightingStyleLabel.Name = "FightingStyleLabel"
+FightingStyleLabel.Parent = StatsFrame
+FightingStyleLabel.BackgroundTransparency = 1
+FightingStyleLabel.Position = UDim2.new(0, 0, 0, 120)
+FightingStyleLabel.Size = UDim2.new(1, 0, 0, 30)
+FightingStyleLabel.Font = Enum.Font.GothamMedium
+FightingStyleLabel.Text = "Fighting Style: None"
+FightingStyleLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+FightingStyleLabel.TextSize = 12
+FightingStyleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Devil Fruit Label
+DevilFruitLabel.Name = "DevilFruitLabel"
+DevilFruitLabel.Parent = StatsFrame
+DevilFruitLabel.BackgroundTransparency = 1
+DevilFruitLabel.Position = UDim2.new(0, 0, 0, 150)
+DevilFruitLabel.Size = UDim2.new(1, 0, 0, 30)
+DevilFruitLabel.Font = Enum.Font.GothamMedium
+DevilFruitLabel.Text = "Devil Fruit: None"
+DevilFruitLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+DevilFruitLabel.TextSize = 12
+DevilFruitLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Race Label
+RaceLabel.Name = "RaceLabel"
+RaceLabel.Parent = StatsFrame
+RaceLabel.BackgroundTransparency = 1
+RaceLabel.Position = UDim2.new(0, 0, 0, 180)
+RaceLabel.Size = UDim2.new(1, 0, 0, 30)
+RaceLabel.Font = Enum.Font.GothamMedium
+RaceLabel.Text = "Race: Unknown"
+RaceLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+RaceLabel.TextSize = 12
+RaceLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Sword Label
+SwordLabel.Name = "SwordLabel"
+SwordLabel.Parent = StatsFrame
+SwordLabel.BackgroundTransparency = 1
+SwordLabel.Position = UDim2.new(0, 0, 0, 210)
+SwordLabel.Size = UDim2.new(1, 0, 0, 30)
+SwordLabel.Font = Enum.Font.GothamMedium
+SwordLabel.Text = "Swords: None"
+SwordLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+SwordLabel.TextSize = 12
+SwordLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Menu Divider
+MenuDivider.Parent = MainFrame
+MenuDivider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+MenuDivider.Position = UDim2.new(0, 75, 0, 24)
+MenuDivider.Size = UDim2.new(0, 1, 1, -24)
 
 -- Update Function
 local function updateStats()
     if LocalPlayer.Character then
-        -- Level
-        local level = LocalPlayer:WaitForChild("leaderstats"):WaitForChild("Level")
-        LevelLabel.Text = tostring(level.Value)
+        local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+        if humanoid then
+            HealthLabel.Text = string.format("Health: %d/%d", humanoid.Health, humanoid.MaxHealth)
+        end
+    end
+    
+    -- Get player stats from leaderstats
+    local leaderstats = LocalPlayer:FindFirstChild("leaderstats")
+    if leaderstats then
+        local level = leaderstats:FindFirstChild("Level")
+        local beli = leaderstats:FindFirstChild("Beli")
+        local fragments = leaderstats:FindFirstChild("Fragments")
         
-        -- Health
-        local humanoid = LocalPlayer.Character:WaitForChild("Humanoid")
-        HealthLabel.Text = string.format("%d/%d", humanoid.Health, humanoid.MaxHealth)
+        if level then
+            LevelLabel.Text = string.format("Level: %s", level.Value)
+        end
+        if beli then
+            BelliLabel.Text = string.format("Beli: %s", beli.Value)
+        end
+        if fragments then
+            FragmentsLabel.Text = string.format("Fragments: %s", fragments.Value)
+        end
+    end
+    
+    -- Get race info
+    local race = LocalPlayer:FindFirstChild("Race")
+    if race then
+        RaceLabel.Text = string.format("Race: %s", race.Value)
+    else
+        RaceLabel.Text = "Race: Unknown"
+    end
+    
+    -- Get fighting style info
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    local character = LocalPlayer.Character
+    if backpack and character then
+        -- Check for fighting styles
+        local fightingStyles = {}
+        for _, item in pairs(backpack:GetChildren()) do
+            if item:FindFirstChild("FightingStyle") then
+                table.insert(fightingStyles, item.Name)
+            end
+        end
+        for _, item in pairs(character:GetChildren()) do
+            if item:FindFirstChild("FightingStyle") then
+                table.insert(fightingStyles, item.Name)
+            end
+        end
+        if #fightingStyles > 0 then
+            FightingStyleLabel.Text = string.format("Fighting Style: %s", table.concat(fightingStyles, ", "))
+        else
+            FightingStyleLabel.Text = "Fighting Style: None"
+        end
         
-        -- Beli
-        local beli = LocalPlayer:WaitForChild("leaderstats"):WaitForChild("Beli")
-        BelliLabel.Text = tostring(beli.Value)
+        -- Check for devil fruits
+        local devilFruits = {}
+        for _, item in pairs(backpack:GetChildren()) do
+            if item:FindFirstChild("DevilFruit") then
+                table.insert(devilFruits, item.Name)
+            end
+        end
+        for _, item in pairs(character:GetChildren()) do
+            if item:FindFirstChild("DevilFruit") then
+                table.insert(devilFruits, item.Name)
+            end
+        end
+        if #devilFruits > 0 then
+            DevilFruitLabel.Text = string.format("Devil Fruit: %s", table.concat(devilFruits, ", "))
+        else
+            DevilFruitLabel.Text = "Devil Fruit: None"
+        end
         
-        -- Fragments
-        local fragments = LocalPlayer:WaitForChild("leaderstats"):WaitForChild("Fragments")
-        FragmentsLabel.Text = tostring(fragments.Value)
-        
-        -- Race
-        local race = LocalPlayer:WaitForChild("Data"):WaitForChild("Race")
-        RaceLabel.Text = tostring(race.Value)
-        
-        -- Get fighting style info
-        local backpack = LocalPlayer:FindFirstChild("Backpack")
-        local character = LocalPlayer.Character
-        if backpack and character then
-            -- Check for fighting styles
-            local fightingStyles = {}
-            for _, item in pairs(backpack:GetChildren()) do
-                if item:FindFirstChild("FightingStyle") then
-                    table.insert(fightingStyles, item.Name)
-                end
+        -- Check for swords
+        local swords = {}
+        for _, item in pairs(backpack:GetChildren()) do
+            if item:FindFirstChild("SwordTool") then
+                table.insert(swords, item.Name)
             end
-            for _, item in pairs(character:GetChildren()) do
-                if item:FindFirstChild("FightingStyle") then
-                    table.insert(fightingStyles, item.Name)
-                end
+        end
+        for _, item in pairs(character:GetChildren()) do
+            if item:FindFirstChild("SwordTool") then
+                table.insert(swords, item.Name)
             end
-            if #fightingStyles > 0 then
-                FightingStyleLabel.Text = table.concat(fightingStyles, ", ")
-            else
-                FightingStyleLabel.Text = "None"
-            end
-            
-            -- Check for devil fruits
-            local devilFruits = {}
-            for _, item in pairs(backpack:GetChildren()) do
-                if item:FindFirstChild("DevilFruit") then
-                    table.insert(devilFruits, item.Name)
-                end
-            end
-            for _, item in pairs(character:GetChildren()) do
-                if item:FindFirstChild("DevilFruit") then
-                    table.insert(devilFruits, item.Name)
-                end
-            end
-            if #devilFruits > 0 then
-                DevilFruitLabel.Text = table.concat(devilFruits, ", ")
-            else
-                DevilFruitLabel.Text = "None"
-            end
-            
-            -- Check for swords
-            local swords = {}
-            for _, item in pairs(backpack:GetChildren()) do
-                if item:FindFirstChild("SwordName") then
-                    table.insert(swords, item.Name)
-                end
-            end
-            for _, item in pairs(character:GetChildren()) do
-                if item:FindFirstChild("SwordName") then
-                    table.insert(swords, item.Name)
-                end
-            end
-            if #swords > 0 then
-                SwordLabel.Text = table.concat(swords, ", ")
-            else
-                SwordLabel.Text = "None"
-            end
+        end
+        if #swords > 0 then
+            SwordLabel.Text = string.format("Swords: %s", table.concat(swords, ", "))
+        else
+            SwordLabel.Text = "Swords: None"
         end
     end
 end
@@ -516,9 +341,3 @@ game:GetService("RunService").RenderStepped:Connect(updateStats)
 CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
-
--- Menu Divider
-MenuDivider.Parent = MainFrame
-MenuDivider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-MenuDivider.Position = UDim2.new(0, 85, 0, 32)
-MenuDivider.Size = UDim2.new(0, 1, 1, -32)
