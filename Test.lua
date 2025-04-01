@@ -1,17 +1,26 @@
 -- Constants for configuration
 local CONFIG = {
-    UPDATE_INTERVAL = 0.1, -- Seconds between updates
+    UPDATE_INTERVAL = 0.1,
     COLORS = {
-        BACKGROUND_DARK = Color3.fromRGB(30, 30, 30),
-        BACKGROUND_MEDIUM = Color3.fromRGB(35, 35, 35),
-        BACKGROUND_LIGHT = Color3.fromRGB(40, 40, 40),
+        BACKGROUND_DARK = Color3.fromRGB(25, 25, 25),
+        BACKGROUND_MEDIUM = Color3.fromRGB(30, 30, 30),
+        BACKGROUND_LIGHT = Color3.fromRGB(35, 35, 35),
+        ACCENT = Color3.fromRGB(65, 105, 225), -- Royal Blue
         TEXT_PRIMARY = Color3.fromRGB(255, 255, 255),
-        TEXT_SECONDARY = Color3.fromRGB(200, 200, 200),
+        TEXT_SECONDARY = Color3.fromRGB(180, 180, 180),
+        POSITIVE = Color3.fromRGB(50, 205, 50), -- Lime Green
+        NEGATIVE = Color3.fromRGB(220, 20, 60), -- Crimson
+        WARNING = Color3.fromRGB(255, 185, 0), -- Amber
     },
     PADDING = {
-        SECTION = 4,
-        ITEM = 2,
+        SECTION = 6,
+        ITEM = 4,
     },
+    ANIMATION = {
+        TWEEN_INFO = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        HOVER_TWEEN_INFO = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    },
+    CORNER_RADIUS = 6,
 }
 
 -- Services
@@ -66,7 +75,7 @@ MainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
 MainFrame.Size = UDim2.new(0, 350, 0, 250)
 MainFrame.ClipsDescendants = true
 
-local mainCorner = createCorner(MainFrame)
+local mainCorner = createCorner(MainFrame, CONFIG.CORNER_RADIUS)
 
 -- Title Bar Setup
 local TitleBar = Instance.new("Frame")
@@ -75,7 +84,7 @@ TitleBar.Parent = MainFrame
 TitleBar.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_LIGHT
 TitleBar.Size = UDim2.new(1, 0, 0, 24)
 
-local titleBarCorner = createCorner(TitleBar)
+local titleBarCorner = createCorner(TitleBar, CONFIG.CORNER_RADIUS)
 
 -- Title Text
 local Title = Instance.new("TextLabel")
@@ -102,7 +111,7 @@ MinimizeButton.TextColor3 = CONFIG.COLORS.TEXT_PRIMARY
 MinimizeButton.TextSize = 12
 MinimizeButton.AutoButtonColor = true
 
-local minimizeCorner = createCorner(MinimizeButton)
+local minimizeCorner = createCorner(MinimizeButton, CONFIG.CORNER_RADIUS)
 
 -- Close Button
 local CloseButton = Instance.new("TextButton")
@@ -117,7 +126,7 @@ CloseButton.TextColor3 = CONFIG.COLORS.TEXT_PRIMARY
 CloseButton.TextSize = 12
 CloseButton.AutoButtonColor = true
 
-local closeCorner = createCorner(CloseButton)
+local closeCorner = createCorner(CloseButton, CONFIG.CORNER_RADIUS)
 
 -- Menu Frame
 local MenuFrame = Instance.new("Frame")
@@ -127,7 +136,7 @@ MenuFrame.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_LIGHT
 MenuFrame.Position = UDim2.new(0, 0, 0, 24)
 MenuFrame.Size = UDim2.new(0, 75, 1, -24)
 
-local menuCorner = createCorner(MenuFrame)
+local menuCorner = createCorner(MenuFrame, CONFIG.CORNER_RADIUS)
 
 -- Add a frame to cover the top corners of MenuFrame
 local menuTopCover = Instance.new("Frame")
@@ -153,28 +162,32 @@ local function CreateMenuButton(text, order)
     button.TextSize = 11
     button.AutoButtonColor = true
     
-    local buttonCorner = createCorner(button)
+    local buttonCorner = createCorner(button, CONFIG.CORNER_RADIUS)
     
     -- Selected indicator
     local selectedIndicator = Instance.new("Frame")
     selectedIndicator.Name = "SelectedIndicator"
     selectedIndicator.Parent = button
-    selectedIndicator.BackgroundColor3 = CONFIG.COLORS.TEXT_PRIMARY
+    selectedIndicator.BackgroundColor3 = CONFIG.COLORS.ACCENT
     selectedIndicator.Position = UDim2.new(0, 0, 0.5, -1)
     selectedIndicator.Size = UDim2.new(0, 2, 0, 16)
     selectedIndicator.Visible = false
-    createCorner(selectedIndicator)
+    createCorner(selectedIndicator, CONFIG.CORNER_RADIUS)
     
     -- Hover effect
     button.MouseEnter:Connect(function()
         if button ~= selectedButton then
-            button.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_LIGHT
+            TweenService:Create(button, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
+                BackgroundColor3 = CONFIG.COLORS.BACKGROUND_LIGHT
+            }):Play()
         end
     end)
     
     button.MouseLeave:Connect(function()
         if button ~= selectedButton then
-            button.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_DARK
+            TweenService:Create(button, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
+                BackgroundColor3 = CONFIG.COLORS.BACKGROUND_DARK
+            }):Play()
         end
     end)
     
@@ -232,58 +245,117 @@ ContentContainer.Visible = true
 local function CreateSectionHeader(text)
     local header = Instance.new("Frame")
     header.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_LIGHT
-    header.Size = UDim2.new(1, 0, 0, 24)
+    header.Size = UDim2.new(1, 0, 0, 32)
+    
+    local headerContent = Instance.new("Frame")
+    headerContent.Name = "Content"
+    headerContent.Parent = header
+    headerContent.BackgroundTransparency = 1
+    headerContent.Size = UDim2.new(1, 0, 1, 0)
     
     local headerLabel = Instance.new("TextLabel")
-    headerLabel.Parent = header
+    headerLabel.Parent = headerContent
     headerLabel.BackgroundTransparency = 1
-    headerLabel.Position = UDim2.new(0, 8, 0, 0)
-    headerLabel.Size = UDim2.new(1, -16, 1, 0)
-    headerLabel.Font = Enum.Font.GothamBold
+    headerLabel.Position = UDim2.new(0, 12, 0, 0)
+    headerLabel.Size = UDim2.new(1, -24, 1, 0)
+    headerLabel.Font = Enum.Font.GothamBlack
     headerLabel.Text = text
     headerLabel.TextColor3 = CONFIG.COLORS.TEXT_PRIMARY
-    headerLabel.TextSize = 11
+    headerLabel.TextSize = 12
     headerLabel.TextXAlignment = Enum.TextXAlignment.Left
     
-    local headerCorner = createCorner(header)
+    local accent = Instance.new("Frame")
+    accent.Name = "Accent"
+    accent.Parent = header
+    accent.BackgroundColor3 = CONFIG.COLORS.ACCENT
+    accent.Position = UDim2.new(0, 0, 0, 0)
+    accent.Size = UDim2.new(0, 2, 1, 0)
+    
+    createCorner(header, CONFIG.CORNER_RADIUS)
+    
+    -- Hover animation
+    local hoverTweenInfo = CONFIG.ANIMATION.HOVER_TWEEN_INFO
+    header.MouseEnter:Connect(function()
+        TweenService:Create(header, hoverTweenInfo, {
+            BackgroundColor3 = CONFIG.COLORS.BACKGROUND_MEDIUM
+        }):Play()
+    end)
+    
+    header.MouseLeave:Connect(function()
+        TweenService:Create(header, hoverTweenInfo, {
+            BackgroundColor3 = CONFIG.COLORS.BACKGROUND_LIGHT
+        }):Play()
+    end)
     
     return header
+end
+
+-- Create Info Label
+local function CreateInfoLabel(text, valueColor)
+    local container = Instance.new("Frame")
+    container.BackgroundTransparency = 1
+    container.Size = UDim2.new(1, 0, 0, 24)
+    
+    local label = Instance.new("TextLabel")
+    label.Parent = container
+    label.BackgroundTransparency = 1
+    label.Position = UDim2.new(0, 0, 0, 0)
+    label.Size = UDim2.new(0.4, -8, 1, 0)
+    label.Font = Enum.Font.GothamMedium
+    label.Text = text:match("^(.-):") or text
+    label.TextColor3 = CONFIG.COLORS.TEXT_SECONDARY
+    label.TextSize = 11
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local value = Instance.new("TextLabel")
+    value.Parent = container
+    value.BackgroundTransparency = 1
+    value.Position = UDim2.new(0.4, 8, 0, 0)
+    value.Size = UDim2.new(0.6, -16, 1, 0)
+    value.Font = Enum.Font.GothamBold
+    value.Text = text:match(": (.+)$") or "None"
+    value.TextColor3 = valueColor or CONFIG.COLORS.TEXT_PRIMARY
+    value.TextSize = 11
+    value.TextXAlignment = Enum.TextXAlignment.Right
+    
+    -- Hover effect
+    container.MouseEnter:Connect(function()
+        TweenService:Create(label, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
+            TextColor3 = CONFIG.COLORS.TEXT_PRIMARY
+        }):Play()
+    end)
+    
+    container.MouseLeave:Connect(function()
+        TweenService:Create(label, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
+            TextColor3 = CONFIG.COLORS.TEXT_SECONDARY
+        }):Play()
+    end)
+    
+    return container, value
 end
 
 -- Create Section Content
 local function CreateSection()
     local section = Instance.new("Frame")
     section.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_DARK
-    section.Size = UDim2.new(1, 0, 0, 0) -- Will be set dynamically
-    
-    local sectionCorner = createCorner(section)
+    section.Size = UDim2.new(1, 0, 0, 0)
+    section.ClipsDescendants = true
     
     local contentPadding = Instance.new("UIPadding")
     contentPadding.Parent = section
     contentPadding.PaddingTop = UDim.new(0, CONFIG.PADDING.SECTION)
     contentPadding.PaddingBottom = UDim.new(0, CONFIG.PADDING.SECTION)
-    contentPadding.PaddingLeft = UDim.new(0, CONFIG.PADDING.ITEM)
-    contentPadding.PaddingRight = UDim.new(0, CONFIG.PADDING.ITEM)
+    contentPadding.PaddingLeft = UDim.new(0, CONFIG.PADDING.SECTION)
+    contentPadding.PaddingRight = UDim.new(0, CONFIG.PADDING.SECTION)
     
     local contentList = Instance.new("UIListLayout")
     contentList.Parent = section
     contentList.SortOrder = Enum.SortOrder.LayoutOrder
     contentList.Padding = UDim.new(0, CONFIG.PADDING.ITEM)
     
+    createCorner(section, CONFIG.CORNER_RADIUS)
+    
     return section, contentList
-end
-
--- Create Info Label
-local function CreateInfoLabel(text)
-    local label = Instance.new("TextLabel")
-    label.BackgroundTransparency = 1
-    label.Size = UDim2.new(1, 0, 0, 20)
-    label.Font = Enum.Font.GothamMedium
-    label.Text = text
-    label.TextColor3 = CONFIG.COLORS.TEXT_SECONDARY
-    label.TextSize = 11
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    return label
 end
 
 -- Stats Frame Setup
@@ -319,35 +391,35 @@ equipmentSection.Parent = StatsFrame
 equipmentSection.LayoutOrder = 5
 
 -- Create and organize labels
-local LevelLabel = CreateInfoLabel("Level: 0")
+local LevelLabel, LevelValue = CreateInfoLabel("Level: 0")
 LevelLabel.Parent = basicInfoSection
 LevelLabel.LayoutOrder = 0
 
-local RaceLabel = CreateInfoLabel("Race: Unknown")
+local RaceLabel, RaceValue = CreateInfoLabel("Race: Unknown")
 RaceLabel.Parent = basicInfoSection
 RaceLabel.LayoutOrder = 1
 
-local BelliLabel = CreateInfoLabel("Beli: 0")
+local BelliLabel, BelliValue = CreateInfoLabel("Beli: 0")
 BelliLabel.Parent = basicInfoSection
 BelliLabel.LayoutOrder = 2
 
-local FragmentsLabel = CreateInfoLabel("Fragments: 0")
+local FragmentsLabel, FragmentsValue = CreateInfoLabel("Fragments: 0")
 FragmentsLabel.Parent = basicInfoSection
 FragmentsLabel.LayoutOrder = 3
 
-local HealthLabel = CreateInfoLabel("Health: 0/0")
+local HealthLabel, HealthValue = CreateInfoLabel("Health: 0/0")
 HealthLabel.Parent = combatSection
 HealthLabel.LayoutOrder = 0
 
-local FightingStyleLabel = CreateInfoLabel("Fighting Style: None")
+local FightingStyleLabel, FightingStyleValue = CreateInfoLabel("Fighting Style: None")
 FightingStyleLabel.Parent = combatSection
 FightingStyleLabel.LayoutOrder = 1
 
-local DevilFruitLabel = CreateInfoLabel("Devil Fruit: None")
+local DevilFruitLabel, DevilFruitValue = CreateInfoLabel("Devil Fruit: None")
 DevilFruitLabel.Parent = combatSection
 DevilFruitLabel.LayoutOrder = 2
 
-local SwordLabel = CreateInfoLabel("Swords: None")
+local SwordLabel, SwordValue = CreateInfoLabel("Swords: None")
 SwordLabel.Parent = equipmentSection
 SwordLabel.LayoutOrder = 0
 
@@ -393,19 +465,29 @@ local function updateStats()
         local beli = safeGet(leaderstats, "Beli")
         local fragments = safeGet(leaderstats, "Fragments")
         
-        if level then LevelLabel.Text = string.format("Level: %s", level.Value) end
-        if beli then BelliLabel.Text = string.format("Beli: %s", beli.Value) end
-        if fragments then FragmentsLabel.Text = string.format("Fragments: %s", fragments.Value) end
+        if level then LevelValue.Text = tostring(level.Value) end
+        if beli then BelliValue.Text = tostring(beli.Value) end
+        if fragments then FragmentsValue.Text = tostring(fragments.Value) end
     end
     
     -- Update Race
     local race = safeGet(LocalPlayer, "Data", "Race")
-    RaceLabel.Text = race and string.format("Race: %s", race.Value) or "Race: Unknown"
+    if race then
+        RaceValue.Text = tostring(race.Value)
+    else
+        RaceValue.Text = "Unknown"
+    end
     
     -- Update Health
     local humanoid = safeGet(character, "Humanoid")
     if humanoid then
-        HealthLabel.Text = string.format("Health: %d/%d", humanoid.Health, humanoid.MaxHealth)
+        local healthPercent = humanoid.Health / humanoid.MaxHealth
+        local healthColor = healthPercent > 0.5 and CONFIG.COLORS.POSITIVE
+            or healthPercent > 0.25 and CONFIG.COLORS.WARNING
+            or CONFIG.COLORS.NEGATIVE
+        
+        HealthValue.TextColor3 = healthColor
+        HealthValue.Text = string.format("%d/%d", humanoid.Health, humanoid.MaxHealth)
     end
     
     -- Get inventory items
@@ -418,9 +500,9 @@ local function updateStats()
                 table.insert(fightingStyles, item)
             end
         end
-        FightingStyleLabel.Text = #fightingStyles > 0 
-            and string.format("Fighting Style: %s", table.concat(fightingStyles, ", "))
-            or "Fighting Style: None"
+        FightingStyleValue.Text = #fightingStyles > 0 
+            and table.concat(fightingStyles, ", ")
+            or "None"
             
         -- Update Devil Fruits
         local devilFruits = {}
@@ -429,9 +511,9 @@ local function updateStats()
                 table.insert(devilFruits, item)
             end
         end
-        DevilFruitLabel.Text = #devilFruits > 0
-            and string.format("Devil Fruit: %s", table.concat(devilFruits, ", "))
-            or "Devil Fruit: None"
+        DevilFruitValue.Text = #devilFruits > 0
+            and table.concat(devilFruits, ", ")
+            or "None"
             
         -- Update Swords
         local swords = {}
@@ -440,9 +522,9 @@ local function updateStats()
                 table.insert(swords, item)
             end
         end
-        SwordLabel.Text = #swords > 0
-            and string.format("Swords: %s", table.concat(swords, ", "))
-            or "Swords: None"
+        SwordValue.Text = #swords > 0
+            and table.concat(swords, ", ")
+            or "None"
     end
 end
 
