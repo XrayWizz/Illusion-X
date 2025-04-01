@@ -137,8 +137,8 @@ closeCorner.CornerRadius = UDim.new(0, 4)
 ContentFrame.Name = "ContentFrame"
 ContentFrame.Parent = MainFrame
 ContentFrame.BackgroundTransparency = 1
-ContentFrame.Position = UDim2.new(0, 85, 0, 28)
-ContentFrame.Size = UDim2.new(1, -90, 1, -32)
+ContentFrame.Position = UDim2.new(0, 80, 0, 28)
+ContentFrame.Size = UDim2.new(1, -85, 1, -32)
 ContentFrame.ClipsDescendants = true
 
 -- Create Scrolling Frame for Content
@@ -146,11 +146,11 @@ local ScrollingFrame = Instance.new("ScrollingFrame")
 ScrollingFrame.Name = "ScrollingFrame"
 ScrollingFrame.Parent = ContentFrame
 ScrollingFrame.BackgroundTransparency = 1
-ScrollingFrame.Size = UDim2.new(1, -5, 1, 0)  -- Slightly smaller width for scrollbar
+ScrollingFrame.Size = UDim2.new(1, -4, 1, 0)  -- Slightly smaller width for scrollbar
 ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)  -- Will be updated dynamically
-ScrollingFrame.ScrollBarThickness = 4
+ScrollingFrame.ScrollBarThickness = 3
 ScrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
-ScrollingFrame.ScrollBarImageTransparency = 0.5
+ScrollingFrame.ScrollBarImageTransparency = 0.7
 ScrollingFrame.BorderSizePixel = 0
 
 -- Stats Frame now goes inside ScrollingFrame
@@ -217,24 +217,24 @@ makeTitleBarDraggable()
 MenuFrame.Name = "MenuFrame"
 MenuFrame.Parent = MainFrame
 MenuFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-MenuFrame.Position = UDim2.new(0, 0, 0, 24)  -- Align with smaller title bar
-MenuFrame.Size = UDim2.new(0, 80, 1, -24)  -- Narrower menu
+MenuFrame.Position = UDim2.new(0, 0, 0, 24)
+MenuFrame.Size = UDim2.new(0, 75, 1, -24)  -- Even narrower menu
 
 local menuLayout = Instance.new("UIListLayout")
 menuLayout.Parent = MenuFrame
 menuLayout.SortOrder = Enum.SortOrder.LayoutOrder
-menuLayout.Padding = UDim.new(0, 5)
+menuLayout.Padding = UDim.new(0, 3)  -- Tighter padding
 menuLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
 -- Menu Padding
 local menuPadding = Instance.new("UIPadding")
 menuPadding.Parent = MenuFrame
-menuPadding.PaddingTop = UDim.new(0, 6)  -- Less top padding
+menuPadding.PaddingTop = UDim.new(0, 4)  -- Less top padding
 
 -- Menu Divider
 MenuDivider.Parent = MainFrame
 MenuDivider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-MenuDivider.Position = UDim2.new(0, 80, 0, 24)
+MenuDivider.Position = UDim2.new(0, 75, 0, 24)
 MenuDivider.Size = UDim2.new(0, 1, 1, -24)
 
 -- Create Menu Button
@@ -243,16 +243,16 @@ local function CreateMenuButton(name)
     button.Name = name.."Button"
     button.Parent = MenuFrame
     button.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-    button.Size = UDim2.new(0.9, 0, 0, 24)  -- Smaller height
+    button.Size = UDim2.new(0.9, 0, 0, 20)  -- Even smaller height
     button.Font = Enum.Font.GothamSemibold
     button.Text = name
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 11  -- Smaller text
+    button.TextSize = 10  -- Smaller text
     button.AutoButtonColor = true
     
     local buttonCorner = Instance.new("UICorner")
     buttonCorner.Parent = button
-    buttonCorner.CornerRadius = UDim.new(0, 4)  -- Smaller corners
+    buttonCorner.CornerRadius = UDim.new(0, 3)  -- Smaller corners
     
     return button
 end
@@ -268,10 +268,10 @@ local menuButtons = {
 local function CreateInfoLabel()
     local label = Instance.new("TextLabel")
     label.BackgroundTransparency = 1
-    label.Size = UDim2.new(1, 0, 0, 20)  -- Smaller height
+    label.Size = UDim2.new(1, 0, 0, 16)  -- Smaller height
     label.Font = Enum.Font.Gotham
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.TextSize = 11  -- Smaller text
+    label.TextSize = 10  -- Smaller text
     label.TextXAlignment = Enum.TextXAlignment.Left
     return label
 end
@@ -436,3 +436,6 @@ menuButtons[3].MouseButton1Click:Connect(function()
     menuButtons[3].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
     -- Add settings frame logic here
 end)
+
+-- Update UIListLayout padding
+UIListLayout.Padding = UDim.new(0, 2)  -- Tighter spacing between items
