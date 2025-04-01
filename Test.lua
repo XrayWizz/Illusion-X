@@ -68,8 +68,8 @@ local MINIMIZE_SETTINGS = {
         Position = UDim2.new(0.5, -CONFIG.SIZES.EXTRA_LARGE.WIDTH/2, 0.5, -CONFIG.SIZES.EXTRA_LARGE.HEIGHT/2)
     },
     MINIMIZED = {
-        Size = UDim2.new(0, CONFIG.SIZES.EXTRA_LARGE.WIDTH, 0, 24),
-        Position = UDim2.new(0.5, -CONFIG.SIZES.EXTRA_LARGE.WIDTH/2, 0, 10)
+        Size = UDim2.new(0, CONFIG.SIZES.EXTRA_LARGE.WIDTH/2, 0, 24),
+        Position = UDim2.new(0.5, -CONFIG.SIZES.EXTRA_LARGE.WIDTH/4, 0, 5)
     }
 }
 
@@ -197,6 +197,24 @@ menuTopCover.BorderSizePixel = 0
 menuTopCover.Position = UDim2.new(0, 0, 0, 0)
 menuTopCover.Size = UDim2.new(1, 0, 0, 10)
 
+-- Create scrolling frame for menu items
+local MenuScroll = Instance.new("ScrollingFrame")
+MenuScroll.Name = "MenuScroll"
+MenuScroll.Parent = MenuFrame
+MenuScroll.BackgroundTransparency = 1
+MenuScroll.Position = UDim2.new(0, 0, 0, 0)
+MenuScroll.Size = UDim2.new(1, 0, 1, 0)
+MenuScroll.ScrollBarThickness = 2
+MenuScroll.ScrollBarImageColor3 = CONFIG.THEMES.DARK.TEXT_SECONDARY
+MenuScroll.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+
+-- Add UIListLayout for automatic button positioning
+local MenuList = Instance.new("UIListLayout")
+MenuList.Parent = MenuScroll
+MenuList.Padding = UDim.new(0, 4)
+MenuList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+MenuList.SortOrder = Enum.SortOrder.LayoutOrder
+
 -- Menu button states
 local selectedButton = nil
 
@@ -211,6 +229,8 @@ local function CreateMenuButton(text, order)
     button.TextColor3 = CONFIG.THEMES.DARK.TEXT_PRIMARY
     button.TextSize = 11
     button.AutoButtonColor = false
+    button.LayoutOrder = order
+    button.Parent = MenuScroll
     
     local buttonCorner = createCorner(button, CONFIG.CORNER_RADIUS)
     
@@ -257,7 +277,7 @@ end
 
 -- Create Overview Button
 local OverviewButton = CreateMenuButton("OVERVIEW", 0)
-OverviewButton.Parent = MenuFrame
+OverviewButton.Parent = MenuScroll
 
 -- Select Overview by default
 selectButton(OverviewButton)
@@ -271,7 +291,12 @@ end)
 
 -- Create Settings Button
 local SettingsButton = CreateMenuButton("SETTINGS", 1)
-SettingsButton.Parent = MenuFrame
+SettingsButton.Parent = MenuScroll
+
+-- Update MenuScroll canvas size when buttons are added
+MenuList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    MenuScroll.CanvasSize = UDim2.new(0, 0, 0, MenuList.AbsoluteContentSize.Y + 8)
+end)
 
 -- Content Frame
 local ContentFrame = Instance.new("Frame")
@@ -866,8 +891,8 @@ local function switchSize(sizeName)
         }):Play()
     else
         -- Update minimized width if size changes while minimized
-        MINIMIZE_SETTINGS.MINIMIZED.Size = UDim2.new(0, size.WIDTH, 0, 24)
-        MINIMIZE_SETTINGS.MINIMIZED.Position = UDim2.new(0.5, -size.WIDTH/2, 0, 10)
+        MINIMIZE_SETTINGS.MINIMIZED.Size = UDim2.new(0, size.WIDTH/2, 0, 24)
+        MINIMIZE_SETTINGS.MINIMIZED.Position = UDim2.new(0.5, -size.WIDTH/4, 0, 5)
         
         TweenService:Create(MainFrame, CONFIG.ANIMATION.TWEEN_INFO, {
             Size = MINIMIZE_SETTINGS.MINIMIZED.Size,
