@@ -552,16 +552,16 @@ local function createSidebarButton(text, positionY, content, displayFunction)
         Parent = Sidebar
     })
 
-    -- Create indicator dot (initially invisible)
+    -- Create indicator (pill shape) (initially invisible)
     local Indicator = createUIElement("Frame", {
-        Size = UDim2.new(0, 4, 0, 4),
-        Position = UDim2.new(0, -8, 0.5, -2),
+        Size = UDim2.new(0, 3, 0, 16), 
+        Position = UDim2.new(0, -6, 0.5, -8), 
         BackgroundColor3 = CONFIG.COLORS.INDICATOR,
         BackgroundTransparency = 1,
         Parent = Button
     })
     createUIElement("UICorner", {
-        CornerRadius = UDim.new(1, 0),
+        CornerRadius = UDim.new(1, 0), 
     }, Indicator)
 
     local ButtonText = createUIElement("TextButton", {
@@ -579,84 +579,41 @@ local function createSidebarButton(text, positionY, content, displayFunction)
         CornerRadius = UDim.new(0, 6),
     }, Button)
 
-    -- Modified click handler to include blue tint and indicator
+    -- Click handler
     ButtonText.MouseButton1Click:Connect(function()
-        -- Reset all buttons
-        for _, child in pairs(Sidebar:GetChildren()) do
-            if child:IsA("Frame") and child ~= Button then
-                child.BackgroundColor3 = CONFIG.COLORS.SECONDARY
-                -- Hide other indicators
-                local otherIndicator = child:FindFirstChild("Frame")
-                if otherIndicator then
-                    otherIndicator.BackgroundTransparency = 1
-                end
+        -- Reset previous button if it exists
+        if selectedButton and selectedButton ~= Button then
+            selectedButton.BackgroundColor3 = CONFIG.COLORS.SECONDARY
+            local prevIndicator = selectedButton:FindFirstChild("Frame")
+            if prevIndicator then
+                prevIndicator.BackgroundTransparency = 1
             end
         end
-        
-        -- Set selected state with blue tint
+
+        -- Update current button
         Button.BackgroundColor3 = CONFIG.COLORS.SELECTED_BLUE
         Indicator.BackgroundTransparency = 0
-        
+        selectedButton = Button
+
+        -- Clear and update content area
         clearContent(ContentArea)
-
-        -- Create header container
-        local headerContainer = createUIElement("Frame", {
-            Size = UDim2.new(1, -20, 0, 40),
-            Position = UDim2.new(0, 10, 0, 5),
-            BackgroundColor3 = CONFIG.COLORS.SECONDARY,
-            BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
-            Parent = ContentArea
-        })
-
-        createUIElement("UICorner", {
-            CornerRadius = UDim.new(0, 6),
-        }, headerContainer)
-
-        -- Create glowing effect
-        local glow = createUIElement("ImageLabel", {
-            Size = UDim2.new(1, 20, 1, 20),
-            Position = UDim2.new(0, -10, 0, -10),
-            BackgroundTransparency = 1,
-            Image = "rbxassetid://4996891970", -- Blur effect
-            ImageColor3 = CONFIG.COLORS.VERSION_BLUE,
-            ImageTransparency = 0.9,
-            Parent = headerContainer
-        })
-
-        -- Create description text
-        local descriptionText = createUIElement("TextLabel", {
-            Size = UDim2.new(1, -20, 1, 0),
-            Position = UDim2.new(0, 10, 0, 0),
-            Text = content,
-            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
-            TextSize = CONFIG.TEXT_SIZES.HEADER,
-            Font = Enum.Font.SourceSansBold,
-            BackgroundTransparency = 1,
-            TextXAlignment = Enum.TextXAlignment.Center,
-            Parent = headerContainer
-        })
-
-        -- Create content container below header
-        local contentContainer = createUIElement("Frame", {
-            Size = UDim2.new(1, -20, 1, -55),
-            Position = UDim2.new(0, 10, 0, 50),
-            BackgroundTransparency = 1,
-            Parent = ContentArea
-        })
-
         if displayFunction then
-            displayFunction(contentContainer)
+            displayFunction(ContentArea)
         end
     end)
 
-    -- Modified hover effect
-    local function updateColor(isHover)
-        if Button.BackgroundColor3 == CONFIG.COLORS.SELECTED_BLUE then return end
-        Button.BackgroundColor3 = isHover and CONFIG.COLORS.HOVER or CONFIG.COLORS.SECONDARY
-    end
-    
-    ButtonText.MouseEnter:Connect(function() updateColor(true) end)
-    ButtonText.MouseLeave:Connect(function() updateColor(false) end)
+    -- Hover effects
+    ButtonText.MouseEnter:Connect(function()
+        if Button ~= selectedButton then
+            Button.BackgroundColor3 = CONFIG.COLORS.HOVER
+        end
+    end)
+
+    ButtonText.MouseLeave:Connect(function()
+        if Button ~= selectedButton then
+            Button.BackgroundColor3 = CONFIG.COLORS.SECONDARY
+        end
+    end)
 
     return Button
 end
@@ -1012,7 +969,12 @@ for i, btnInfo in ipairs(buttonList) do
     
     -- Activate Overview button by default
     if i == 1 then
+        selectedButton = button
         button.BackgroundColor3 = CONFIG.COLORS.SELECTED_BLUE
+        local indicator = button:FindFirstChild("Frame")
+        if indicator then
+            indicator.BackgroundTransparency = 0
+        end
         if btnInfo[3] then
             btnInfo[3](ContentArea)
         end
