@@ -302,9 +302,76 @@ end)
 local ContentFrame = Instance.new("Frame")
 ContentFrame.Name = "ContentFrame"
 ContentFrame.Parent = MainFrame
-ContentFrame.BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_MEDIUM
-ContentFrame.Position = UDim2.new(0, 75, 0, 24)
-ContentFrame.Size = UDim2.new(1, -75, 1, -24)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Position = UDim2.new(0, 76, 0, 24)
+ContentFrame.Size = UDim2.new(1, -76, 1, -24)
+ContentFrame.ClipsDescendants = true
+
+-- Content Container (make scrollable)
+local ContentContainer = Instance.new("ScrollingFrame")
+ContentContainer.Name = "ContentContainer"
+ContentContainer.Parent = ContentFrame
+ContentContainer.BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_DARK
+ContentContainer.Position = UDim2.new(0, 0, 0, 0)
+ContentContainer.Size = UDim2.new(1, 0, 1, 0)
+ContentContainer.ScrollBarThickness = 3
+ContentContainer.ScrollBarImageColor3 = CONFIG.THEMES.DARK.TEXT_SECONDARY
+ContentContainer.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+ContentContainer.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+ContentContainer.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+
+-- Content Layout
+local ContentLayout = Instance.new("UIListLayout")
+ContentLayout.Parent = ContentContainer
+ContentLayout.Padding = UDim.new(0, 8)
+ContentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Content Padding
+local ContentPadding = Instance.new("UIPadding")
+ContentPadding.Parent = ContentContainer
+ContentPadding.PaddingLeft = UDim.new(0, 12)
+ContentPadding.PaddingRight = UDim.new(0, 12)
+ContentPadding.PaddingTop = UDim.new(0, 12)
+ContentPadding.PaddingBottom = UDim.new(0, 12)
+
+-- Settings Container (make scrollable)
+local SettingsContainer = Instance.new("ScrollingFrame")
+SettingsContainer.Name = "SettingsContainer"
+SettingsContainer.Parent = ContentFrame
+SettingsContainer.BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_DARK
+SettingsContainer.Position = UDim2.new(0, 0, 0, 0)
+SettingsContainer.Size = UDim2.new(1, 0, 1, 0)
+SettingsContainer.ScrollBarThickness = 3
+SettingsContainer.ScrollBarImageColor3 = CONFIG.THEMES.DARK.TEXT_SECONDARY
+SettingsContainer.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+SettingsContainer.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+SettingsContainer.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+SettingsContainer.Visible = false
+
+-- Settings Layout
+local SettingsLayout = Instance.new("UIListLayout")
+SettingsLayout.Parent = SettingsContainer
+SettingsLayout.Padding = UDim.new(0, 8)
+SettingsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+SettingsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Settings Padding
+local SettingsPadding = Instance.new("UIPadding")
+SettingsPadding.Parent = SettingsContainer
+SettingsPadding.PaddingLeft = UDim.new(0, 12)
+SettingsPadding.PaddingRight = UDim.new(0, 12)
+SettingsPadding.PaddingTop = UDim.new(0, 12)
+SettingsPadding.PaddingBottom = UDim.new(0, 12)
+
+-- Update canvas sizes when content changes
+ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ContentContainer.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 24)
+end)
+
+SettingsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    SettingsContainer.CanvasSize = UDim2.new(0, 0, 0, SettingsLayout.AbsoluteContentSize.Y + 24)
+end)
 
 -- Menu Divider
 local MenuDivider = Instance.new("Frame")
@@ -312,140 +379,6 @@ MenuDivider.Parent = MainFrame
 MenuDivider.BackgroundColor3 = CONFIG.THEMES.DARK.BORDER
 MenuDivider.Position = UDim2.new(0, 75, 0, 24)
 MenuDivider.Size = UDim2.new(0, 1, 1, -24)
-
--- Content Container
-local ContentContainer = Instance.new("Frame")
-ContentContainer.Name = "ContentContainer"
-ContentContainer.Parent = ContentFrame
-ContentContainer.BackgroundTransparency = 1
-ContentContainer.Size = UDim2.new(1, 0, 1, 0)
-ContentContainer.Visible = true
-
--- Create Settings Container
-local SettingsContainer = Instance.new("Frame")
-SettingsContainer.Name = "SettingsContainer"
-SettingsContainer.Parent = ContentFrame
-SettingsContainer.BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_DARK
-SettingsContainer.Size = UDim2.new(1, 0, 1, 0)
-SettingsContainer.Visible = false
-createCorner(SettingsContainer, CONFIG.CORNER_RADIUS)
-
--- Create Section Header
-local function CreateSectionHeader(text)
-    local header = Instance.new("Frame")
-    header.BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_LIGHT
-    header.Size = UDim2.new(1, 0, 0, 32)
-    
-    local headerContent = Instance.new("Frame")
-    headerContent.Name = "Content"
-    headerContent.Parent = header
-    headerContent.BackgroundTransparency = 1
-    headerContent.Size = UDim2.new(1, 0, 1, 0)
-    
-    local headerLabel = Instance.new("TextLabel")
-    headerLabel.Parent = headerContent
-    headerLabel.BackgroundTransparency = 1
-    headerLabel.Position = UDim2.new(0, 12, 0, 0)
-    headerLabel.Size = UDim2.new(1, -24, 1, 0)
-    headerLabel.Font = Enum.Font.GothamBlack
-    headerLabel.Text = text
-    headerLabel.TextColor3 = CONFIG.THEMES.DARK.TEXT_PRIMARY
-    headerLabel.TextSize = 12
-    headerLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local accent = Instance.new("Frame")
-    accent.Name = "Accent"
-    accent.Parent = header
-    accent.BackgroundColor3 = CONFIG.THEMES.DARK.ACCENT
-    accent.Position = UDim2.new(0, 0, 0, 0)
-    accent.Size = UDim2.new(0, 2, 1, 0)
-    
-    createCorner(header, CONFIG.CORNER_RADIUS)
-    
-    -- Hover animation
-    local hoverTweenInfo = CONFIG.ANIMATION.HOVER_TWEEN_INFO
-    header.MouseEnter:Connect(function()
-        TweenService:Create(header, hoverTweenInfo, {
-            BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_MEDIUM
-        }):Play()
-    end)
-    
-    header.MouseLeave:Connect(function()
-        TweenService:Create(header, hoverTweenInfo, {
-            BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_LIGHT
-        }):Play()
-    end)
-    
-    return header
-end
-
--- Create Info Label
-local function CreateInfoLabel(text, valueColor)
-    local container = Instance.new("Frame")
-    container.BackgroundTransparency = 1
-    container.Size = UDim2.new(1, 0, 0, 24)
-    
-    local label = Instance.new("TextLabel")
-    label.Parent = container
-    label.BackgroundTransparency = 1
-    label.Position = UDim2.new(0, 0, 0, 0)
-    label.Size = UDim2.new(0.4, -8, 1, 0)
-    label.Font = Enum.Font.GothamMedium
-    label.Text = text:match("^(.-):") or text
-    label.TextColor3 = CONFIG.THEMES.DARK.TEXT_SECONDARY
-    label.TextSize = 11
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local value = Instance.new("TextLabel")
-    value.Parent = container
-    value.BackgroundTransparency = 1
-    value.Position = UDim2.new(0.4, 8, 0, 0)
-    value.Size = UDim2.new(0.6, -16, 1, 0)
-    value.Font = Enum.Font.GothamBold
-    value.Text = text:match(": (.+)$") or "None"
-    value.TextColor3 = valueColor or CONFIG.THEMES.DARK.TEXT_PRIMARY
-    value.TextSize = 11
-    value.TextXAlignment = Enum.TextXAlignment.Right
-    
-    -- Hover effect
-    container.MouseEnter:Connect(function()
-        TweenService:Create(label, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
-            TextColor3 = CONFIG.THEMES.DARK.TEXT_PRIMARY
-        }):Play()
-    end)
-    
-    container.MouseLeave:Connect(function()
-        TweenService:Create(label, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
-            TextColor3 = CONFIG.THEMES.DARK.TEXT_SECONDARY
-        }):Play()
-    end)
-    
-    return container, value
-end
-
--- Create Section Content
-local function CreateSection()
-    local section = Instance.new("Frame")
-    section.BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_DARK
-    section.Size = UDim2.new(1, 0, 0, 0)
-    section.ClipsDescendants = true
-    
-    local contentPadding = Instance.new("UIPadding")
-    contentPadding.Parent = section
-    contentPadding.PaddingTop = UDim.new(0, CONFIG.PADDING.SECTION)
-    contentPadding.PaddingBottom = UDim.new(0, CONFIG.PADDING.SECTION)
-    contentPadding.PaddingLeft = UDim.new(0, CONFIG.PADDING.SECTION)
-    contentPadding.PaddingRight = UDim.new(0, CONFIG.PADDING.SECTION)
-    
-    local contentList = Instance.new("UIListLayout")
-    contentList.Parent = section
-    contentList.SortOrder = Enum.SortOrder.LayoutOrder
-    contentList.Padding = UDim.new(0, CONFIG.PADDING.ITEM)
-    
-    createCorner(section, CONFIG.CORNER_RADIUS)
-    
-    return section, contentList
-end
 
 -- Stats Frame Setup
 local StatsFrame = Instance.new("Frame")
