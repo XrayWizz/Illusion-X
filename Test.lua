@@ -15,18 +15,6 @@ local MenuFrame = Instance.new("Frame")
 local ContentFrame = Instance.new("Frame")
 local MenuDivider = Instance.new("Frame")
 
--- Stats Frame Components
-local StatsFrame = Instance.new("Frame")
-local UIListLayout = Instance.new("UIListLayout")
-local LevelLabel = Instance.new("TextLabel")
-local HealthLabel = Instance.new("TextLabel")
-local BelliLabel = Instance.new("TextLabel")
-local FragmentsLabel = Instance.new("TextLabel")
-local FightingStyleLabel = Instance.new("TextLabel")
-local DevilFruitLabel = Instance.new("TextLabel")
-local RaceLabel = Instance.new("TextLabel")
-local SwordLabel = Instance.new("TextLabel")
-
 -- GUI Setup
 ScreenGui.Parent = game.CoreGui
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -126,118 +114,161 @@ ContentFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 ContentFrame.Position = UDim2.new(0, 75, 0, 24)
 ContentFrame.Size = UDim2.new(1, -75, 1, -24)
 
--- Stats Frame
-StatsFrame.Name = "StatsFrame"
-StatsFrame.Parent = ContentFrame
-StatsFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-StatsFrame.Size = UDim2.new(1, 0, 1, 0)
-
--- UI List Layout
-UIListLayout.Parent = StatsFrame
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 4)
-
--- Level Label
-LevelLabel.Name = "LevelLabel"
-LevelLabel.Parent = StatsFrame
-LevelLabel.BackgroundTransparency = 1
-LevelLabel.Position = UDim2.new(0, 0, 0, 0)
-LevelLabel.Size = UDim2.new(1, 0, 0, 30)
-LevelLabel.Font = Enum.Font.GothamMedium
-LevelLabel.Text = "Level: 0"
-LevelLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-LevelLabel.TextSize = 12
-LevelLabel.TextXAlignment = Enum.TextXAlignment.Left
-
--- Health Label
-HealthLabel.Name = "HealthLabel"
-HealthLabel.Parent = StatsFrame
-HealthLabel.BackgroundTransparency = 1
-HealthLabel.Position = UDim2.new(0, 0, 0, 30)
-HealthLabel.Size = UDim2.new(1, 0, 0, 30)
-HealthLabel.Font = Enum.Font.GothamMedium
-HealthLabel.Text = "Health: 0/0"
-HealthLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-HealthLabel.TextSize = 12
-HealthLabel.TextXAlignment = Enum.TextXAlignment.Left
-
--- Belli Label
-BelliLabel.Name = "BelliLabel"
-BelliLabel.Parent = StatsFrame
-BelliLabel.BackgroundTransparency = 1
-BelliLabel.Position = UDim2.new(0, 0, 0, 60)
-BelliLabel.Size = UDim2.new(1, 0, 0, 30)
-BelliLabel.Font = Enum.Font.GothamMedium
-BelliLabel.Text = "Beli: 0"
-BelliLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-BelliLabel.TextSize = 12
-BelliLabel.TextXAlignment = Enum.TextXAlignment.Left
-
--- Fragments Label
-FragmentsLabel.Name = "FragmentsLabel"
-FragmentsLabel.Parent = StatsFrame
-FragmentsLabel.BackgroundTransparency = 1
-FragmentsLabel.Position = UDim2.new(0, 0, 0, 90)
-FragmentsLabel.Size = UDim2.new(1, 0, 0, 30)
-FragmentsLabel.Font = Enum.Font.GothamMedium
-FragmentsLabel.Text = "Fragments: 0"
-FragmentsLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-FragmentsLabel.TextSize = 12
-FragmentsLabel.TextXAlignment = Enum.TextXAlignment.Left
-
--- Fighting Style Label
-FightingStyleLabel.Name = "FightingStyleLabel"
-FightingStyleLabel.Parent = StatsFrame
-FightingStyleLabel.BackgroundTransparency = 1
-FightingStyleLabel.Position = UDim2.new(0, 0, 0, 120)
-FightingStyleLabel.Size = UDim2.new(1, 0, 0, 30)
-FightingStyleLabel.Font = Enum.Font.GothamMedium
-FightingStyleLabel.Text = "Fighting Style: None"
-FightingStyleLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-FightingStyleLabel.TextSize = 12
-FightingStyleLabel.TextXAlignment = Enum.TextXAlignment.Left
-
--- Devil Fruit Label
-DevilFruitLabel.Name = "DevilFruitLabel"
-DevilFruitLabel.Parent = StatsFrame
-DevilFruitLabel.BackgroundTransparency = 1
-DevilFruitLabel.Position = UDim2.new(0, 0, 0, 150)
-DevilFruitLabel.Size = UDim2.new(1, 0, 0, 30)
-DevilFruitLabel.Font = Enum.Font.GothamMedium
-DevilFruitLabel.Text = "Devil Fruit: None"
-DevilFruitLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-DevilFruitLabel.TextSize = 12
-DevilFruitLabel.TextXAlignment = Enum.TextXAlignment.Left
-
--- Race Label
-RaceLabel.Name = "RaceLabel"
-RaceLabel.Parent = StatsFrame
-RaceLabel.BackgroundTransparency = 1
-RaceLabel.Position = UDim2.new(0, 0, 0, 180)
-RaceLabel.Size = UDim2.new(1, 0, 0, 30)
-RaceLabel.Font = Enum.Font.GothamMedium
-RaceLabel.Text = "Race: Unknown"
-RaceLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-RaceLabel.TextSize = 12
-RaceLabel.TextXAlignment = Enum.TextXAlignment.Left
-
--- Sword Label
-SwordLabel.Name = "SwordLabel"
-SwordLabel.Parent = StatsFrame
-SwordLabel.BackgroundTransparency = 1
-SwordLabel.Position = UDim2.new(0, 0, 0, 210)
-SwordLabel.Size = UDim2.new(1, 0, 0, 30)
-SwordLabel.Font = Enum.Font.GothamMedium
-SwordLabel.Text = "Swords: None"
-SwordLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-SwordLabel.TextSize = 12
-SwordLabel.TextXAlignment = Enum.TextXAlignment.Left
-
 -- Menu Divider
 MenuDivider.Parent = MainFrame
 MenuDivider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 MenuDivider.Position = UDim2.new(0, 75, 0, 24)
 MenuDivider.Size = UDim2.new(0, 1, 1, -24)
+
+-- Create Section Header
+local function CreateSectionHeader(text)
+    local header = Instance.new("Frame")
+    header.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    header.Size = UDim2.new(1, 0, 0, 24)
+    
+    local headerLabel = Instance.new("TextLabel")
+    headerLabel.Parent = header
+    headerLabel.BackgroundTransparency = 1
+    headerLabel.Position = UDim2.new(0, 8, 0, 0)
+    headerLabel.Size = UDim2.new(1, -16, 1, 0)
+    headerLabel.Font = Enum.Font.GothamBold
+    headerLabel.Text = text
+    headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    headerLabel.TextSize = 11
+    headerLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local headerCorner = Instance.new("UICorner")
+    headerCorner.Parent = header
+    headerCorner.CornerRadius = UDim.new(0, 4)
+    
+    return header
+end
+
+-- Create Section Content
+local function CreateSection()
+    local section = Instance.new("Frame")
+    section.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    section.Size = UDim2.new(1, 0, 0, 0) -- Will be set dynamically
+    
+    local sectionCorner = Instance.new("UICorner")
+    sectionCorner.Parent = section
+    sectionCorner.CornerRadius = UDim.new(0, 4)
+    
+    local contentPadding = Instance.new("UIPadding")
+    contentPadding.Parent = section
+    contentPadding.PaddingTop = UDim.new(0, 4)
+    contentPadding.PaddingBottom = UDim.new(0, 4)
+    contentPadding.PaddingLeft = UDim.new(0, 8)
+    contentPadding.PaddingRight = UDim.new(0, 8)
+    
+    local contentList = Instance.new("UIListLayout")
+    contentList.Parent = section
+    contentList.SortOrder = Enum.SortOrder.LayoutOrder
+    contentList.Padding = UDim.new(0, 2)
+    
+    return section, contentList
+end
+
+-- Create Info Label
+local function CreateInfoLabel(text)
+    local label = Instance.new("TextLabel")
+    label.BackgroundTransparency = 1
+    label.Size = UDim2.new(1, 0, 0, 20)
+    label.Font = Enum.Font.GothamMedium
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(200, 200, 200)
+    label.TextSize = 11
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    return label
+end
+
+-- Stats Frame Setup
+local StatsFrame = Instance.new("Frame")
+StatsFrame.Name = "StatsFrame"
+StatsFrame.Parent = ContentFrame
+StatsFrame.BackgroundTransparency = 1
+StatsFrame.Size = UDim2.new(1, -8, 1, 0)
+
+-- Create sections
+local basicInfoHeader = CreateSectionHeader("Basic Info")
+basicInfoHeader.Parent = StatsFrame
+basicInfoHeader.LayoutOrder = 0
+
+local basicInfoSection, basicInfoList = CreateSection()
+basicInfoSection.Parent = StatsFrame
+basicInfoSection.LayoutOrder = 1
+
+local combatHeader = CreateSectionHeader("Combat")
+combatHeader.Parent = StatsFrame
+combatHeader.LayoutOrder = 2
+
+local combatSection, combatList = CreateSection()
+combatSection.Parent = StatsFrame
+combatSection.LayoutOrder = 3
+
+local equipmentHeader = CreateSectionHeader("Equipment")
+equipmentHeader.Parent = StatsFrame
+equipmentHeader.LayoutOrder = 4
+
+local equipmentSection, equipmentList = CreateSection()
+equipmentSection.Parent = StatsFrame
+equipmentSection.LayoutOrder = 5
+
+-- Create and organize labels
+local LevelLabel = CreateInfoLabel("Level: 0")
+LevelLabel.Parent = basicInfoSection
+LevelLabel.LayoutOrder = 0
+
+local RaceLabel = CreateInfoLabel("Race: Unknown")
+RaceLabel.Parent = basicInfoSection
+RaceLabel.LayoutOrder = 1
+
+local BelliLabel = CreateInfoLabel("Beli: 0")
+BelliLabel.Parent = basicInfoSection
+BelliLabel.LayoutOrder = 2
+
+local FragmentsLabel = CreateInfoLabel("Fragments: 0")
+FragmentsLabel.Parent = basicInfoSection
+FragmentsLabel.LayoutOrder = 3
+
+local HealthLabel = CreateInfoLabel("Health: 0/0")
+HealthLabel.Parent = combatSection
+HealthLabel.LayoutOrder = 0
+
+local FightingStyleLabel = CreateInfoLabel("Fighting Style: None")
+FightingStyleLabel.Parent = combatSection
+FightingStyleLabel.LayoutOrder = 1
+
+local DevilFruitLabel = CreateInfoLabel("Devil Fruit: None")
+DevilFruitLabel.Parent = combatSection
+DevilFruitLabel.LayoutOrder = 2
+
+local SwordLabel = CreateInfoLabel("Swords: None")
+SwordLabel.Parent = equipmentSection
+SwordLabel.LayoutOrder = 0
+
+-- Update section sizes
+local function updateSectionSizes()
+    local function updateSection(section, list)
+        local contentSize = list.AbsoluteContentSize
+        section.Size = UDim2.new(1, 0, 0, contentSize.Y + 8)
+    end
+    
+    updateSection(basicInfoSection, basicInfoList)
+    updateSection(combatSection, combatList)
+    updateSection(equipmentSection, equipmentList)
+end
+
+-- Connect size updates
+basicInfoList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSizes)
+combatList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSizes)
+equipmentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSizes)
+
+-- Update spacing
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Parent = StatsFrame
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 4)
 
 -- Update Function
 local function updateStats()
