@@ -769,20 +769,30 @@ local function switchTheme(themeName)
     -- Update all color properties
     local function updateColors(instance)
         if instance:IsA("Frame") or instance:IsA("TextButton") then
-            if instance.BackgroundColor3 == CONFIG.THEMES.DARK.BACKGROUND_DARK then
-                instance.BackgroundColor3 = theme.BACKGROUND_DARK
-            elseif instance.BackgroundColor3 == CONFIG.THEMES.DARK.BACKGROUND_MEDIUM then
-                instance.BackgroundColor3 = theme.BACKGROUND_MEDIUM
-            elseif instance.BackgroundColor3 == CONFIG.THEMES.DARK.BACKGROUND_LIGHT then
-                instance.BackgroundColor3 = theme.BACKGROUND_LIGHT
+            if instance.BackgroundColor3 == CONFIG.THEMES[currentTheme == "DARK" and "LIGHT" or "DARK"].BACKGROUND_DARK then
+                TweenService:Create(instance, CONFIG.ANIMATION.TWEEN_INFO, {
+                    BackgroundColor3 = theme.BACKGROUND_DARK
+                }):Play()
+            elseif instance.BackgroundColor3 == CONFIG.THEMES[currentTheme == "DARK" and "LIGHT" or "DARK"].BACKGROUND_MEDIUM then
+                TweenService:Create(instance, CONFIG.ANIMATION.TWEEN_INFO, {
+                    BackgroundColor3 = theme.BACKGROUND_MEDIUM
+                }):Play()
+            elseif instance.BackgroundColor3 == CONFIG.THEMES[currentTheme == "DARK" and "LIGHT" or "DARK"].BACKGROUND_LIGHT then
+                TweenService:Create(instance, CONFIG.ANIMATION.TWEEN_INFO, {
+                    BackgroundColor3 = theme.BACKGROUND_LIGHT
+                }):Play()
             end
         end
         
         if instance:IsA("TextLabel") or instance:IsA("TextButton") then
-            if instance.TextColor3 == CONFIG.THEMES.DARK.TEXT_PRIMARY then
-                instance.TextColor3 = theme.TEXT_PRIMARY
-            elseif instance.TextColor3 == CONFIG.THEMES.DARK.TEXT_SECONDARY then
-                instance.TextColor3 = theme.TEXT_SECONDARY
+            if instance.TextColor3 == CONFIG.THEMES[currentTheme == "DARK" and "LIGHT" or "DARK"].TEXT_PRIMARY then
+                TweenService:Create(instance, CONFIG.ANIMATION.TWEEN_INFO, {
+                    TextColor3 = theme.TEXT_PRIMARY
+                }):Play()
+            elseif instance.TextColor3 == CONFIG.THEMES[currentTheme == "DARK" and "LIGHT" or "DARK"].TEXT_SECONDARY then
+                TweenService:Create(instance, CONFIG.ANIMATION.TWEEN_INFO, {
+                    TextColor3 = theme.TEXT_SECONDARY
+                }):Play()
             end
         end
         
@@ -792,7 +802,18 @@ local function switchTheme(themeName)
     end
     
     updateColors(ScreenGui)
-    CONFIG.THEMES.DARK = theme
+    -- Update active colors for future elements
+    CONFIG.COLORS = {
+        BACKGROUND_DARK = theme.BACKGROUND_DARK,
+        BACKGROUND_MEDIUM = theme.BACKGROUND_MEDIUM,
+        BACKGROUND_LIGHT = theme.BACKGROUND_LIGHT,
+        ACCENT = theme.ACCENT,
+        TEXT_PRIMARY = theme.TEXT_PRIMARY,
+        TEXT_SECONDARY = theme.TEXT_SECONDARY,
+        POSITIVE = CONFIG.COLORS.POSITIVE,
+        NEGATIVE = CONFIG.COLORS.NEGATIVE,
+        WARNING = CONFIG.COLORS.WARNING,
+    }
 end
 
 -- Size switching function
