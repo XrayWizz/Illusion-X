@@ -1,5 +1,10 @@
 local CONFIG = {
     MAIN_SIZE = UDim2.new(0, 450, 0, 300),
+    SIZE_PRESETS = {
+        SMALL = { width = 400, height = 250 },
+        MEDIUM = { width = 450, height = 300 },
+        LARGE = { width = 550, height = 400 }
+    },
     SIDEBAR_WIDTH = 110,
     BUTTON_HEIGHT = 24,
     BUTTON_SPACING = 8, 
@@ -14,7 +19,8 @@ local CONFIG = {
         TEXT = Color3.fromRGB(230, 230, 230),
         BORDER = Color3.fromRGB(40, 40, 40),
         VERSION_BLUE = Color3.fromRGB(0, 144, 255), 
-        INDICATOR = Color3.fromRGB(0, 144, 255) 
+        INDICATOR = Color3.fromRGB(0, 144, 255),
+        DROPDOWN_BG = Color3.fromRGB(35, 35, 35)
     },
     TRANSPARENCY = 0.7,
     TWEEN_INFO = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -309,6 +315,23 @@ local TitleBar = createUIElement("Frame", {
     Parent = MainFrame
 })
 
+-- Create sidebar
+local Sidebar = createUIElement("Frame", {
+    Size = UDim2.new(0, CONFIG.SIDEBAR_WIDTH, 1, -30),
+    Position = UDim2.new(0, 0, 0, 30),
+    BackgroundColor3 = CONFIG.COLORS.SECONDARY,
+    BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
+    Parent = MainFrame
+})
+
+-- Create content area
+local ContentArea = createUIElement("Frame", {
+    Size = UDim2.new(1, -(CONFIG.SIDEBAR_WIDTH + 1), 1, -30),
+    Position = UDim2.new(0, CONFIG.SIDEBAR_WIDTH + 1, 0, 30),
+    BackgroundTransparency = 1,
+    Parent = MainFrame
+})
+
 -- Create a drag handle that spans the entire minimized frame
 local DragHandle = createUIElement("Frame", {
     Size = UDim2.new(1, -70, 0, 30), 
@@ -403,25 +426,47 @@ createUIElement("UICorner", { CornerRadius = UDim.new(0, 6) }, MinimizeButton)
 -- Add hover effect
 hoverEffect(MinimizeButton, CONFIG.COLORS.SECONDARY, CONFIG.COLORS.HOVER)
 
--- Sidebar and Content Area (the main UI sections)
-local Sidebar = createUIElement("Frame", {
-    Name = "Sidebar",
-    Size = UDim2.new(0, CONFIG.SIDEBAR_WIDTH, 1, -CONFIG.SIDE_GAP*2 - 30),
-    Position = UDim2.new(0, CONFIG.SIDE_GAP, 0, CONFIG.SIDE_GAP + 30),
-    BackgroundColor3 = CONFIG.COLORS.SECONDARY,
-    BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
-    Parent = MainFrame
-})
-createUIElement("UICorner", { CornerRadius = UDim.new(0, 12) }, Sidebar)
-
-local ContentArea = createUIElement("Frame", {
-    Size = UDim2.new(1, -CONFIG.SIDEBAR_WIDTH - CONFIG.SIDE_GAP*3, 1, -CONFIG.SIDE_GAP*2 - 30),
-    Position = UDim2.new(0, CONFIG.SIDEBAR_WIDTH + CONFIG.SIDE_GAP*2, 0, CONFIG.SIDE_GAP + 30),
-    BackgroundColor3 = CONFIG.COLORS.PRIMARY,
-    BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
-    Parent = MainFrame
-})
-createUIElement("UICorner", { CornerRadius = UDim.new(0, 12) }, ContentArea)
+-- Toggle Minimize/Restore behavior with tweening
+local minimized = false
+MinimizeButton.MouseButton1Click:Connect(function()
+    if minimized then
+        -- Restore (two-step animation)
+        -- Step 1: Extend the minimized frame horizontally
+        local extendTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
+            Size = UDim2.new(0, CONFIG.MAIN_SIZE.X.Offset, 0, 40)
+        })
+        extendTween:Play()
+        extendTween.Completed:Wait()
+        
+        -- Step 2: Expand vertically and show content
+        local restoreTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
+            Size = CONFIG.MAIN_SIZE
+        })
+        restoreTween:Play()
+        restoreTween.Completed:Wait()
+        Sidebar.Visible = true
+        ContentArea.Visible = true
+        MinimizeButton.Text = "–"
+    else
+        -- Minimize (two-step animation)
+        -- Step 1: Collapse vertically
+        Sidebar.Visible = false
+        ContentArea.Visible = false
+        local collapseTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
+            Size = UDim2.new(0, CONFIG.MAIN_SIZE.X.Offset, 0, 40)
+        })
+        collapseTween:Play()
+        collapseTween.Completed:Wait()
+        
+        -- Step 2: Shrink horizontally
+        local shrinkTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
+            Size = UDim2.new(0, CONFIG.MAIN_SIZE.X.Offset/2, 0, 40)
+        })
+        shrinkTween:Play()
+        MinimizeButton.Text = "+"
+    end
+    minimized = not minimized
+end)
 
 -- Function to create button context
 local function createButtonContext(contentFrame, buttonName)
@@ -653,33 +698,310 @@ local function showOverviewContent(contentFrame)
     updatePlayerInfoDisplay(playerInfoContainer)
 end
 
+-- Function to update UI size
+local function updateUISize(width, height)
+    local newSize = UDim2.new(0, width, 0, height)
+    local sizeTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
+        Size = newSize
+    })
+    sizeTween:Play()
+    CONFIG.MAIN_SIZE = newSize
+end
+
+-- Function to create dropdown menu
+local function createDropdown(parent, options, callback)
+    local isOpen = false
+    local dropdownHeight = #options * CONFIG.BUTTON_HEIGHT
+    
+    local dropdownButton = createUIElement("TextButton", {
+        Size = UDim2.new(1, -20, 0, CONFIG.BUTTON_HEIGHT),
+        Position = UDim2.new(0, 10, 0, 0),
+        BackgroundColor3 = CONFIG.COLORS.SECONDARY,
+        BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
+        Text = "Select Size",
+        TextColor3 = CONFIG.COLORS.TEXT,
+        TextSize = CONFIG.TEXT_SIZES.BODY,
+        Font = Enum.Font.SourceSans,
+        Parent = parent
+    })
+    
+    createUIElement("UICorner", {
+        CornerRadius = UDim.new(0, 6),
+    }, dropdownButton)
+    
+    local dropdownContainer = createUIElement("Frame", {
+        Size = UDim2.new(1, -20, 0, 0),
+        Position = UDim2.new(0, 10, 0, CONFIG.BUTTON_HEIGHT),
+        BackgroundColor3 = CONFIG.COLORS.DROPDOWN_BG,
+        BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
+        ClipsDescendants = true,
+        Visible = false,
+        Parent = parent
+    })
+    
+    createUIElement("UICorner", {
+        CornerRadius = UDim.new(0, 6),
+    }, dropdownContainer)
+    
+    for i, option in ipairs(options) do
+        local optionButton = createUIElement("TextButton", {
+            Size = UDim2.new(1, 0, 0, CONFIG.BUTTON_HEIGHT),
+            Position = UDim2.new(0, 0, 0, (i-1) * CONFIG.BUTTON_HEIGHT),
+            BackgroundTransparency = 1,
+            Text = option,
+            TextColor3 = CONFIG.COLORS.TEXT,
+            TextSize = CONFIG.TEXT_SIZES.BODY,
+            Font = Enum.Font.SourceSans,
+            Parent = dropdownContainer
+        })
+        
+        optionButton.MouseButton1Click:Connect(function()
+            callback(option)
+            dropdownButton.Text = option
+            isOpen = false
+            dropdownContainer.Visible = false
+        end)
+        
+        optionButton.MouseEnter:Connect(function()
+            game:GetService("TweenService"):Create(optionButton, CONFIG.TWEEN_INFO, {
+                BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
+                BackgroundColor3 = CONFIG.COLORS.HOVER
+            }):Play()
+        end)
+        
+        optionButton.MouseLeave:Connect(function()
+            game:GetService("TweenService"):Create(optionButton, CONFIG.TWEEN_INFO, {
+                BackgroundTransparency = 1
+            }):Play()
+        end)
+    end
+    
+    dropdownButton.MouseButton1Click:Connect(function()
+        isOpen = not isOpen
+        dropdownContainer.Visible = isOpen
+    end)
+    
+    return dropdownButton
+end
+
 local buttonList = {
     { "Overview", "View your player information and hub status.", showOverviewContent },
     { "Auto Farm", "Configure and control auto-farming settings.", function(contentFrame)
-        createButtonContext(contentFrame, "Auto Farm")
+        -- Create auto farm settings container
+        local container = createUIElement("Frame", {
+            Size = UDim2.new(1, -20, 1, -20),
+            Position = UDim2.new(0, 10, 0, 10),
+            BackgroundTransparency = 1,
+            Parent = contentFrame
+        })
+        
+        -- Add auto farm settings here
+        local title = createUIElement("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 30),
+            Text = "Auto Farm Settings",
+            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
+            Font = Enum.Font.SourceSansBold,
+            TextSize = CONFIG.TEXT_SIZES.HEADER,
+            BackgroundTransparency = 1,
+            Parent = container
+        })
+        
+        -- Add farm settings controls
+        local settingsContainer = createUIElement("Frame", {
+            Size = UDim2.new(1, 0, 1, -40),
+            Position = UDim2.new(0, 0, 0, 40),
+            BackgroundTransparency = 1,
+            Parent = container
+        })
+        
+        -- Add your auto farm settings UI elements here
     end },
     { "Farming Tweaks", "Adjust farming settings and configurations.", function(contentFrame)
-        createButtonContext(contentFrame, "Farming Tweaks")
+        local container = createUIElement("Frame", {
+            Size = UDim2.new(1, -20, 1, -20),
+            Position = UDim2.new(0, 10, 0, 10),
+            BackgroundTransparency = 1,
+            Parent = contentFrame
+        })
+        
+        local title = createUIElement("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 30),
+            Text = "Farming Tweaks",
+            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
+            Font = Enum.Font.SourceSansBold,
+            TextSize = CONFIG.TEXT_SIZES.HEADER,
+            BackgroundTransparency = 1,
+            Parent = container
+        })
+        
+        -- Add farming tweaks UI elements here
     end },
     { "Sea Events", "Monitor and interact with sea-based events.", function(contentFrame)
-        createButtonContext(contentFrame, "Sea Events")
+        local container = createUIElement("Frame", {
+            Size = UDim2.new(1, -20, 1, -20),
+            Position = UDim2.new(0, 10, 0, 10),
+            BackgroundTransparency = 1,
+            Parent = contentFrame
+        })
+        
+        local title = createUIElement("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 30),
+            Text = "Sea Events",
+            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
+            Font = Enum.Font.SourceSansBold,
+            TextSize = CONFIG.TEXT_SIZES.HEADER,
+            BackgroundTransparency = 1,
+            Parent = container
+        })
+        
+        -- Add sea events UI elements here
     end },
     { "Teleport", "Teleport to various locations.", function(contentFrame)
-        createButtonContext(contentFrame, "Teleport")
+        local container = createUIElement("Frame", {
+            Size = UDim2.new(1, -20, 1, -20),
+            Position = UDim2.new(0, 10, 0, 10),
+            BackgroundTransparency = 1,
+            Parent = contentFrame
+        })
+        
+        local title = createUIElement("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 30),
+            Text = "Teleport Locations",
+            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
+            Font = Enum.Font.SourceSansBold,
+            TextSize = CONFIG.TEXT_SIZES.HEADER,
+            BackgroundTransparency = 1,
+            Parent = container
+        })
+        
+        -- Add teleport location buttons here
     end },
     { "Fruit Tweaks", "Customize fruit-related settings and tweaks.", function(contentFrame)
-        createButtonContext(contentFrame, "Fruit Tweaks")
+        local container = createUIElement("Frame", {
+            Size = UDim2.new(1, -20, 1, -20),
+            Position = UDim2.new(0, 10, 0, 10),
+            BackgroundTransparency = 1,
+            Parent = contentFrame
+        })
+        
+        local title = createUIElement("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 30),
+            Text = "Fruit Tweaks",
+            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
+            Font = Enum.Font.SourceSansBold,
+            TextSize = CONFIG.TEXT_SIZES.HEADER,
+            BackgroundTransparency = 1,
+            Parent = container
+        })
+        
+        -- Add fruit tweaks UI elements here
     end },
     { "Miscellaneous", "Access other features and tools.", function(contentFrame)
-        createButtonContext(contentFrame, "Miscellaneous")
+        local container = createUIElement("Frame", {
+            Size = UDim2.new(1, -20, 1, -20),
+            Position = UDim2.new(0, 10, 0, 10),
+            BackgroundTransparency = 1,
+            Parent = contentFrame
+        })
+        
+        local title = createUIElement("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 30),
+            Text = "Miscellaneous Features",
+            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
+            Font = Enum.Font.SourceSansBold,
+            TextSize = CONFIG.TEXT_SIZES.HEADER,
+            BackgroundTransparency = 1,
+            Parent = container
+        })
+        
+        -- Add miscellaneous feature UI elements here
     end },
     { "UI Settings", "Modify and personalize the UI.", function(contentFrame)
-        createButtonContext(contentFrame, "UI Settings")
+        local container = createUIElement("Frame", {
+            Size = UDim2.new(1, -20, 1, -20),
+            Position = UDim2.new(0, 10, 0, 10),
+            BackgroundTransparency = 1,
+            Parent = contentFrame
+        })
+        
+        local title = createUIElement("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 30),
+            Text = "UI Settings",
+            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
+            Font = Enum.Font.SourceSansBold,
+            TextSize = CONFIG.TEXT_SIZES.HEADER,
+            BackgroundTransparency = 1,
+            Parent = container
+        })
+        
+        -- Size settings section
+        local sizeSection = createUIElement("Frame", {
+            Size = UDim2.new(1, 0, 0, 80),
+            Position = UDim2.new(0, 0, 0, 40),
+            BackgroundTransparency = 1,
+            Parent = container
+        })
+        
+        local sizeLabel = createUIElement("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 20),
+            Text = "UI Size",
+            TextColor3 = CONFIG.COLORS.TEXT,
+            Font = Enum.Font.SourceSansBold,
+            TextSize = CONFIG.TEXT_SIZES.BODY,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            BackgroundTransparency = 1,
+            Parent = sizeSection
+        })
+        
+        -- Create size dropdown
+        local sizeOptions = {"Small", "Medium", "Large"}
+        createDropdown(sizeSection, sizeOptions, function(selected)
+            local preset = CONFIG.SIZE_PRESETS[selected:upper()]
+            if preset then
+                updateUISize(preset.width, preset.height)
+            end
+        end)
     end },
     { "Settings", "General settings for the hub.", function(contentFrame)
-        createButtonContext(contentFrame, "Settings")
+        local container = createUIElement("Frame", {
+            Size = UDim2.new(1, -20, 1, -20),
+            Position = UDim2.new(0, 10, 0, 10),
+            BackgroundTransparency = 1,
+            Parent = contentFrame
+        })
+        
+        local title = createUIElement("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 30),
+            Text = "Settings",
+            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
+            Font = Enum.Font.SourceSansBold,
+            TextSize = CONFIG.TEXT_SIZES.HEADER,
+            BackgroundTransparency = 1,
+            Parent = container
+        })
+        
+        -- Add settings controls here
     end },
-    { "Help & Feedback", "Provide feedback or get help.", showHelpAndFeedback }
+    { "Help & Feedback", "Provide feedback or get help.", function(contentFrame)
+        local container = createUIElement("Frame", {
+            Size = UDim2.new(1, -20, 1, -20),
+            Position = UDim2.new(0, 10, 0, 10),
+            BackgroundTransparency = 1,
+            Parent = contentFrame
+        })
+        
+        local title = createUIElement("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 30),
+            Text = "Help & Feedback",
+            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
+            Font = Enum.Font.SourceSansBold,
+            TextSize = CONFIG.TEXT_SIZES.HEADER,
+            BackgroundTransparency = 1,
+            Parent = container
+        })
+        
+        -- Add help and feedback UI elements here
+    end }
 }
 
 -- Create buttons and set Overview as default active
@@ -696,45 +1018,3 @@ for i, btnInfo in ipairs(buttonList) do
         end
     end
 end
-
--- Toggle Minimize/Restore behavior with tweening
-local minimized = false
-MinimizeButton.MouseButton1Click:Connect(function()
-    if minimized then
-        -- Restore (two-step animation)
-        -- Step 1: Extend the minimized frame horizontally
-        local extendTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
-            Size = UDim2.new(0, CONFIG.MAIN_SIZE.X.Offset, 0, 40)
-        })
-        extendTween:Play()
-        extendTween.Completed:Wait()
-        
-        -- Step 2: Expand vertically and show content
-        local restoreTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
-            Size = CONFIG.MAIN_SIZE
-        })
-        restoreTween:Play()
-        restoreTween.Completed:Wait()
-        Sidebar.Visible = true
-        ContentArea.Visible = true
-        MinimizeButton.Text = "–"
-    else
-        -- Minimize (two-step animation)
-        -- Step 1: Collapse vertically
-        Sidebar.Visible = false
-        ContentArea.Visible = false
-        local collapseTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
-            Size = UDim2.new(0, CONFIG.MAIN_SIZE.X.Offset, 0, 40)
-        })
-        collapseTween:Play()
-        collapseTween.Completed:Wait()
-        
-        -- Step 2: Shrink horizontally
-        local shrinkTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
-            Size = UDim2.new(0, CONFIG.MAIN_SIZE.X.Offset/2, 0, 40)
-        })
-        shrinkTween:Play()
-        MinimizeButton.Text = "+"
-    end
-    minimized = not minimized
-end)
