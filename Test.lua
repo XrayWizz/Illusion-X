@@ -487,7 +487,8 @@ local Sidebar = createUIElement("Frame", {
     Position = UDim2.new(0, 0, 0, 30),
     BackgroundColor3 = CONFIG.COLORS.SECONDARY,
     BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
-    Parent = MainFrame
+    Parent = MainFrame,
+    ClipsDescendants = true
 })
 createUIElement("UICorner", { 
     CornerRadius = UDim.new(0, 8)
@@ -579,10 +580,11 @@ local selectedButton = nil
 local function createSidebarButton(text, positionY, content, displayFunction, iconId)
     local Button = createUIElement("Frame", {
         Size = UDim2.new(1, -10, 0, CONFIG.BUTTON_HEIGHT),
-        Position = UDim2.new(0, 5, 0, positionY),
+        Position = UDim2.new(0, 5, 0, positionY + 5), 
         BackgroundColor3 = CONFIG.COLORS.SECONDARY,
         BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
-        Parent = Sidebar
+        Parent = Sidebar,
+        Name = text .. "Button" 
     })
 
     -- Create indicator (pill shape) (initially invisible)
@@ -591,7 +593,8 @@ local function createSidebarButton(text, positionY, content, displayFunction, ic
         Position = UDim2.new(0, -6, 0.5, -8),
         BackgroundColor3 = CONFIG.COLORS.INDICATOR,
         BackgroundTransparency = 1,
-        Parent = Button
+        Parent = Button,
+        Name = "Indicator"
     })
     createUIElement("UICorner", {
         CornerRadius = UDim.new(1, 0),
@@ -604,7 +607,8 @@ local function createSidebarButton(text, positionY, content, displayFunction, ic
         BackgroundTransparency = 1,
         Image = iconId,
         ImageColor3 = CONFIG.COLORS.TEXT,
-        Parent = Button
+        Parent = Button,
+        Name = "Icon"
     })
 
     local ButtonText = createUIElement("TextButton", {
@@ -616,7 +620,8 @@ local function createSidebarButton(text, positionY, content, displayFunction, ic
         TextSize = CONFIG.TEXT_SIZES.BODY,
         Font = Enum.Font.SourceSans,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = Button
+        Parent = Button,
+        Name = "ButtonText"
     })
 
     createUIElement("UICorner", {
@@ -628,12 +633,11 @@ local function createSidebarButton(text, positionY, content, displayFunction, ic
         -- Reset previous button if it exists
         if selectedButton and selectedButton ~= Button then
             selectedButton.BackgroundColor3 = CONFIG.COLORS.SECONDARY
-            local prevIndicator = selectedButton:FindFirstChild("Frame")
+            local prevIndicator = selectedButton:FindFirstChild("Indicator")
             if prevIndicator then
                 prevIndicator.BackgroundTransparency = 1
             end
-            -- Reset previous icon color
-            local prevIcon = selectedButton:FindFirstChild("ImageLabel")
+            local prevIcon = selectedButton:FindFirstChild("Icon")
             if prevIcon then
                 prevIcon.ImageColor3 = CONFIG.COLORS.TEXT
             end
@@ -815,19 +819,19 @@ local function createDropdown(parent, options, callback)
 end
 
 local buttonList = {
-    { "Overview", "View your player information and hub status.", showOverviewContent, "rbxassetid://3926305904", Vector2.new(964, 204) }, -- User icon
+    { "Overview", "View your player information and hub status.", showOverviewContent, "rbxassetid://3926305904" }, 
     { "Auto Farm", "Configure and control auto-farming settings.", function(contentFrame)
         -- Auto farm content
-    end, "rbxassetid://3926307971", Vector2.new(964, 4) }, -- Target/farming icon
+    end, "rbxassetid://3926307971" }, 
     { "Teleport", "Quick access to various locations.", function(contentFrame)
         -- Teleport content
-    end, "rbxassetid://3926305904", Vector2.new(924, 684) }, -- Navigation icon
+    end, "rbxassetid://3926305904" }, 
     { "UI Settings", "Customize the interface appearance.", function(contentFrame)
         -- Settings content
-    end, "rbxassetid://3926307971", Vector2.new(84, 44) }, -- Gear icon
+    end, "rbxassetid://3926307971" }, 
     { "Help", "Get help and provide feedback.", function(contentFrame)
         -- Help content
-    end, "rbxassetid://3926305904", Vector2.new(204, 644) }  -- Question mark icon
+    end, "rbxassetid://3926305904" }  
 }
 
 -- Create buttons and set Overview as default active
@@ -840,11 +844,11 @@ for i, btnInfo in ipairs(buttonList) do
     if i == 1 then
         selectedButton = button
         button.BackgroundColor3 = CONFIG.COLORS.SELECTED_BLUE
-        local indicator = button:FindFirstChild("Frame")
+        local indicator = button:FindFirstChild("Indicator")
         if indicator then
             indicator.BackgroundTransparency = 0
         end
-        local icon = button:FindFirstChild("ImageLabel")
+        local icon = button:FindFirstChild("Icon")
         if icon then
             icon.ImageColor3 = CONFIG.COLORS.VERSION_BLUE
         end
