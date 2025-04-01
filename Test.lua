@@ -36,6 +36,10 @@ local CONFIG = {
         LARGE = {
             WIDTH = 400,
             HEIGHT = 300
+        },
+        EXTRA_LARGE = {
+            WIDTH = 450,
+            HEIGHT = 350
         }
     },
     PADDING = {
@@ -756,6 +760,7 @@ end
 local smallButton = CreateSizeButton("Small", UDim2.new(0, 8, 0, 36))
 local normalButton = CreateSizeButton("Normal", UDim2.new(0.33, 4, 0, 36))
 local largeButton = CreateSizeButton("Large", UDim2.new(0.66, 4, 0, 36))
+local extraLargeButton = CreateSizeButton("Extra Large", UDim2.new(0, 8, 0, 68))
 
 -- Current theme and size
 local currentTheme = "DARK"
@@ -858,6 +863,10 @@ end)
 
 largeButton.MouseButton1Click:Connect(function()
     switchSize("LARGE")
+end)
+
+extraLargeButton.MouseButton1Click:Connect(function()
+    switchSize("EXTRA_LARGE")
 end)
 
 -- Settings Button Handler
