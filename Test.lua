@@ -234,190 +234,165 @@ menuTopCover.BorderSizePixel = 0
 menuTopCover.Position = UDim2.new(0, 0, 0, 0)
 menuTopCover.Size = UDim2.new(1, 0, 0, 10)
 
--- Section spacing and organization
-UIListLayout.Parent = StatsFrame
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 6)  -- Increased spacing between major sections
+-- Create Info Item Function
+local function CreateInfoItem(label, defaultValue)
+    local container = Instance.new("Frame")
+    container.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    container.Size = UDim2.new(1, 0, 0, 28)
+    
+    local containerCorner = Instance.new("UICorner")
+    containerCorner.Parent = container
+    containerCorner.CornerRadius = UDim.new(0, 4)
+    
+    -- Label
+    local labelText = Instance.new("TextLabel")
+    labelText.Parent = container
+    labelText.BackgroundTransparency = 1
+    labelText.Position = UDim2.new(0, 8, 0, 0)
+    labelText.Size = UDim2.new(0.4, -8, 1, 0)
+    labelText.Font = Enum.Font.GothamMedium
+    labelText.Text = label
+    labelText.TextColor3 = Color3.fromRGB(200, 200, 200)
+    labelText.TextSize = 11
+    labelText.TextXAlignment = Enum.TextXAlignment.Left
+    
+    -- Value
+    local valueText = Instance.new("TextLabel")
+    valueText.Parent = container
+    valueText.BackgroundTransparency = 1
+    valueText.Position = UDim2.new(0.4, 4, 0, 0)
+    valueText.Size = UDim2.new(0.6, -12, 1, 0)
+    valueText.Font = Enum.Font.GothamSemibold
+    valueText.Text = defaultValue or "Loading..."
+    valueText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    valueText.TextSize = 11
+    valueText.TextXAlignment = Enum.TextXAlignment.Right
+    
+    return container, valueText
+end
 
--- Update the section header style
+-- Create Section Header Function
 local function CreateSectionHeader(text)
     local header = Instance.new("Frame")
-    header.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    header.Size = UDim2.new(1, 0, 0, 22)
+    header.BackgroundTransparency = 1
+    header.Size = UDim2.new(1, 0, 0, 30)
     
     local headerLabel = Instance.new("TextLabel")
     headerLabel.Parent = header
     headerLabel.BackgroundTransparency = 1
-    headerLabel.Position = UDim2.new(0, 8, 0, 0)
-    headerLabel.Size = UDim2.new(1, -16, 1, 0)
-    headerLabel.Font = Enum.Font.GothamBold
+    headerLabel.Position = UDim2.new(0, 0, 0, 0)
+    headerLabel.Size = UDim2.new(1, 0, 1, 0)
+    headerLabel.Font = Enum.Font.GothamBlack
     headerLabel.Text = text
     headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    headerLabel.TextSize = 11
+    headerLabel.TextSize = 12
     headerLabel.TextXAlignment = Enum.TextXAlignment.Left
     
-    local headerCorner = Instance.new("UICorner")
-    headerCorner.Parent = header
-    headerCorner.CornerRadius = UDim.new(0, 4)
+    local underline = Instance.new("Frame")
+    underline.Parent = header
+    underline.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    underline.BorderSizePixel = 0
+    underline.Position = UDim2.new(0, 0, 1, -1)
+    underline.Size = UDim2.new(1, 0, 0, 1)
     
     return header
 end
 
--- Update section style
+-- Create Section Function
 local function CreateSection()
     local section = Instance.new("Frame")
-    section.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    section.Size = UDim2.new(1, 0, 0, 0)  -- Height will be set dynamically
-    
-    local sectionCorner = Instance.new("UICorner")
-    sectionCorner.Parent = section
-    sectionCorner.CornerRadius = UDim.new(0, 4)
-    
-    local sectionPadding = Instance.new("UIPadding")
-    sectionPadding.Parent = section
-    sectionPadding.PaddingTop = UDim.new(0, 6)
-    sectionPadding.PaddingBottom = UDim.new(0, 6)
-    sectionPadding.PaddingLeft = UDim.new(0, 8)
-    sectionPadding.PaddingRight = UDim.new(0, 8)
+    section.BackgroundTransparency = 1
+    section.Size = UDim2.new(1, 0, 0, 0)
     
     local sectionList = Instance.new("UIListLayout")
     sectionList.Parent = section
     sectionList.SortOrder = Enum.SortOrder.LayoutOrder
-    sectionList.Padding = UDim.new(0, 4)  -- Consistent spacing within sections
+    sectionList.Padding = UDim.new(0, 4)
     
     return section, sectionList
 end
 
--- Update section sizes function
+-- Create sections and items
+local basicInfoSection, basicInfoList = CreateSection()
+basicInfoSection.Parent = StatsFrame
+basicInfoSection.LayoutOrder = 1
+
+local basicHeader = CreateSectionHeader("BASIC INFORMATION")
+basicHeader.Parent = basicInfoSection
+basicHeader.LayoutOrder = 0
+
+local levelContainer, LevelLabel = CreateInfoItem("Level")
+levelContainer.Parent = basicInfoSection
+levelContainer.LayoutOrder = 1
+
+local raceContainer, RaceLabel = CreateInfoItem("Race")
+raceContainer.Parent = basicInfoSection
+raceContainer.LayoutOrder = 2
+
+local belliContainer, BelliLabel = CreateInfoItem("Beli")
+belliContainer.Parent = basicInfoSection
+belliContainer.LayoutOrder = 3
+
+local fragmentsContainer, FragmentsLabel = CreateInfoItem("Fragments")
+fragmentsContainer.Parent = basicInfoSection
+fragmentsContainer.LayoutOrder = 4
+
+local combatSection, combatList = CreateSection()
+combatSection.Parent = StatsFrame
+combatSection.LayoutOrder = 3
+
+local combatHeader = CreateSectionHeader("COMBAT STATS")
+combatHeader.Parent = combatSection
+combatHeader.LayoutOrder = 0
+
+local healthContainer, HealthLabel = CreateInfoItem("Health")
+healthContainer.Parent = combatSection
+healthContainer.LayoutOrder = 1
+
+local fightingStyleContainer, FightingStyleLabel = CreateInfoItem("Fighting Style")
+fightingStyleContainer.Parent = combatSection
+fightingStyleContainer.LayoutOrder = 2
+
+local devilFruitContainer, DevilFruitLabel = CreateInfoItem("Devil Fruit")
+devilFruitContainer.Parent = combatSection
+devilFruitContainer.LayoutOrder = 3
+
+local equipmentSection, equipmentList = CreateSection()
+equipmentSection.Parent = StatsFrame
+equipmentSection.LayoutOrder = 5
+
+local equipmentHeader = CreateSectionHeader("EQUIPMENT")
+equipmentHeader.Parent = equipmentSection
+equipmentHeader.LayoutOrder = 0
+
+local swordsContainer, SwordLabel = CreateInfoItem("Swords")
+swordsContainer.Parent = equipmentSection
+swordsContainer.LayoutOrder = 1
+
+-- Section spacing
+UIListLayout.Parent = StatsFrame
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 16)  -- More space between major sections
+
+-- Update function
 local function updateSectionSizes()
     local function updateSection(section, list)
         local contentSize = list.AbsoluteContentSize
-        section.Size = UDim2.new(1, 0, 0, contentSize.Y + 12)  -- Increased padding
+        section.Size = UDim2.new(1, 0, 0, contentSize.Y)
     end
     
     updateSection(basicInfoSection, basicInfoList)
     updateSection(combatSection, combatList)
     updateSection(equipmentSection, equipmentList)
     
-    -- Update overall canvas size
     local totalSize = UIListLayout.AbsoluteContentSize
-    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, totalSize.Y + 12)
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, totalSize.Y + 16)
 end
-
--- Create Menu Button
-local function CreateMenuButton(name)
-    local button = Instance.new("TextButton")
-    button.Name = name.."Button"
-    button.Parent = MenuFrame
-    button.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-    button.Size = UDim2.new(0.9, 0, 0, 20)  -- Even smaller height
-    button.Font = Enum.Font.GothamSemibold
-    button.Text = name
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 10  -- Smaller text
-    button.AutoButtonColor = true
-    
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.Parent = button
-    buttonCorner.CornerRadius = UDim.new(0, 3)  -- Smaller corners
-    
-    return button
-end
-
--- Create menu buttons
-local menuButtons = {
-    CreateMenuButton("Overview"),
-    CreateMenuButton("Inventory"),
-    CreateMenuButton("Settings")
-}
-
--- Create Label Function
-local function CreateInfoLabel()
-    local label = Instance.new("TextLabel")
-    label.BackgroundTransparency = 1
-    label.Size = UDim2.new(1, 0, 0, 16)  -- Smaller height
-    label.Font = Enum.Font.Gotham
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.TextSize = 10  -- Smaller text
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    return label
-end
-
--- Create sections for different types of information
-local basicInfoSection, basicInfoList = CreateSection()
-basicInfoSection.Parent = StatsFrame
-basicInfoSection.LayoutOrder = 1
-
-local combatSection, combatList = CreateSection()
-combatSection.Parent = StatsFrame
-combatSection.LayoutOrder = 3
-
-local equipmentSection, equipmentList = CreateSection()
-equipmentSection.Parent = StatsFrame
-equipmentSection.LayoutOrder = 5
-
--- Create section headers
-local basicInfoHeader = CreateSectionHeader("Basic Information")
-basicInfoHeader.Parent = StatsFrame
-basicInfoHeader.LayoutOrder = 0
-
-local combatHeader = CreateSectionHeader("Combat Stats")
-combatHeader.Parent = StatsFrame
-combatHeader.LayoutOrder = 2
-
-local equipmentHeader = CreateSectionHeader("Equipment")
-equipmentHeader.Parent = StatsFrame
-equipmentHeader.LayoutOrder = 4
-
--- Move labels to their respective sections
-LevelLabel.Parent = basicInfoSection
-RaceLabel.Parent = basicInfoSection
-BelliLabel.Parent = basicInfoSection
-FragmentsLabel.Parent = basicInfoSection
-
-HealthLabel.Parent = combatSection
-FightingStyleLabel.Parent = combatSection
-DevilFruitLabel.Parent = combatSection
-
-SwordLabel.Parent = equipmentSection
 
 -- Connect size updates
 basicInfoList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSizes)
 combatList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSizes)
 equipmentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSizes)
-
--- Stats Labels
-LevelLabel = CreateInfoLabel()
-LevelLabel.Parent = basicInfoSection
-LevelLabel.LayoutOrder = 1
-
-HealthLabel = CreateInfoLabel()
-HealthLabel.Parent = combatSection
-HealthLabel.LayoutOrder = 2
-
-BelliLabel = CreateInfoLabel()
-BelliLabel.Parent = basicInfoSection
-BelliLabel.LayoutOrder = 3
-
-FragmentsLabel = CreateInfoLabel()
-FragmentsLabel.Parent = basicInfoSection
-FragmentsLabel.LayoutOrder = 4
-
-FightingStyleLabel = CreateInfoLabel()
-FightingStyleLabel.Parent = combatSection
-FightingStyleLabel.LayoutOrder = 5
-
-DevilFruitLabel = CreateInfoLabel()
-DevilFruitLabel.Parent = combatSection
-DevilFruitLabel.LayoutOrder = 6
-
-RaceLabel = CreateInfoLabel()
-RaceLabel.Parent = basicInfoSection
-RaceLabel.LayoutOrder = 7
-
-SwordLabel = CreateInfoLabel()
-SwordLabel.Parent = equipmentSection
-SwordLabel.LayoutOrder = 8
 
 -- Update Function
 local function updateStats()
