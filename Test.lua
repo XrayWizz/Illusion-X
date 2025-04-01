@@ -51,15 +51,18 @@ local function createStatRow(parent, label, value, yPosition)
     local container = createUIElement("Frame", {
         Size = UDim2.new(1, -20, 0, 25),
         Position = UDim2.new(0, 10, 0, yPosition),
-        BackgroundTransparency = 1,
+        BackgroundColor3 = CONFIG.COLORS.SECONDARY,
+        BackgroundTransparency = CONFIG.TRANSPARENCY.BUTTON,
         Parent = parent
     })
+    makeRounded(container)
 
     createUIElement("TextLabel", {
         Size = UDim2.new(0.4, 0, 1, 0),
-        Position = UDim2.new(0, 0, 0, 0),
+        Position = UDim2.new(0, 10, 0, 0),
         Text = label,
         TextColor3 = CONFIG.COLORS.TEXT,
+        TextTransparency = CONFIG.TRANSPARENCY.TEXT,
         TextSize = CONFIG.TEXT_SIZES.BODY,
         TextXAlignment = Enum.TextXAlignment.Left,
         BackgroundTransparency = 1,
@@ -67,10 +70,11 @@ local function createStatRow(parent, label, value, yPosition)
     })
 
     createUIElement("TextLabel", {
-        Size = UDim2.new(0.6, -10, 1, 0),
+        Size = UDim2.new(0.6, -20, 1, 0),
         Position = UDim2.new(0.4, 5, 0, 0),
         Text = tostring(value),
         TextColor3 = CONFIG.COLORS.VERSION_BLUE,
+        TextTransparency = CONFIG.TRANSPARENCY.TEXT,
         TextSize = CONFIG.TEXT_SIZES.BODY,
         TextXAlignment = Enum.TextXAlignment.Left,
         BackgroundTransparency = 1,
@@ -95,6 +99,7 @@ local function showOverviewContent(contentFrame)
         Position = UDim2.new(0, 10, 0, 10),
         Text = "Player Information",
         TextColor3 = CONFIG.COLORS.TEXT,
+        TextTransparency = CONFIG.TRANSPARENCY.TEXT,
         TextSize = CONFIG.TEXT_SIZES.HEADER,
         TextXAlignment = Enum.TextXAlignment.Left,
         BackgroundTransparency = 1,
@@ -151,6 +156,7 @@ local function showFarmContent(contentFrame)
         Position = UDim2.new(0, 10, 0, 10),
         BackgroundTransparency = 1,
         TextColor3 = CONFIG.COLORS.TEXT,
+        TextTransparency = CONFIG.TRANSPARENCY.TEXT,
         TextSize = CONFIG.TEXT_SIZES.HEADER,
         TextXAlignment = Enum.TextXAlignment.Left
     }, contentFrame)
@@ -164,6 +170,7 @@ local function showSeaContent(contentFrame)
         Position = UDim2.new(0, 10, 0, 10),
         BackgroundTransparency = 1,
         TextColor3 = CONFIG.COLORS.TEXT,
+        TextTransparency = CONFIG.TRANSPARENCY.TEXT,
         TextSize = CONFIG.TEXT_SIZES.HEADER,
         TextXAlignment = Enum.TextXAlignment.Left
     }, contentFrame)
@@ -179,14 +186,91 @@ local function showVisualContent(contentFrame) end
 local function showShopContent(contentFrame) end
 local function showSettingsContent(contentFrame) end
 
+local CONFIG = {
+    MAIN_SIZE = UDim2.new(0, 450, 0, 300),
+    SIZE_PRESETS = {
+        SMALL = { width = 400, height = 250 },
+        MEDIUM = { width = 450, height = 300 },
+        LARGE = { width = 550, height = 400 }
+    },
+    SIDEBAR_WIDTH = 110,
+    BUTTON_HEIGHT = 24,
+    BUTTON_SPACING = 8,
+    SIDE_GAP = 5,
+    TEXT_SIZES = { HEADER = 14, BODY = 12 },
+    CORNER_RADIUS = 8,
+    COLORS = {
+        PRIMARY = Color3.fromRGB(17, 17, 23),
+        SECONDARY = Color3.fromRGB(24, 24, 32),
+        HOVER = Color3.fromRGB(35, 35, 45),
+        SELECTED = Color3.fromRGB(45, 45, 60),
+        SELECTED_BLUE = Color3.fromRGB(45, 70, 100),
+        TEXT = Color3.fromRGB(230, 230, 240),
+        BORDER = Color3.fromRGB(40, 40, 50),
+        VERSION_BLUE = Color3.fromRGB(65, 175, 255),
+        INDICATOR = Color3.fromRGB(65, 175, 255),
+        DROPDOWN_BG = Color3.fromRGB(28, 28, 36),
+        ACCENT = Color3.fromRGB(90, 120, 255)
+    },
+    TRANSPARENCY = {
+        BACKGROUND = 0.1,
+        SIDEBAR = 0.05,
+        BUTTON = 0.1,
+        CONTENT = 0.1,
+        TEXT = 0
+    }
+}
+
+-- Function to create a rounded corner UI element
+local function makeRounded(element, radius)
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.CornerRadius = UDim.new(0, radius or CONFIG.CORNER_RADIUS)
+    uiCorner.Parent = element
+    return element
+end
+
+-- Update the MainFrame
+MainFrame.BackgroundColor3 = CONFIG.COLORS.PRIMARY
+MainFrame.BackgroundTransparency = CONFIG.TRANSPARENCY.BACKGROUND
+makeRounded(MainFrame)
+
+-- Add a subtle border
+local border = Instance.new("UIStroke")
+border.Color = CONFIG.COLORS.BORDER
+border.Thickness = 1
+border.Transparency = 0.7
+border.Parent = MainFrame
+
+-- Update sidebar
+local SidebarFrame = MainFrame.SidebarFrame
+SidebarFrame.BackgroundColor3 = CONFIG.COLORS.SECONDARY
+SidebarFrame.BackgroundTransparency = CONFIG.TRANSPARENCY.SIDEBAR
+makeRounded(SidebarFrame)
+
+-- Update content frame
+local ContentFrame = MainFrame.ContentFrame
+ContentFrame.BackgroundColor3 = CONFIG.COLORS.SECONDARY
+ContentFrame.BackgroundTransparency = CONFIG.TRANSPARENCY.CONTENT
+makeRounded(ContentFrame)
+
+-- Update the createSidebarButton function
 local function createSidebarButton(text, icon, description, positionY, content, displayFunction)
     local Button = createUIElement("Frame", {
         Size = UDim2.new(1, -10, 0, CONFIG.BUTTON_HEIGHT),
         Position = UDim2.new(0, 5, 0, positionY),
         BackgroundColor3 = CONFIG.COLORS.SECONDARY,
+        BackgroundTransparency = CONFIG.TRANSPARENCY.BUTTON,
         BorderSizePixel = 0,
         Name = text .. "Button"
     })
+    makeRounded(Button, CONFIG.CORNER_RADIUS - 2)
+
+    -- Add subtle button border
+    local buttonBorder = Instance.new("UIStroke")
+    buttonBorder.Color = CONFIG.COLORS.BORDER
+    buttonBorder.Thickness = 1
+    buttonBorder.Transparency = 0.8
+    buttonBorder.Parent = Button
 
     -- Create icon
     local Icon = createUIElement("TextLabel", {
@@ -196,6 +280,7 @@ local function createSidebarButton(text, icon, description, positionY, content, 
         TextSize = 16,
         BackgroundTransparency = 1,
         TextColor3 = CONFIG.COLORS.TEXT,
+        TextTransparency = CONFIG.TRANSPARENCY.TEXT,
         Parent = Button
     })
 
@@ -207,44 +292,83 @@ local function createSidebarButton(text, icon, description, positionY, content, 
         TextSize = CONFIG.TEXT_SIZES.BODY,
         BackgroundTransparency = 1,
         TextColor3 = CONFIG.COLORS.TEXT,
+        TextTransparency = CONFIG.TRANSPARENCY.TEXT,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = Button
     })
 
-    -- Create hover effect
-    local function updateBackgroundColor(color)
-        Button.BackgroundColor3 = color
+    -- Update hover and selection effects
+    local function updateStyle(isHovered, isSelected)
+        local targetColor = isSelected and CONFIG.COLORS.SELECTED or (isHovered and CONFIG.COLORS.HOVER or CONFIG.COLORS.SECONDARY)
+        local targetTransparency = isSelected and (CONFIG.TRANSPARENCY.BUTTON - 0.1) or (isHovered and (CONFIG.TRANSPARENCY.BUTTON - 0.05) or CONFIG.TRANSPARENCY.BUTTON)
+        
+        game:GetService("TweenService"):Create(Button, CONFIG.TWEEN_INFO, {
+            BackgroundColor3 = targetColor,
+            BackgroundTransparency = targetTransparency
+        }):Play()
     end
 
     Button.MouseEnter:Connect(function()
-        updateBackgroundColor(CONFIG.COLORS.HOVER)
+        updateStyle(true, Button == currentActiveButton)
         -- Show tooltip with description
-        local tooltip = createUIElement("TextLabel", {
-            Size = UDim2.new(0, 200, 0, 20),
+        local tooltip = createUIElement("Frame", {
+            Size = UDim2.new(0, 200, 0, 30),
             Position = UDim2.new(1, 10, 0, 0),
+            BackgroundColor3 = CONFIG.COLORS.SECONDARY,
+            BackgroundTransparency = CONFIG.TRANSPARENCY.BACKGROUND,
+            Parent = Button
+        })
+        makeRounded(tooltip)
+        
+        createUIElement("TextLabel", {
+            Size = UDim2.new(1, -10, 1, 0),
+            Position = UDim2.new(0, 5, 0, 0),
             Text = description,
             TextSize = CONFIG.TEXT_SIZES.BODY,
-            BackgroundColor3 = CONFIG.COLORS.SECONDARY,
             TextColor3 = CONFIG.COLORS.TEXT,
+            TextTransparency = CONFIG.TRANSPARENCY.TEXT,
+            BackgroundTransparency = 1,
             TextWrapped = true,
-            Parent = Button
+            Parent = tooltip
         })
     end)
 
     Button.MouseLeave:Connect(function()
-        updateBackgroundColor(CONFIG.COLORS.SECONDARY)
+        updateStyle(false, Button == currentActiveButton)
         -- Remove tooltip
         for _, child in pairs(Button:GetChildren()) do
-            if child:IsA("TextLabel") and child.Text == description then
+            if child:IsA("Frame") and child.Size.X.Offset == 200 then
                 child:Destroy()
             end
         end
     end)
 
-    Button.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            displayFunction(content)
-        end
+    -- Update close button
+    local CloseButton = createUIElement("TextButton", {
+        Size = UDim2.new(0, 24, 0, 24),
+        Position = UDim2.new(1, -30, 0, 5),
+        Text = "×",
+        TextColor3 = CONFIG.COLORS.TEXT,
+        TextTransparency = CONFIG.TRANSPARENCY.TEXT,
+        TextSize = 20,
+        BackgroundColor3 = CONFIG.COLORS.SECONDARY,
+        BackgroundTransparency = CONFIG.TRANSPARENCY.BUTTON,
+        Parent = MainFrame
+    })
+    makeRounded(CloseButton, CONFIG.CORNER_RADIUS)
+
+    CloseButton.MouseEnter:Connect(function()
+        game:GetService("TweenService"):Create(CloseButton, CONFIG.TWEEN_INFO, {
+            BackgroundColor3 = Color3.fromRGB(255, 70, 70),
+            BackgroundTransparency = CONFIG.TRANSPARENCY.BUTTON - 0.1
+        }):Play()
+    end)
+
+    CloseButton.MouseLeave:Connect(function()
+        game:GetService("TweenService"):Create(CloseButton, CONFIG.TWEEN_INFO, {
+            BackgroundColor3 = CONFIG.COLORS.SECONDARY,
+            BackgroundTransparency = CONFIG.TRANSPARENCY.BUTTON
+        }):Play()
     end)
 
     return Button
