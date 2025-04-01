@@ -1,19 +1,48 @@
-local buttonList = {
-    { "Overview", "", "View your player information and hub status.", showOverviewContent },
-    { "Farm", "", "Configure and control farming settings.", showFarmContent },
-    { "Sea", "", "Access sea-related features.", showSeaContent },
-    { "Islands", "", "Navigate and manage islands.", showIslandsContent },
-    { "Quests", "", "View and track available quests.", showQuestsContent },
-    { "Fruit", "", "Manage fruit-related features.", showFruitContent },
-    { "Teleport", "", "Quick teleportation options.", showTeleportContent },
-    { "Status", "", "Check player and game status.", showStatusContent },
-    { "Visual", "", "Adjust visual settings and effects.", showVisualContent },
-    { "Shop", "", "Access the in-game shop.", showShopContent },
-    { "Misc.", "", "Access other features and tools.", showMiscContent },
-    { "Settings", "", "Configure UI and game settings.", showSettingsContent }
+-- Configuration
+local CONFIG = {
+    MAIN_SIZE = UDim2.new(0, 450, 0, 300),
+    SIZE_PRESETS = {
+        SMALL = { width = 400, height = 250 },
+        MEDIUM = { width = 450, height = 300 },
+        LARGE = { width = 550, height = 400 }
+    },
+    SIDEBAR_WIDTH = 110,
+    BUTTON_HEIGHT = 24,
+    BUTTON_SPACING = 8,
+    SIDE_GAP = 5,
+    TEXT_SIZES = { HEADER = 14, BODY = 12 },
+    CORNER_RADIUS = 8,
+    COLORS = {
+        PRIMARY = Color3.fromRGB(17, 17, 23),
+        SECONDARY = Color3.fromRGB(24, 24, 32),
+        HOVER = Color3.fromRGB(35, 35, 45),
+        SELECTED = Color3.fromRGB(45, 45, 60),
+        SELECTED_BLUE = Color3.fromRGB(45, 70, 100),
+        TEXT = Color3.fromRGB(230, 230, 240),
+        BORDER = Color3.fromRGB(40, 40, 50),
+        VERSION_BLUE = Color3.fromRGB(65, 175, 255),
+        INDICATOR = Color3.fromRGB(65, 175, 255),
+        DROPDOWN_BG = Color3.fromRGB(28, 28, 36),
+        ACCENT = Color3.fromRGB(90, 120, 255)
+    },
+    TRANSPARENCY = {
+        BACKGROUND = 0.1,
+        SIDEBAR = 0.05,
+        BUTTON = 0.1,
+        CONTENT = 0.1,
+        TEXT = 0
+    },
+    TWEEN_INFO = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 }
 
--- Function to format numbers with commas
+-- Utility Functions
+local function makeRounded(element, radius)
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.CornerRadius = UDim.new(0, radius or CONFIG.CORNER_RADIUS)
+    uiCorner.Parent = element
+    return element
+end
+
 local function formatNumber(number)
     local formatted = tostring(number)
     local k
@@ -23,6 +52,127 @@ local function formatNumber(number)
     end
     return formatted
 end
+
+-- Create UI elements with error handling
+local function createUIElement(class, properties, parent)
+    local success, element = pcall(function()
+        local elem = Instance.new(class)
+        for prop, value in pairs(properties) do
+            elem[prop] = value
+        end
+        if parent then elem.Parent = parent end
+        return elem
+    end)
+    
+    if not success then
+        warn("Failed to create UI element:", class, element)
+        return nil
+    end
+    return element
+end
+
+-- Initialize Main GUI
+local ScreenGui = createUIElement("ScreenGui", {
+    Name = "BloxFruitsUI",
+    ResetOnSpawn = false,
+    ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+})
+
+-- Create main frame
+local MainFrame = createUIElement("Frame", {
+    Name = "MainFrame",
+    Size = CONFIG.MAIN_SIZE,
+    Position = UDim2.new(0.5, -CONFIG.MAIN_SIZE.X.Offset/2, 0.5, -CONFIG.MAIN_SIZE.Y.Offset/2),
+    BackgroundColor3 = CONFIG.COLORS.PRIMARY,
+    BackgroundTransparency = CONFIG.TRANSPARENCY.BACKGROUND,
+    Parent = ScreenGui
+})
+makeRounded(MainFrame)
+
+-- Add border to main frame
+local border = Instance.new("UIStroke")
+border.Color = CONFIG.COLORS.BORDER
+border.Thickness = 1
+border.Transparency = 0.7
+border.Parent = MainFrame
+
+-- Create sidebar frame
+local SidebarFrame = createUIElement("Frame", {
+    Name = "SidebarFrame",
+    Size = UDim2.new(0, CONFIG.SIDEBAR_WIDTH, 1, 0),
+    Position = UDim2.new(0, 0, 0, 0),
+    BackgroundColor3 = CONFIG.COLORS.SECONDARY,
+    BackgroundTransparency = CONFIG.TRANSPARENCY.SIDEBAR,
+    Parent = MainFrame
+})
+makeRounded(SidebarFrame)
+
+-- Create content frame
+local ContentFrame = createUIElement("Frame", {
+    Name = "ContentFrame",
+    Size = UDim2.new(1, -(CONFIG.SIDEBAR_WIDTH + CONFIG.SIDE_GAP), 1, -CONFIG.SIDE_GAP * 2),
+    Position = UDim2.new(0, CONFIG.SIDEBAR_WIDTH + CONFIG.SIDE_GAP, 0, CONFIG.SIDE_GAP),
+    BackgroundColor3 = CONFIG.COLORS.SECONDARY,
+    BackgroundTransparency = CONFIG.TRANSPARENCY.CONTENT,
+    Parent = MainFrame
+})
+makeRounded(ContentFrame)
+
+-- Create close button
+local CloseButton = createUIElement("TextButton", {
+    Size = UDim2.new(0, 24, 0, 24),
+    Position = UDim2.new(1, -30, 0, 5),
+    Text = "×",
+    TextColor3 = CONFIG.COLORS.TEXT,
+    TextSize = 20,
+    BackgroundColor3 = CONFIG.COLORS.SECONDARY,
+    BackgroundTransparency = CONFIG.TRANSPARENCY.BUTTON,
+    Parent = MainFrame
+})
+makeRounded(CloseButton, CONFIG.CORNER_RADIUS)
+
+-- Close button functionality
+CloseButton.MouseButton1Click:Connect(function()
+    local fadeOut = game:GetService("TweenService"):Create(
+        MainFrame,
+        CONFIG.TWEEN_INFO,
+        {BackgroundTransparency = 1}
+    )
+    
+    local function fadeOutRecursive(parent)
+        for _, child in pairs(parent:GetChildren()) do
+            if child:IsA("GuiObject") then
+                game:GetService("TweenService"):Create(
+                    child,
+                    CONFIG.TWEEN_INFO,
+                    {BackgroundTransparency = 1, TextTransparency = 1}
+                ):Play()
+            end
+            fadeOutRecursive(child)
+        end
+    end
+    
+    fadeOutRecursive(MainFrame)
+    fadeOut:Play()
+    
+    fadeOut.Completed:Connect(function()
+        ScreenGui:Destroy()
+    end)
+end)
+
+CloseButton.MouseEnter:Connect(function()
+    game:GetService("TweenService"):Create(CloseButton, CONFIG.TWEEN_INFO, {
+        BackgroundColor3 = Color3.fromRGB(255, 70, 70),
+        BackgroundTransparency = CONFIG.TRANSPARENCY.BUTTON - 0.1
+    }):Play()
+end)
+
+CloseButton.MouseLeave:Connect(function()
+    game:GetService("TweenService"):Create(CloseButton, CONFIG.TWEEN_INFO, {
+        BackgroundColor3 = CONFIG.COLORS.SECONDARY,
+        BackgroundTransparency = CONFIG.TRANSPARENCY.BUTTON
+    }):Play()
+end)
 
 -- Function to get player information
 local function getPlayerInfo()
@@ -148,112 +298,7 @@ local function showOverviewContent(contentFrame)
     statsFrame.CanvasSize = UDim2.new(0, 0, 0, yOffset + spacing)
 end
 
-local function showFarmContent(contentFrame)
-    -- Placeholder for farm content
-    createUIElement("TextLabel", {
-        Text = "Farm Settings",
-        Size = UDim2.new(1, -20, 0, 30),
-        Position = UDim2.new(0, 10, 0, 10),
-        BackgroundTransparency = 1,
-        TextColor3 = CONFIG.COLORS.TEXT,
-        TextTransparency = CONFIG.TRANSPARENCY.TEXT,
-        TextSize = CONFIG.TEXT_SIZES.HEADER,
-        TextXAlignment = Enum.TextXAlignment.Left
-    }, contentFrame)
-end
-
-local function showSeaContent(contentFrame)
-    -- Similar structure for sea content
-    createUIElement("TextLabel", {
-        Text = "Sea Features",
-        Size = UDim2.new(1, -20, 0, 30),
-        Position = UDim2.new(0, 10, 0, 10),
-        BackgroundTransparency = 1,
-        TextColor3 = CONFIG.COLORS.TEXT,
-        TextTransparency = CONFIG.TRANSPARENCY.TEXT,
-        TextSize = CONFIG.TEXT_SIZES.HEADER,
-        TextXAlignment = Enum.TextXAlignment.Left
-    }, contentFrame)
-end
-
--- Create similar placeholder functions for other sections
-local function showIslandsContent(contentFrame) end
-local function showQuestsContent(contentFrame) end
-local function showFruitContent(contentFrame) end
-local function showTeleportContent(contentFrame) end
-local function showStatusContent(contentFrame) end
-local function showVisualContent(contentFrame) end
-local function showShopContent(contentFrame) end
-local function showSettingsContent(contentFrame) end
-
-local CONFIG = {
-    MAIN_SIZE = UDim2.new(0, 450, 0, 300),
-    SIZE_PRESETS = {
-        SMALL = { width = 400, height = 250 },
-        MEDIUM = { width = 450, height = 300 },
-        LARGE = { width = 550, height = 400 }
-    },
-    SIDEBAR_WIDTH = 110,
-    BUTTON_HEIGHT = 24,
-    BUTTON_SPACING = 8,
-    SIDE_GAP = 5,
-    TEXT_SIZES = { HEADER = 14, BODY = 12 },
-    CORNER_RADIUS = 8,
-    COLORS = {
-        PRIMARY = Color3.fromRGB(17, 17, 23),
-        SECONDARY = Color3.fromRGB(24, 24, 32),
-        HOVER = Color3.fromRGB(35, 35, 45),
-        SELECTED = Color3.fromRGB(45, 45, 60),
-        SELECTED_BLUE = Color3.fromRGB(45, 70, 100),
-        TEXT = Color3.fromRGB(230, 230, 240),
-        BORDER = Color3.fromRGB(40, 40, 50),
-        VERSION_BLUE = Color3.fromRGB(65, 175, 255),
-        INDICATOR = Color3.fromRGB(65, 175, 255),
-        DROPDOWN_BG = Color3.fromRGB(28, 28, 36),
-        ACCENT = Color3.fromRGB(90, 120, 255)
-    },
-    TRANSPARENCY = {
-        BACKGROUND = 0.1,
-        SIDEBAR = 0.05,
-        BUTTON = 0.1,
-        CONTENT = 0.1,
-        TEXT = 0
-    }
-}
-
--- Function to create a rounded corner UI element
-local function makeRounded(element, radius)
-    local uiCorner = Instance.new("UICorner")
-    uiCorner.CornerRadius = UDim.new(0, radius or CONFIG.CORNER_RADIUS)
-    uiCorner.Parent = element
-    return element
-end
-
--- Update the MainFrame
-MainFrame.BackgroundColor3 = CONFIG.COLORS.PRIMARY
-MainFrame.BackgroundTransparency = CONFIG.TRANSPARENCY.BACKGROUND
-makeRounded(MainFrame)
-
--- Add a subtle border
-local border = Instance.new("UIStroke")
-border.Color = CONFIG.COLORS.BORDER
-border.Thickness = 1
-border.Transparency = 0.7
-border.Parent = MainFrame
-
--- Update sidebar
-local SidebarFrame = MainFrame.SidebarFrame
-SidebarFrame.BackgroundColor3 = CONFIG.COLORS.SECONDARY
-SidebarFrame.BackgroundTransparency = CONFIG.TRANSPARENCY.SIDEBAR
-makeRounded(SidebarFrame)
-
--- Update content frame
-local ContentFrame = MainFrame.ContentFrame
-ContentFrame.BackgroundColor3 = CONFIG.COLORS.SECONDARY
-ContentFrame.BackgroundTransparency = CONFIG.TRANSPARENCY.CONTENT
-makeRounded(ContentFrame)
-
--- Update the createSidebarButton function
+-- Function to create a sidebar button
 local function createSidebarButton(text, icon, description, positionY, content, displayFunction)
     local Button = createUIElement("Frame", {
         Size = UDim2.new(1, -10, 0, CONFIG.BUTTON_HEIGHT),
@@ -343,36 +388,24 @@ local function createSidebarButton(text, icon, description, positionY, content, 
         end
     end)
 
-    -- Update close button
-    local CloseButton = createUIElement("TextButton", {
-        Size = UDim2.new(0, 24, 0, 24),
-        Position = UDim2.new(1, -30, 0, 5),
-        Text = "×",
-        TextColor3 = CONFIG.COLORS.TEXT,
-        TextTransparency = CONFIG.TRANSPARENCY.TEXT,
-        TextSize = 20,
-        BackgroundColor3 = CONFIG.COLORS.SECONDARY,
-        BackgroundTransparency = CONFIG.TRANSPARENCY.BUTTON,
-        Parent = MainFrame
-    })
-    makeRounded(CloseButton, CONFIG.CORNER_RADIUS)
-
-    CloseButton.MouseEnter:Connect(function()
-        game:GetService("TweenService"):Create(CloseButton, CONFIG.TWEEN_INFO, {
-            BackgroundColor3 = Color3.fromRGB(255, 70, 70),
-            BackgroundTransparency = CONFIG.TRANSPARENCY.BUTTON - 0.1
-        }):Play()
-    end)
-
-    CloseButton.MouseLeave:Connect(function()
-        game:GetService("TweenService"):Create(CloseButton, CONFIG.TWEEN_INFO, {
-            BackgroundColor3 = CONFIG.COLORS.SECONDARY,
-            BackgroundTransparency = CONFIG.TRANSPARENCY.BUTTON
-        }):Play()
-    end)
-
     return Button
 end
+
+-- Button list
+local buttonList = {
+    { "Overview", "", "View your player information and hub status.", showOverviewContent },
+    { "Farm", "", "Configure and control farming settings.", showFarmContent },
+    { "Sea", "", "Access sea-related features.", showSeaContent },
+    { "Islands", "", "Navigate and manage islands.", showIslandsContent },
+    { "Quests", "", "View and track available quests.", showQuestsContent },
+    { "Fruit", "", "Manage fruit-related features.", showFruitContent },
+    { "Teleport", "", "Quick teleportation options.", showTeleportContent },
+    { "Status", "", "Check player and game status.", showStatusContent },
+    { "Visual", "", "Adjust visual settings and effects.", showVisualContent },
+    { "Shop", "", "Access the in-game shop.", showShopContent },
+    { "Misc.", "", "Access other features and tools.", showMiscContent },
+    { "Settings", "", "Configure UI and game settings.", showSettingsContent }
+}
 
 -- Create buttons and set Overview as default active
 local buttons = {}
@@ -400,52 +433,44 @@ for i, btnInfo in ipairs(buttonList) do
     end
 end
 
--- Add close button functionality
-local CloseButton = createUIElement("TextButton", {
-    Size = UDim2.new(0, 20, 0, 20),
-    Position = UDim2.new(1, -25, 0, 5),
-    Text = "×",
-    TextColor3 = CONFIG.COLORS.TEXT,
-    TextSize = 20,
-    BackgroundTransparency = 1,
-    Parent = MainFrame
-})
+-- Other content functions
+local function showFarmContent(contentFrame)
+    -- Placeholder for farm content
+    createUIElement("TextLabel", {
+        Text = "Farm Settings",
+        Size = UDim2.new(1, -20, 0, 30),
+        Position = UDim2.new(0, 10, 0, 10),
+        BackgroundTransparency = 1,
+        TextColor3 = CONFIG.COLORS.TEXT,
+        TextTransparency = CONFIG.TRANSPARENCY.TEXT,
+        TextSize = CONFIG.TEXT_SIZES.HEADER,
+        TextXAlignment = Enum.TextXAlignment.Left
+    }, contentFrame)
+end
 
-CloseButton.MouseButton1Click:Connect(function()
-    -- Fade out animation
-    local fadeOut = game:GetService("TweenService"):Create(
-        MainFrame,
-        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {BackgroundTransparency = 1}
-    )
-    
-    -- Fade out all children
-    local function fadeOutRecursive(parent)
-        for _, child in pairs(parent:GetChildren()) do
-            if child:IsA("GuiObject") then
-                game:GetService("TweenService"):Create(
-                    child,
-                    TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {BackgroundTransparency = 1, TextTransparency = 1}
-                ):Play()
-            end
-            fadeOutRecursive(child)
-        end
-    end
-    
-    fadeOutRecursive(MainFrame)
-    fadeOut:Play()
-    
-    -- Destroy the GUI after animation
-    fadeOut.Completed:Connect(function()
-        MainFrame.Parent:Destroy()
-    end)
-end)
+local function showSeaContent(contentFrame)
+    -- Similar structure for sea content
+    createUIElement("TextLabel", {
+        Text = "Sea Features",
+        Size = UDim2.new(1, -20, 0, 30),
+        Position = UDim2.new(0, 10, 0, 10),
+        BackgroundTransparency = 1,
+        TextColor3 = CONFIG.COLORS.TEXT,
+        TextTransparency = CONFIG.TRANSPARENCY.TEXT,
+        TextSize = CONFIG.TEXT_SIZES.HEADER,
+        TextXAlignment = Enum.TextXAlignment.Left
+    }, contentFrame)
+end
 
-CloseButton.MouseEnter:Connect(function()
-    CloseButton.TextColor3 = Color3.fromRGB(255, 100, 100)
-end)
+-- Create similar placeholder functions for other sections
+local function showIslandsContent(contentFrame) end
+local function showQuestsContent(contentFrame) end
+local function showFruitContent(contentFrame) end
+local function showTeleportContent(contentFrame) end
+local function showStatusContent(contentFrame) end
+local function showVisualContent(contentFrame) end
+local function showShopContent(contentFrame) end
+local function showSettingsContent(contentFrame) end
 
-CloseButton.MouseLeave:Connect(function()
-    CloseButton.TextColor3 = CONFIG.COLORS.TEXT
-end)
+-- Parent the ScreenGui to the game
+ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
