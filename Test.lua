@@ -1,59 +1,96 @@
+-- Constants for configuration
+local CONFIG = {
+    UPDATE_INTERVAL = 0.1, -- Seconds between updates
+    COLORS = {
+        BACKGROUND_DARK = Color3.fromRGB(30, 30, 30),
+        BACKGROUND_MEDIUM = Color3.fromRGB(35, 35, 35),
+        BACKGROUND_LIGHT = Color3.fromRGB(40, 40, 40),
+        TEXT_PRIMARY = Color3.fromRGB(255, 255, 255),
+        TEXT_SECONDARY = Color3.fromRGB(200, 200, 200),
+    },
+    PADDING = {
+        SECTION = 4,
+        ITEM = 2,
+    },
+}
+
+-- Services
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
-local ScreenGui = Instance.new("ScreenGui")
+
+-- Utility Functions
+local function safeGet(instance, ...)
+    local current = instance
+    for _, propertyName in ipairs({...}) do
+        if not current then return nil end
+        current = current:FindFirstChild(propertyName)
+    end
+    return current
+end
+
+local function getItemsWithProperty(container, propertyName)
+    local items = {}
+    if not container then return items end
+    
+    for _, item in ipairs(container:GetChildren()) do
+        if item:FindFirstChild(propertyName) then
+            table.insert(items, item.Name)
+        end
+    end
+    return items
+end
+
+-- UI Creation Helpers
+local function createCorner(parent, radius)
+    local corner = Instance.new("UICorner")
+    corner.Parent = parent
+    corner.CornerRadius = UDim.new(0, radius or 4)
+    return corner
+end
 
 -- Create main components
-local MainFrame = Instance.new("Frame")
-local TitleBar = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local CloseButton = Instance.new("TextButton")
-local MinimizeButton = Instance.new("TextButton")
-local MenuFrame = Instance.new("Frame")
-local ContentFrame = Instance.new("Frame")
-local MenuDivider = Instance.new("Frame")
-
--- GUI Setup
-ScreenGui.Parent = game.CoreGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = CoreGui
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Main Frame Setup
+local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+MainFrame.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_MEDIUM
 MainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
 MainFrame.Size = UDim2.new(0, 350, 0, 250)
 MainFrame.ClipsDescendants = true
 
-local mainCorner = Instance.new("UICorner")
-mainCorner.Parent = MainFrame
-mainCorner.CornerRadius = UDim.new(0, 8)
+local mainCorner = createCorner(MainFrame)
 
 -- Title Bar Setup
+local TitleBar = Instance.new("Frame")
 TitleBar.Name = "TitleBar"
 TitleBar.Parent = MainFrame
-TitleBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+TitleBar.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_LIGHT
 TitleBar.Size = UDim2.new(1, 0, 0, 24)
 
-local titleBarCorner = Instance.new("UICorner")
-titleBarCorner.Parent = TitleBar
-titleBarCorner.CornerRadius = UDim.new(0, 8)
+local titleBarCorner = createCorner(TitleBar)
 
 -- Title Text
+local Title = Instance.new("TextLabel")
 Title.Parent = TitleBar
 Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 8, 0, 0)
 Title.Size = UDim2.new(1, -60, 1, 0)
 Title.Font = Enum.Font.GothamBold
 Title.Text = "Blox Fruits Info"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextColor3 = CONFIG.COLORS.TEXT_PRIMARY
 Title.TextSize = 12
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Minimize Button
-MinimizeButton = Instance.new("TextButton")
+local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Name = "MinimizeButton"
 MinimizeButton.Parent = TitleBar
 MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 185, 0)
@@ -61,16 +98,14 @@ MinimizeButton.Position = UDim2.new(1, -38, 0.5, -6)
 MinimizeButton.Size = UDim2.new(0, 12, 0, 12)
 MinimizeButton.Font = Enum.Font.GothamBold
 MinimizeButton.Text = "-"
-MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.TextColor3 = CONFIG.COLORS.TEXT_PRIMARY
 MinimizeButton.TextSize = 12
 MinimizeButton.AutoButtonColor = true
 
-local minimizeCorner = Instance.new("UICorner")
-minimizeCorner.Parent = MinimizeButton
-minimizeCorner.CornerRadius = UDim.new(0, 4)
+local minimizeCorner = createCorner(MinimizeButton)
 
 -- Close Button
-CloseButton = Instance.new("TextButton")
+local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseButton"
 CloseButton.Parent = TitleBar
 CloseButton.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
@@ -78,52 +113,125 @@ CloseButton.Position = UDim2.new(1, -20, 0.5, -6)
 CloseButton.Size = UDim2.new(0, 12, 0, 12)
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.Text = "×"
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextColor3 = CONFIG.COLORS.TEXT_PRIMARY
 CloseButton.TextSize = 12
 CloseButton.AutoButtonColor = true
 
-local closeCorner = Instance.new("UICorner")
-closeCorner.Parent = CloseButton
-closeCorner.CornerRadius = UDim.new(0, 4)
+local closeCorner = createCorner(CloseButton)
 
 -- Menu Frame
+local MenuFrame = Instance.new("Frame")
 MenuFrame.Name = "MenuFrame"
 MenuFrame.Parent = MainFrame
-MenuFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+MenuFrame.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_LIGHT
 MenuFrame.Position = UDim2.new(0, 0, 0, 24)
 MenuFrame.Size = UDim2.new(0, 75, 1, -24)
 
--- Add corner radius to MenuFrame
-local menuCorner = Instance.new("UICorner")
-menuCorner.Parent = MenuFrame
-menuCorner.CornerRadius = UDim.new(0, 8)
+local menuCorner = createCorner(MenuFrame)
 
 -- Add a frame to cover the top corners of MenuFrame
 local menuTopCover = Instance.new("Frame")
 menuTopCover.Name = "MenuTopCover"
 menuTopCover.Parent = MenuFrame
-menuTopCover.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+menuTopCover.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_LIGHT
 menuTopCover.BorderSizePixel = 0
 menuTopCover.Position = UDim2.new(0, 0, 0, 0)
 menuTopCover.Size = UDim2.new(1, 0, 0, 10)
 
+-- Menu button states
+local selectedButton = nil
+
+-- Create Menu Button
+local function CreateMenuButton(text, order)
+    local button = Instance.new("TextButton")
+    button.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_DARK
+    button.Size = UDim2.new(1, -8, 0, 28)
+    button.Position = UDim2.new(0, 4, 0, 4 + (order * 32))
+    button.Font = Enum.Font.GothamBold
+    button.Text = text
+    button.TextColor3 = CONFIG.COLORS.TEXT_PRIMARY
+    button.TextSize = 11
+    button.AutoButtonColor = true
+    
+    local buttonCorner = createCorner(button)
+    
+    -- Selected indicator
+    local selectedIndicator = Instance.new("Frame")
+    selectedIndicator.Name = "SelectedIndicator"
+    selectedIndicator.Parent = button
+    selectedIndicator.BackgroundColor3 = CONFIG.COLORS.TEXT_PRIMARY
+    selectedIndicator.Position = UDim2.new(0, 0, 0.5, -1)
+    selectedIndicator.Size = UDim2.new(0, 2, 0, 16)
+    selectedIndicator.Visible = false
+    createCorner(selectedIndicator)
+    
+    -- Hover effect
+    button.MouseEnter:Connect(function()
+        if button ~= selectedButton then
+            button.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_LIGHT
+        end
+    end)
+    
+    button.MouseLeave:Connect(function()
+        if button ~= selectedButton then
+            button.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_DARK
+        end
+    end)
+    
+    return button
+end
+
+local function selectButton(button)
+    if selectedButton then
+        selectedButton.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_DARK
+        selectedButton:FindFirstChild("SelectedIndicator").Visible = false
+    end
+    
+    selectedButton = button
+    button.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_LIGHT
+    button:FindFirstChild("SelectedIndicator").Visible = true
+end
+
+-- Create Overview Button
+local OverviewButton = CreateMenuButton("OVERVIEW", 0)
+OverviewButton.Parent = MenuFrame
+
+-- Select Overview by default
+selectButton(OverviewButton)
+
+-- Overview Button Handler
+OverviewButton.MouseButton1Click:Connect(function()
+    selectButton(OverviewButton)
+    ContentContainer.Visible = true
+end)
+
 -- Content Frame
+local ContentFrame = Instance.new("Frame")
 ContentFrame.Name = "ContentFrame"
 ContentFrame.Parent = MainFrame
-ContentFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ContentFrame.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_MEDIUM
 ContentFrame.Position = UDim2.new(0, 75, 0, 24)
 ContentFrame.Size = UDim2.new(1, -75, 1, -24)
 
 -- Menu Divider
+local MenuDivider = Instance.new("Frame")
 MenuDivider.Parent = MainFrame
 MenuDivider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 MenuDivider.Position = UDim2.new(0, 75, 0, 24)
 MenuDivider.Size = UDim2.new(0, 1, 1, -24)
 
+-- Content Container
+local ContentContainer = Instance.new("Frame")
+ContentContainer.Name = "ContentContainer"
+ContentContainer.Parent = ContentFrame
+ContentContainer.BackgroundTransparency = 1
+ContentContainer.Size = UDim2.new(1, 0, 1, 0)
+ContentContainer.Visible = true
+
 -- Create Section Header
 local function CreateSectionHeader(text)
     local header = Instance.new("Frame")
-    header.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    header.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_LIGHT
     header.Size = UDim2.new(1, 0, 0, 24)
     
     local headerLabel = Instance.new("TextLabel")
@@ -133,13 +241,11 @@ local function CreateSectionHeader(text)
     headerLabel.Size = UDim2.new(1, -16, 1, 0)
     headerLabel.Font = Enum.Font.GothamBold
     headerLabel.Text = text
-    headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    headerLabel.TextColor3 = CONFIG.COLORS.TEXT_PRIMARY
     headerLabel.TextSize = 11
     headerLabel.TextXAlignment = Enum.TextXAlignment.Left
     
-    local headerCorner = Instance.new("UICorner")
-    headerCorner.Parent = header
-    headerCorner.CornerRadius = UDim.new(0, 4)
+    local headerCorner = createCorner(header)
     
     return header
 end
@@ -147,24 +253,22 @@ end
 -- Create Section Content
 local function CreateSection()
     local section = Instance.new("Frame")
-    section.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    section.BackgroundColor3 = CONFIG.COLORS.BACKGROUND_DARK
     section.Size = UDim2.new(1, 0, 0, 0) -- Will be set dynamically
     
-    local sectionCorner = Instance.new("UICorner")
-    sectionCorner.Parent = section
-    sectionCorner.CornerRadius = UDim.new(0, 4)
+    local sectionCorner = createCorner(section)
     
     local contentPadding = Instance.new("UIPadding")
     contentPadding.Parent = section
-    contentPadding.PaddingTop = UDim.new(0, 4)
-    contentPadding.PaddingBottom = UDim.new(0, 4)
-    contentPadding.PaddingLeft = UDim.new(0, 8)
-    contentPadding.PaddingRight = UDim.new(0, 8)
+    contentPadding.PaddingTop = UDim.new(0, CONFIG.PADDING.SECTION)
+    contentPadding.PaddingBottom = UDim.new(0, CONFIG.PADDING.SECTION)
+    contentPadding.PaddingLeft = UDim.new(0, CONFIG.PADDING.ITEM)
+    contentPadding.PaddingRight = UDim.new(0, CONFIG.PADDING.ITEM)
     
     local contentList = Instance.new("UIListLayout")
     contentList.Parent = section
     contentList.SortOrder = Enum.SortOrder.LayoutOrder
-    contentList.Padding = UDim.new(0, 2)
+    contentList.Padding = UDim.new(0, CONFIG.PADDING.ITEM)
     
     return section, contentList
 end
@@ -176,7 +280,7 @@ local function CreateInfoLabel(text)
     label.Size = UDim2.new(1, 0, 0, 20)
     label.Font = Enum.Font.GothamMedium
     label.Text = text
-    label.TextColor3 = Color3.fromRGB(200, 200, 200)
+    label.TextColor3 = CONFIG.COLORS.TEXT_SECONDARY
     label.TextSize = 11
     label.TextXAlignment = Enum.TextXAlignment.Left
     return label
@@ -185,7 +289,7 @@ end
 -- Stats Frame Setup
 local StatsFrame = Instance.new("Frame")
 StatsFrame.Name = "StatsFrame"
-StatsFrame.Parent = ContentFrame
+StatsFrame.Parent = ContentContainer
 StatsFrame.BackgroundTransparency = 1
 StatsFrame.Size = UDim2.new(1, -8, 1, 0)
 
@@ -251,7 +355,7 @@ SwordLabel.LayoutOrder = 0
 local function updateSectionSizes()
     local function updateSection(section, list)
         local contentSize = list.AbsoluteContentSize
-        section.Size = UDim2.new(1, 0, 0, contentSize.Y + 8)
+        section.Size = UDim2.new(1, 0, 0, contentSize.Y + CONFIG.PADDING.SECTION)
     end
     
     updateSection(basicInfoSection, basicInfoList)
@@ -268,105 +372,99 @@ equipmentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSect
 local UIListLayout = Instance.new("UIListLayout")
 UIListLayout.Parent = StatsFrame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 4)
+UIListLayout.Padding = UDim.new(0, CONFIG.PADDING.ITEM)
 
 -- Update Function
+local lastUpdate = 0
 local function updateStats()
-    if LocalPlayer.Character then
-        local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-        if humanoid then
-            HealthLabel.Text = string.format("Health: %d/%d", humanoid.Health, humanoid.MaxHealth)
-        end
-    end
+    -- Throttle updates
+    local now = tick()
+    if now - lastUpdate < CONFIG.UPDATE_INTERVAL then return end
+    lastUpdate = now
     
-    -- Get player stats from leaderstats
-    local leaderstats = LocalPlayer:FindFirstChild("leaderstats")
-    if leaderstats then
-        local level = leaderstats:FindFirstChild("Level")
-        local beli = leaderstats:FindFirstChild("Beli")
-        local fragments = leaderstats:FindFirstChild("Fragments")
-        
-        if level then
-            LevelLabel.Text = string.format("Level: %s", level.Value)
-        end
-        if beli then
-            BelliLabel.Text = string.format("Beli: %s", beli.Value)
-        end
-        if fragments then
-            FragmentsLabel.Text = string.format("Fragments: %s", fragments.Value)
-        end
-    end
-    
-    -- Get race info
-    local race = LocalPlayer:FindFirstChild("Race")
-    if race then
-        RaceLabel.Text = string.format("Race: %s", race.Value)
-    else
-        RaceLabel.Text = "Race: Unknown"
-    end
-    
-    -- Get fighting style info
-    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    -- Get character safely
     local character = LocalPlayer.Character
+    if not character then return end
+    
+    -- Update Basic Info
+    local leaderstats = safeGet(LocalPlayer, "leaderstats")
+    if leaderstats then
+        local level = safeGet(leaderstats, "Level")
+        local beli = safeGet(leaderstats, "Beli")
+        local fragments = safeGet(leaderstats, "Fragments")
+        
+        if level then LevelLabel.Text = string.format("Level: %s", level.Value) end
+        if beli then BelliLabel.Text = string.format("Beli: %s", beli.Value) end
+        if fragments then FragmentsLabel.Text = string.format("Fragments: %s", fragments.Value) end
+    end
+    
+    -- Update Race
+    local race = safeGet(LocalPlayer, "Data", "Race")
+    RaceLabel.Text = race and string.format("Race: %s", race.Value) or "Race: Unknown"
+    
+    -- Update Health
+    local humanoid = safeGet(character, "Humanoid")
+    if humanoid then
+        HealthLabel.Text = string.format("Health: %d/%d", humanoid.Health, humanoid.MaxHealth)
+    end
+    
+    -- Get inventory items
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
     if backpack and character then
-        -- Check for fighting styles
+        -- Update Fighting Styles
         local fightingStyles = {}
-        for _, item in pairs(backpack:GetChildren()) do
-            if item:FindFirstChild("FightingStyle") then
-                table.insert(fightingStyles, item.Name)
+        for _, container in ipairs({backpack, character}) do
+            for _, item in ipairs(getItemsWithProperty(container, "FightingStyle")) do
+                table.insert(fightingStyles, item)
             end
         end
-        for _, item in pairs(character:GetChildren()) do
-            if item:FindFirstChild("FightingStyle") then
-                table.insert(fightingStyles, item.Name)
-            end
-        end
-        if #fightingStyles > 0 then
-            FightingStyleLabel.Text = string.format("Fighting Style: %s", table.concat(fightingStyles, ", "))
-        else
-            FightingStyleLabel.Text = "Fighting Style: None"
-        end
-        
-        -- Check for devil fruits
+        FightingStyleLabel.Text = #fightingStyles > 0 
+            and string.format("Fighting Style: %s", table.concat(fightingStyles, ", "))
+            or "Fighting Style: None"
+            
+        -- Update Devil Fruits
         local devilFruits = {}
-        for _, item in pairs(backpack:GetChildren()) do
-            if item:FindFirstChild("DevilFruit") then
-                table.insert(devilFruits, item.Name)
+        for _, container in ipairs({backpack, character}) do
+            for _, item in ipairs(getItemsWithProperty(container, "DevilFruit")) do
+                table.insert(devilFruits, item)
             end
         end
-        for _, item in pairs(character:GetChildren()) do
-            if item:FindFirstChild("DevilFruit") then
-                table.insert(devilFruits, item.Name)
-            end
-        end
-        if #devilFruits > 0 then
-            DevilFruitLabel.Text = string.format("Devil Fruit: %s", table.concat(devilFruits, ", "))
-        else
-            DevilFruitLabel.Text = "Devil Fruit: None"
-        end
-        
-        -- Check for swords
+        DevilFruitLabel.Text = #devilFruits > 0
+            and string.format("Devil Fruit: %s", table.concat(devilFruits, ", "))
+            or "Devil Fruit: None"
+            
+        -- Update Swords
         local swords = {}
-        for _, item in pairs(backpack:GetChildren()) do
-            if item:FindFirstChild("SwordTool") then
-                table.insert(swords, item.Name)
+        for _, container in ipairs({backpack, character}) do
+            for _, item in ipairs(getItemsWithProperty(container, "SwordTool")) do
+                table.insert(swords, item)
             end
         end
-        for _, item in pairs(character:GetChildren()) do
-            if item:FindFirstChild("SwordTool") then
-                table.insert(swords, item.Name)
-            end
-        end
-        if #swords > 0 then
-            SwordLabel.Text = string.format("Swords: %s", table.concat(swords, ", "))
-        else
-            SwordLabel.Text = "Swords: None"
-        end
+        SwordLabel.Text = #swords > 0
+            and string.format("Swords: %s", table.concat(swords, ", "))
+            or "Swords: None"
     end
 end
 
--- Update loop
-game:GetService("RunService").RenderStepped:Connect(updateStats)
+-- Connect update loop with error handling
+local function safeUpdate()
+    local success, error = pcall(updateStats)
+    if not success then
+        warn("Error in update loop:", error)
+    end
+end
+
+-- Start update loop
+RunService.RenderStepped:Connect(safeUpdate)
+
+-- Clean up on script end
+local function cleanup()
+    if ScreenGui then
+        ScreenGui:Destroy()
+    end
+end
+
+ScreenGui.Destroying:Connect(cleanup)
 
 -- Close Button Handler
 CloseButton.MouseButton1Click:Connect(function()
