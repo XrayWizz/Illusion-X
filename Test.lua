@@ -72,9 +72,8 @@ local expandInfo = TweenInfo.new(
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-MainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
-MainFrame.Size = UDim2.new(0, 350, 0, 250)
-MainFrame.ClipsDescendants = true
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)  -- Smaller centered position
+MainFrame.Size = UDim2.new(0, 300, 0, 200)  -- More compact size
 
 local mainCorner = Instance.new("UICorner")
 mainCorner.Parent = MainFrame
@@ -84,7 +83,7 @@ mainCorner.CornerRadius = UDim.new(0, 8)
 TitleBar.Name = "TitleBar"
 TitleBar.Parent = MainFrame
 TitleBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-TitleBar.Size = UDim2.new(1, 0, 0, 30)
+TitleBar.Size = UDim2.new(1, 0, 0, 24)  -- Smaller height
 
 local titleBarCorner = Instance.new("UICorner")
 titleBarCorner.Parent = TitleBar
@@ -93,24 +92,24 @@ titleBarCorner.CornerRadius = UDim.new(0, 8)
 -- Title Setup
 Title.Parent = TitleBar
 Title.BackgroundTransparency = 1
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Size = UDim2.new(1, -70, 1, 0)  -- Adjusted for both buttons
+Title.Position = UDim2.new(0, 8, 0, 0)  -- Less padding
+Title.Size = UDim2.new(1, -60, 1, 0)
 Title.Font = Enum.Font.GothamBold
 Title.Text = "Blox Fruits Info"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 14
+Title.TextSize = 12  -- Smaller text
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Minimize Button
 MinimizeButton.Name = "MinimizeButton"
 MinimizeButton.Parent = TitleBar
 MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 185, 0)  -- Yellow color
-MinimizeButton.Position = UDim2.new(1, -45, 0.5, -8)
-MinimizeButton.Size = UDim2.new(0, 16, 0, 16)
+MinimizeButton.Position = UDim2.new(1, -38, 0.5, -6)  -- Adjusted position
+MinimizeButton.Size = UDim2.new(0, 12, 0, 12)  -- Smaller button
 MinimizeButton.Font = Enum.Font.GothamBold
 MinimizeButton.Text = "-"
 MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinimizeButton.TextSize = 14
+MinimizeButton.TextSize = 12  -- Smaller text
 MinimizeButton.AutoButtonColor = true
 
 local minimizeCorner = Instance.new("UICorner")
@@ -121,12 +120,12 @@ minimizeCorner.CornerRadius = UDim.new(0, 4)
 CloseButton.Name = "CloseButton"
 CloseButton.Parent = TitleBar
 CloseButton.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
-CloseButton.Position = UDim2.new(1, -25, 0.5, -8)
-CloseButton.Size = UDim2.new(0, 16, 0, 16)
+CloseButton.Position = UDim2.new(1, -20, 0.5, -6)  -- Adjusted position
+CloseButton.Size = UDim2.new(0, 12, 0, 12)  -- Smaller button
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.Text = "×"
 CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.TextSize = 14
+CloseButton.TextSize = 12  -- Smaller text
 CloseButton.AutoButtonColor = true
 
 local closeCorner = Instance.new("UICorner")
@@ -210,8 +209,8 @@ local function expandUI()
     
     -- Create and play the expand animation
     local expandTween = TweenService:Create(MainFrame, expandInfo, {
-        Size = UDim2.new(0, 350, 0, 250),
-        Position = UDim2.new(0.5, -175, 0.5, -125)
+        Size = UDim2.new(0, 300, 0, 200),
+        Position = UDim2.new(0.5, -150, 0.5, -100)
     })
     
     expandTween:Play()
@@ -225,8 +224,8 @@ BubbleButton.MouseButton1Click:Connect(expandUI)
 MenuFrame.Name = "MenuFrame"
 MenuFrame.Parent = MainFrame
 MenuFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-MenuFrame.Position = UDim2.new(0, 0, 0, 30)
-MenuFrame.Size = UDim2.new(0, 100, 1, -30)
+MenuFrame.Position = UDim2.new(0, 0, 0, 24)  -- Align with smaller title bar
+MenuFrame.Size = UDim2.new(0, 80, 1, -24)  -- Narrower menu
 
 local menuLayout = Instance.new("UIListLayout")
 menuLayout.Parent = MenuFrame
@@ -234,18 +233,23 @@ menuLayout.SortOrder = Enum.SortOrder.LayoutOrder
 menuLayout.Padding = UDim.new(0, 5)
 menuLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
+-- Menu Padding
+local menuPadding = Instance.new("UIPadding")
+menuPadding.Parent = MenuFrame
+menuPadding.PaddingTop = UDim.new(0, 6)  -- Less top padding
+
 -- Menu Divider
 MenuDivider.Parent = MainFrame
 MenuDivider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-MenuDivider.Position = UDim2.new(0, 100, 0, 30)
-MenuDivider.Size = UDim2.new(0, 1, 1, -30)
+MenuDivider.Position = UDim2.new(0, 80, 0, 24)
+MenuDivider.Size = UDim2.new(0, 1, 1, -24)
 
 -- Content Frame (Right side)
 ContentFrame.Name = "ContentFrame"
 ContentFrame.Parent = MainFrame
 ContentFrame.BackgroundTransparency = 1
-ContentFrame.Position = UDim2.new(0, 110, 0, 35)
-ContentFrame.Size = UDim2.new(1, -120, 1, -45)
+ContentFrame.Position = UDim2.new(0, 85, 0, 28)  -- Adjusted for new menu width
+ContentFrame.Size = UDim2.new(1, -90, 1, -32)  -- Adjusted for new spacing
 
 -- Create Menu Button
 local function CreateMenuButton(name)
@@ -253,24 +257,19 @@ local function CreateMenuButton(name)
     button.Name = name.."Button"
     button.Parent = MenuFrame
     button.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-    button.Size = UDim2.new(0.9, 0, 0, 30)
+    button.Size = UDim2.new(0.9, 0, 0, 24)  -- Smaller height
     button.Font = Enum.Font.GothamSemibold
     button.Text = name
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 12
+    button.TextSize = 11  -- Smaller text
     button.AutoButtonColor = true
     
     local buttonCorner = Instance.new("UICorner")
     buttonCorner.Parent = button
-    buttonCorner.CornerRadius = UDim.new(0, 6)
+    buttonCorner.CornerRadius = UDim.new(0, 4)  -- Smaller corners
     
     return button
 end
-
--- Add padding to menu
-local menuPadding = Instance.new("UIPadding")
-menuPadding.Parent = MenuFrame
-menuPadding.PaddingTop = UDim.new(0, 10)
 
 -- Create menu buttons
 local menuButtons = {
@@ -287,16 +286,16 @@ StatsFrame.Visible = true
 
 UIListLayout.Parent = StatsFrame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 8)
+UIListLayout.Padding = UDim.new(0, 4)  -- Less spacing between items
 
 -- Create Label Function
 local function CreateInfoLabel()
     local label = Instance.new("TextLabel")
     label.BackgroundTransparency = 1
-    label.Size = UDim2.new(1, 0, 0, 25)
+    label.Size = UDim2.new(1, 0, 0, 20)  -- Smaller height
     label.Font = Enum.Font.Gotham
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.TextSize = 14
+    label.TextSize = 11  -- Smaller text
     label.TextXAlignment = Enum.TextXAlignment.Left
     return label
 end
