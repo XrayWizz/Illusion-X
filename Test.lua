@@ -9,7 +9,7 @@ local CONFIG = {
     BUTTON_HEIGHT = 24,
     BUTTON_SPACING = 8, 
     SIDE_GAP = 5,
-    TEXT_SIZES = { HEADER = 14, BODY = 12 },
+    TEXT_SIZES = { HEADER = 14, BODY = 12, SMALL = 10 },
     COLORS = {
         PRIMARY = Color3.fromRGB(18, 18, 18),
         SECONDARY = Color3.fromRGB(28, 28, 28),
@@ -315,23 +315,6 @@ local TitleBar = createUIElement("Frame", {
     Parent = MainFrame
 })
 
--- Create sidebar
-local Sidebar = createUIElement("Frame", {
-    Size = UDim2.new(0, CONFIG.SIDEBAR_WIDTH, 1, -30),
-    Position = UDim2.new(0, 0, 0, 30),
-    BackgroundColor3 = CONFIG.COLORS.SECONDARY,
-    BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
-    Parent = MainFrame
-})
-
--- Create content area
-local ContentArea = createUIElement("Frame", {
-    Size = UDim2.new(1, -(CONFIG.SIDEBAR_WIDTH + 1), 1, -30),
-    Position = UDim2.new(0, CONFIG.SIDEBAR_WIDTH + 1, 0, 30),
-    BackgroundTransparency = 1,
-    Parent = MainFrame
-})
-
 -- Create a drag handle that spans the entire minimized frame
 local DragHandle = createUIElement("Frame", {
     Size = UDim2.new(1, -70, 0, 30), 
@@ -345,128 +328,66 @@ makeDraggable(DragHandle, MainFrame)
 
 -- Create title with glow effect
 local TitleLabel = createUIElement("TextLabel", {
-    Size = UDim2.new(1, -80, 0, 30),
-    Position = UDim2.new(0, CONFIG.SIDE_GAP + 5, 0, 5),
+    Size = UDim2.new(1, -80, 1, 0),
+    Position = UDim2.new(0, 10, 0, 0),
     Text = " Ray'z Hub",
     TextColor3 = CONFIG.COLORS.VERSION_BLUE,
-    Font = Enum.Font.SourceSansBold,
     TextSize = CONFIG.TEXT_SIZES.HEADER,
-    TextXAlignment = Enum.TextXAlignment.Left,
-    BackgroundTransparency = 1,
-    Parent = TitleBar
-})
-
--- Add glow effect to title
-local titleGlow = createUIElement("ImageLabel", {
-    Size = UDim2.new(1, 20, 1, 20),
-    Position = UDim2.new(0, -10, 0, -10),
-    BackgroundTransparency = 1,
-    Image = "rbxassetid://4996891970",
-    ImageColor3 = CONFIG.COLORS.VERSION_BLUE,
-    ImageTransparency = 0.9,
-    Parent = TitleLabel
-})
-
--- Create version bubble
-local VersionBubble = createUIElement("TextButton", {
-    Size = UDim2.new(0, 40, 0, 20),
-    Position = UDim2.new(0, TitleLabel.Position.X.Offset + 75, 0, 10),
-    Text = "v1.3",
-    TextColor3 = CONFIG.COLORS.VERSION_BLUE,
-    Font = Enum.Font.SourceSans,
-    TextSize = CONFIG.TEXT_SIZES.BODY,
-    BackgroundColor3 = CONFIG.COLORS.SECONDARY,
-    BackgroundTransparency = 0.6,
-    AutoButtonColor = false,
-    Parent = MainFrame
-})
-
-createUIElement("UICorner", { CornerRadius = UDim.new(0, 6) }, VersionBubble)
-
--- Create close button
-local CloseButton = createUIElement("TextButton", {
-    Size = UDim2.new(0, 24, 0, 20),
-    Position = UDim2.new(1, -32, 0, 10),
-    Text = "×",
-    TextColor3 = CONFIG.COLORS.VERSION_BLUE,
     Font = Enum.Font.SourceSansBold,
-    TextSize = CONFIG.TEXT_SIZES.BODY + 2,
-    BackgroundColor3 = CONFIG.COLORS.SECONDARY,
-    BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
-    AutoButtonColor = false,
+    BackgroundTransparency = 1,
+    TextXAlignment = Enum.TextXAlignment.Left,
     Parent = TitleBar
 })
 
-createUIElement("UICorner", { CornerRadius = UDim.new(0, 6) }, CloseButton)
-
--- Add hover effect
-hoverEffect(CloseButton, CONFIG.COLORS.SECONDARY, CONFIG.COLORS.HOVER)
-
--- Add close functionality
-CloseButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
+-- Create version label
+local VersionLabel = createUIElement("TextLabel", {
+    Size = UDim2.new(0, 60, 1, 0),
+    Position = UDim2.new(1, -120, 0, 0),
+    Text = "v1.0.0",
+    TextColor3 = CONFIG.COLORS.VERSION_BLUE,
+    TextSize = CONFIG.TEXT_SIZES.SMALL,
+    Font = Enum.Font.SourceSans,
+    BackgroundTransparency = 1,
+    TextXAlignment = Enum.TextXAlignment.Right,
+    Parent = TitleBar
+})
 
 -- Create minimize button
 local MinimizeButton = createUIElement("TextButton", {
-    Size = UDim2.new(0, 24, 0, 20),
-    Position = UDim2.new(1, -62, 0, 10),
+    Size = UDim2.new(0, 30, 0, 30),
+    Position = UDim2.new(1, -35, 0, 0),
     Text = "–",
-    TextColor3 = CONFIG.COLORS.VERSION_BLUE,
+    TextColor3 = CONFIG.COLORS.TEXT,
+    TextSize = CONFIG.TEXT_SIZES.HEADER,
     Font = Enum.Font.SourceSansBold,
-    TextSize = CONFIG.TEXT_SIZES.BODY + 2,
     BackgroundColor3 = CONFIG.COLORS.SECONDARY,
     BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
-    AutoButtonColor = false,
     Parent = TitleBar
 })
-
 createUIElement("UICorner", { CornerRadius = UDim.new(0, 6) }, MinimizeButton)
 
 -- Add hover effect
 hoverEffect(MinimizeButton, CONFIG.COLORS.SECONDARY, CONFIG.COLORS.HOVER)
 
--- Toggle Minimize/Restore behavior with tweening
-local minimized = false
-MinimizeButton.MouseButton1Click:Connect(function()
-    if minimized then
-        -- Restore (two-step animation)
-        -- Step 1: Extend the minimized frame horizontally
-        local extendTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
-            Size = UDim2.new(0, CONFIG.MAIN_SIZE.X.Offset, 0, 40)
-        })
-        extendTween:Play()
-        extendTween.Completed:Wait()
-        
-        -- Step 2: Expand vertically and show content
-        local restoreTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
-            Size = CONFIG.MAIN_SIZE
-        })
-        restoreTween:Play()
-        restoreTween.Completed:Wait()
-        Sidebar.Visible = true
-        ContentArea.Visible = true
-        MinimizeButton.Text = "–"
-    else
-        -- Minimize (two-step animation)
-        -- Step 1: Collapse vertically
-        Sidebar.Visible = false
-        ContentArea.Visible = false
-        local collapseTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
-            Size = UDim2.new(0, CONFIG.MAIN_SIZE.X.Offset, 0, 40)
-        })
-        collapseTween:Play()
-        collapseTween.Completed:Wait()
-        
-        -- Step 2: Shrink horizontally
-        local shrinkTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
-            Size = UDim2.new(0, CONFIG.MAIN_SIZE.X.Offset/2, 0, 40)
-        })
-        shrinkTween:Play()
-        MinimizeButton.Text = "+"
-    end
-    minimized = not minimized
-end)
+-- Create sidebar with proper styling
+local Sidebar = createUIElement("Frame", {
+    Size = UDim2.new(0, CONFIG.SIDEBAR_WIDTH, 1, -30),
+    Position = UDim2.new(0, 0, 0, 30),
+    BackgroundColor3 = CONFIG.COLORS.SECONDARY,
+    BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
+    Parent = MainFrame
+})
+createUIElement("UICorner", { 
+    CornerRadius = UDim.new(0, 8)
+}, Sidebar)
+
+-- Create content area
+local ContentArea = createUIElement("Frame", {
+    Size = UDim2.new(1, -(CONFIG.SIDEBAR_WIDTH + 10), 1, -40),
+    Position = UDim2.new(0, CONFIG.SIDEBAR_WIDTH + 5, 0, 35),
+    BackgroundTransparency = 1,
+    Parent = MainFrame
+})
 
 -- Function to create button context
 local function createButtonContext(contentFrame, buttonName)
