@@ -8,9 +8,9 @@ local MainFrame = Instance.new("Frame")
 local TitleBar = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
 local CloseButton = Instance.new("TextButton")
+local MenuFrame = Instance.new("Frame")
 local ContentFrame = Instance.new("Frame")
-local TabButtons = Instance.new("Frame")
-local TabContent = Instance.new("Frame")
+local MenuDivider = Instance.new("Frame")
 
 -- Stats Frame Components
 local StatsFrame = Instance.new("Frame")
@@ -27,8 +27,8 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-MainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)  -- Centered
-MainFrame.Size = UDim2.new(0, 350, 0, 250)  -- Compact size
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
+MainFrame.Size = UDim2.new(0, 350, 0, 250)
 MainFrame.ClipsDescendants = true
 
 local mainCorner = Instance.new("UICorner")
@@ -107,68 +107,66 @@ local closeCorner = Instance.new("UICorner")
 closeCorner.Parent = CloseButton
 closeCorner.CornerRadius = UDim.new(0, 4)
 
--- Content Frame
+-- Menu Frame (Left side)
+MenuFrame.Name = "MenuFrame"
+MenuFrame.Parent = MainFrame
+MenuFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+MenuFrame.Position = UDim2.new(0, 0, 0, 30)
+MenuFrame.Size = UDim2.new(0, 100, 1, -30)
+
+local menuLayout = Instance.new("UIListLayout")
+menuLayout.Parent = MenuFrame
+menuLayout.SortOrder = Enum.SortOrder.LayoutOrder
+menuLayout.Padding = UDim.new(0, 5)
+menuLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- Menu Divider
+MenuDivider.Parent = MainFrame
+MenuDivider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+MenuDivider.Position = UDim2.new(0, 100, 0, 30)
+MenuDivider.Size = UDim2.new(0, 1, 1, -30)
+
+-- Content Frame (Right side)
 ContentFrame.Name = "ContentFrame"
 ContentFrame.Parent = MainFrame
 ContentFrame.BackgroundTransparency = 1
-ContentFrame.Position = UDim2.new(0, 0, 0, 30)
-ContentFrame.Size = UDim2.new(1, 0, 1, -30)
+ContentFrame.Position = UDim2.new(0, 110, 0, 35)
+ContentFrame.Size = UDim2.new(1, -120, 1, -45)
 
--- Tab Buttons
-TabButtons.Name = "TabButtons"
-TabButtons.Parent = ContentFrame
-TabButtons.BackgroundTransparency = 1
-TabButtons.Position = UDim2.new(0, 0, 0, 0)
-TabButtons.Size = UDim2.new(1, 0, 0, 30)
-
-local tabLayout = Instance.new("UIListLayout")
-tabLayout.Parent = TabButtons
-tabLayout.FillDirection = Enum.FillDirection.Horizontal
-tabLayout.Padding = UDim.new(0, 5)
-tabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-
--- Tab Content
-TabContent.Name = "TabContent"
-TabContent.Parent = ContentFrame
-TabContent.BackgroundTransparency = 1
-TabContent.Position = UDim2.new(0, 10, 0, 35)
-TabContent.Size = UDim2.new(1, -20, 1, -45)
-
--- Create Tab Button
-local function CreateTab(name)
-    local tab = Instance.new("TextButton")
-    tab.Name = name.."Tab"
-    tab.Parent = TabButtons
-    tab.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-    tab.Size = UDim2.new(0, 80, 1, -4)
-    tab.Font = Enum.Font.GothamSemibold
-    tab.Text = name
-    tab.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tab.TextSize = 12
-    tab.AutoButtonColor = true
+-- Create Menu Button
+local function CreateMenuButton(name)
+    local button = Instance.new("TextButton")
+    button.Name = name.."Button"
+    button.Parent = MenuFrame
+    button.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    button.Size = UDim2.new(0.9, 0, 0, 30)
+    button.Font = Enum.Font.GothamSemibold
+    button.Text = name
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextSize = 12
+    button.AutoButtonColor = true
     
-    local tabCorner = Instance.new("UICorner")
-    tabCorner.Parent = tab
-    tabCorner.CornerRadius = UDim.new(0, 6)
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.Parent = button
+    buttonCorner.CornerRadius = UDim.new(0, 6)
     
-    return tab
+    return button
 end
 
--- Add padding to tab buttons
-local tabPadding = Instance.new("UIPadding")
-tabPadding.Parent = TabButtons
-tabPadding.PaddingLeft = UDim.new(0, 10)
-tabPadding.PaddingTop = UDim.new(0, 2)
+-- Add padding to menu
+local menuPadding = Instance.new("UIPadding")
+menuPadding.Parent = MenuFrame
+menuPadding.PaddingTop = UDim.new(0, 10)
 
--- Create tabs
-local tabs = {
-    CreateTab("Stats"),
-    CreateTab("Inventory"),
-    CreateTab("Settings")
+-- Create menu buttons
+local menuButtons = {
+    CreateMenuButton("Stats"),
+    CreateMenuButton("Inventory"),
+    CreateMenuButton("Settings")
 }
 
 -- Stats Frame Setup
-StatsFrame.Parent = TabContent
+StatsFrame.Parent = ContentFrame
 StatsFrame.BackgroundTransparency = 1
 StatsFrame.Size = UDim2.new(1, 0, 1, 0)
 StatsFrame.Visible = true
@@ -207,28 +205,28 @@ CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
--- Tab Button Handlers
-tabs[1].BackgroundColor3 = Color3.fromRGB(65, 65, 65)  -- Active tab
-tabs[1].MouseButton1Click:Connect(function()
+-- Menu Button Handlers
+menuButtons[1].BackgroundColor3 = Color3.fromRGB(65, 65, 65)  -- Active button
+menuButtons[1].MouseButton1Click:Connect(function()
     StatsFrame.Visible = true
-    tabs[1].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
-    tabs[2].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-    tabs[3].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    menuButtons[1].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    menuButtons[2].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    menuButtons[3].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
 end)
 
-tabs[2].MouseButton1Click:Connect(function()
+menuButtons[2].MouseButton1Click:Connect(function()
     StatsFrame.Visible = false
-    tabs[1].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-    tabs[2].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
-    tabs[3].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    menuButtons[1].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    menuButtons[2].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    menuButtons[3].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
     -- Add inventory frame logic here
 end)
 
-tabs[3].MouseButton1Click:Connect(function()
+menuButtons[3].MouseButton1Click:Connect(function()
     StatsFrame.Visible = false
-    tabs[1].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-    tabs[2].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-    tabs[3].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    menuButtons[1].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    menuButtons[2].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    menuButtons[3].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
     -- Add settings frame logic here
 end)
 
