@@ -276,37 +276,145 @@ local function CreateInfoLabel()
     return label
 end
 
+-- Create Section Header Function
+local function CreateSectionHeader(text)
+    local header = Instance.new("Frame")
+    header.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    header.Size = UDim2.new(1, 0, 0, 22)
+    
+    local headerLabel = Instance.new("TextLabel")
+    headerLabel.Parent = header
+    headerLabel.BackgroundTransparency = 1
+    headerLabel.Position = UDim2.new(0, 8, 0, 0)
+    headerLabel.Size = UDim2.new(1, -16, 1, 0)
+    headerLabel.Font = Enum.Font.GothamBold
+    headerLabel.Text = text
+    headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    headerLabel.TextSize = 11
+    headerLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local headerCorner = Instance.new("UICorner")
+    headerCorner.Parent = header
+    headerCorner.CornerRadius = UDim.new(0, 3)
+    
+    return header
+end
+
+-- Create Section Function
+local function CreateSection()
+    local section = Instance.new("Frame")
+    section.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    section.Size = UDim2.new(1, 0, 0, 0)  -- Height will be set dynamically
+    
+    local sectionCorner = Instance.new("UICorner")
+    sectionCorner.Parent = section
+    sectionCorner.CornerRadius = UDim.new(0, 3)
+    
+    local sectionPadding = Instance.new("UIPadding")
+    sectionPadding.Parent = section
+    sectionPadding.PaddingTop = UDim.new(0, 4)
+    sectionPadding.PaddingBottom = UDim.new(0, 4)
+    sectionPadding.PaddingLeft = UDim.new(0, 8)
+    sectionPadding.PaddingRight = UDim.new(0, 8)
+    
+    local sectionList = Instance.new("UIListLayout")
+    sectionList.Parent = section
+    sectionList.SortOrder = Enum.SortOrder.LayoutOrder
+    sectionList.Padding = UDim.new(0, 2)
+    
+    return section, sectionList
+end
+
+-- Create sections for different types of information
+local basicInfoSection, basicInfoList = CreateSection()
+basicInfoSection.Parent = StatsFrame
+basicInfoSection.LayoutOrder = 1
+
+local combatSection, combatList = CreateSection()
+combatSection.Parent = StatsFrame
+combatSection.LayoutOrder = 3
+
+local equipmentSection, equipmentList = CreateSection()
+equipmentSection.Parent = StatsFrame
+equipmentSection.LayoutOrder = 5
+
+-- Create section headers
+local basicInfoHeader = CreateSectionHeader("Basic Information")
+basicInfoHeader.Parent = StatsFrame
+basicInfoHeader.LayoutOrder = 0
+
+local combatHeader = CreateSectionHeader("Combat Stats")
+combatHeader.Parent = StatsFrame
+combatHeader.LayoutOrder = 2
+
+local equipmentHeader = CreateSectionHeader("Equipment")
+equipmentHeader.Parent = StatsFrame
+equipmentHeader.LayoutOrder = 4
+
+-- Move labels to their respective sections
+LevelLabel.Parent = basicInfoSection
+RaceLabel.Parent = basicInfoSection
+BelliLabel.Parent = basicInfoSection
+FragmentsLabel.Parent = basicInfoSection
+
+HealthLabel.Parent = combatSection
+FightingStyleLabel.Parent = combatSection
+DevilFruitLabel.Parent = combatSection
+
+SwordLabel.Parent = equipmentSection
+
+-- Update function to handle section sizes
+local function updateSectionSizes()
+    local function updateSection(section, list)
+        local contentSize = list.AbsoluteContentSize
+        section.Size = UDim2.new(1, 0, 0, contentSize.Y + 8)  -- Add padding
+    end
+    
+    updateSection(basicInfoSection, basicInfoList)
+    updateSection(combatSection, combatList)
+    updateSection(equipmentSection, equipmentList)
+    
+    -- Update overall canvas size
+    local totalSize = UIListLayout.AbsoluteContentSize
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, totalSize.Y + 8)
+end
+
+-- Connect size updates
+basicInfoList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSizes)
+combatList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSizes)
+equipmentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSizes)
+
 -- Stats Labels
 LevelLabel = CreateInfoLabel()
-LevelLabel.Parent = StatsFrame
+LevelLabel.Parent = basicInfoSection
 LevelLabel.LayoutOrder = 1
 
 HealthLabel = CreateInfoLabel()
-HealthLabel.Parent = StatsFrame
+HealthLabel.Parent = combatSection
 HealthLabel.LayoutOrder = 2
 
 BelliLabel = CreateInfoLabel()
-BelliLabel.Parent = StatsFrame
+BelliLabel.Parent = basicInfoSection
 BelliLabel.LayoutOrder = 3
 
 FragmentsLabel = CreateInfoLabel()
-FragmentsLabel.Parent = StatsFrame
+FragmentsLabel.Parent = basicInfoSection
 FragmentsLabel.LayoutOrder = 4
 
 FightingStyleLabel = CreateInfoLabel()
-FightingStyleLabel.Parent = StatsFrame
+FightingStyleLabel.Parent = combatSection
 FightingStyleLabel.LayoutOrder = 5
 
 DevilFruitLabel = CreateInfoLabel()
-DevilFruitLabel.Parent = StatsFrame
+DevilFruitLabel.Parent = combatSection
 DevilFruitLabel.LayoutOrder = 6
 
 RaceLabel = CreateInfoLabel()
-RaceLabel.Parent = StatsFrame
+RaceLabel.Parent = basicInfoSection
 RaceLabel.LayoutOrder = 7
 
 SwordLabel = CreateInfoLabel()
-SwordLabel.Parent = StatsFrame
+SwordLabel.Parent = equipmentSection
 SwordLabel.LayoutOrder = 8
 
 -- Update Function
