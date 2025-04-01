@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local ScreenGui = Instance.new("ScreenGui")
 
@@ -127,10 +128,58 @@ local closeCorner = Instance.new("UICorner")
 closeCorner.Parent = CloseButton
 closeCorner.CornerRadius = UDim.new(0, 4)
 
+-- Make frame draggable function
+local function makeDraggable(frame)
+    local dragToggle = nil
+    local dragSpeed = 0.1
+    local dragStart = nil
+    local startPos = nil
+
+    local function updateInput(input)
+        local delta = input.Position - dragStart
+        local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+            startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        
+        -- Create smooth drag animation
+        local tweenInfo = TweenInfo.new(dragSpeed, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        TweenService:Create(frame, tweenInfo, {Position = position}):Play()
+    end
+
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = frame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
+        end
+    end)
+
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragToggle then
+            updateInput(input)
+        end
+    end)
+end
+
+-- Make both frames draggable
+makeDraggable(MainFrame)
+makeDraggable(BubbleButton)
+
 -- Minimize and Expand Functions
 local function minimizeUI()
     local currentPos = MainFrame.Position
-    local targetPos = UDim2.new(0.85, 0, 0.5, 0)
+    local targetPos = BubbleButton.Position
     
     -- Create and play the minimize animation
     local minimizeTween = TweenService:Create(MainFrame, minimizeInfo, {
@@ -166,41 +215,6 @@ end
 -- Connect minimize and expand buttons
 MinimizeButton.MouseButton1Click:Connect(minimizeUI)
 BubbleButton.MouseButton1Click:Connect(expandUI)
-
--- Make title bar draggable
-local dragInput
-local dragStart
-local startPos
-
-local function update(input)
-    local delta = input.Position - dragStart
-    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
-
-TitleBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragStart = nil
-            end
-        end)
-    end
-end)
-
-TitleBar.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        dragInput = input
-    end
-end)
-
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if input == dragInput and dragStart then
-        update(input)
-    end
-end)
 
 -- Menu Frame (Left side)
 MenuFrame.Name = "MenuFrame"
