@@ -153,12 +153,12 @@ local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Name = "MinimizeButton"
 MinimizeButton.Parent = TitleBar
 MinimizeButton.BackgroundColor3 = CONFIG.THEMES.DARK.BUTTON_HOVER
-MinimizeButton.Position = UDim2.new(1, -38, 0.5, -6)
-MinimizeButton.Size = UDim2.new(0, 12, 0, 12)
+MinimizeButton.Position = UDim2.new(1, -44, 0.5, -7)
+MinimizeButton.Size = UDim2.new(0, 14, 0, 14)
 MinimizeButton.Font = Enum.Font.GothamBold
 MinimizeButton.Text = "-"
 MinimizeButton.TextColor3 = CONFIG.THEMES.DARK.TEXT_PRIMARY
-MinimizeButton.TextSize = 12
+MinimizeButton.TextSize = 14
 MinimizeButton.AutoButtonColor = false
 
 local minimizeCorner = createCorner(MinimizeButton, CONFIG.CORNER_RADIUS)
@@ -168,13 +168,13 @@ local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseButton"
 CloseButton.Parent = TitleBar
 CloseButton.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
-CloseButton.Position = UDim2.new(1, -20, 0.5, -6)
-CloseButton.Size = UDim2.new(0, 12, 0, 12)
+CloseButton.Position = UDim2.new(1, -24, 0.5, -7)
+CloseButton.Size = UDim2.new(0, 14, 0, 14)
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.Text = "×"
 CloseButton.TextColor3 = CONFIG.THEMES.DARK.TEXT_PRIMARY
-CloseButton.TextSize = 12
-CloseButton.AutoButtonColor = true
+CloseButton.TextSize = 14
+CloseButton.AutoButtonColor = false
 
 local closeCorner = createCorner(CloseButton, CONFIG.CORNER_RADIUS)
 
