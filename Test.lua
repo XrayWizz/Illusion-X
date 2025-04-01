@@ -25,6 +25,11 @@ local UIListLayout = Instance.new("UIListLayout")
 local LevelLabel = Instance.new("TextLabel")
 local HealthLabel = Instance.new("TextLabel")
 local BelliLabel = Instance.new("TextLabel")
+local FragmentsLabel = Instance.new("TextLabel")
+local FightingStyleLabel = Instance.new("TextLabel")
+local DevilFruitLabel = Instance.new("TextLabel")
+local RaceLabel = Instance.new("TextLabel")
+local SwordLabel = Instance.new("TextLabel")
 
 -- GUI Setup
 ScreenGui.Parent = game.CoreGui
@@ -269,7 +274,7 @@ menuPadding.PaddingTop = UDim.new(0, 10)
 
 -- Create menu buttons
 local menuButtons = {
-    CreateMenuButton("Stats"),
+    CreateMenuButton("Overview"),
     CreateMenuButton("Inventory"),
     CreateMenuButton("Settings")
 }
@@ -284,30 +289,148 @@ UIListLayout.Parent = StatsFrame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 8)
 
+-- Create Label Function
+local function CreateInfoLabel()
+    local label = Instance.new("TextLabel")
+    label.BackgroundTransparency = 1
+    label.Size = UDim2.new(1, 0, 0, 25)
+    label.Font = Enum.Font.Gotham
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextSize = 14
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    return label
+end
+
 -- Stats Labels
+LevelLabel = CreateInfoLabel()
 LevelLabel.Parent = StatsFrame
-LevelLabel.BackgroundTransparency = 1
-LevelLabel.Size = UDim2.new(1, 0, 0, 25)
-LevelLabel.Font = Enum.Font.Gotham
-LevelLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-LevelLabel.TextSize = 14
-LevelLabel.TextXAlignment = Enum.TextXAlignment.Left
+LevelLabel.LayoutOrder = 1
 
+HealthLabel = CreateInfoLabel()
 HealthLabel.Parent = StatsFrame
-HealthLabel.BackgroundTransparency = 1
-HealthLabel.Size = UDim2.new(1, 0, 0, 25)
-HealthLabel.Font = Enum.Font.Gotham
-HealthLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-HealthLabel.TextSize = 14
-HealthLabel.TextXAlignment = Enum.TextXAlignment.Left
+HealthLabel.LayoutOrder = 2
 
+BelliLabel = CreateInfoLabel()
 BelliLabel.Parent = StatsFrame
-BelliLabel.BackgroundTransparency = 1
-BelliLabel.Size = UDim2.new(1, 0, 0, 25)
-BelliLabel.Font = Enum.Font.Gotham
-BelliLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-BelliLabel.TextSize = 14
-BelliLabel.TextXAlignment = Enum.TextXAlignment.Left
+BelliLabel.LayoutOrder = 3
+
+FragmentsLabel = CreateInfoLabel()
+FragmentsLabel.Parent = StatsFrame
+FragmentsLabel.LayoutOrder = 4
+
+FightingStyleLabel = CreateInfoLabel()
+FightingStyleLabel.Parent = StatsFrame
+FightingStyleLabel.LayoutOrder = 5
+
+DevilFruitLabel = CreateInfoLabel()
+DevilFruitLabel.Parent = StatsFrame
+DevilFruitLabel.LayoutOrder = 6
+
+RaceLabel = CreateInfoLabel()
+RaceLabel.Parent = StatsFrame
+RaceLabel.LayoutOrder = 7
+
+SwordLabel = CreateInfoLabel()
+SwordLabel.Parent = StatsFrame
+SwordLabel.LayoutOrder = 8
+
+-- Update Function
+local function updateStats()
+    if LocalPlayer.Character then
+        local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+        if humanoid then
+            HealthLabel.Text = string.format("Health: %d/%d", humanoid.Health, humanoid.MaxHealth)
+        end
+    end
+    
+    -- Get player stats from leaderstats
+    local leaderstats = LocalPlayer:FindFirstChild("leaderstats")
+    if leaderstats then
+        local level = leaderstats:FindFirstChild("Level")
+        local beli = leaderstats:FindFirstChild("Beli")
+        local fragments = leaderstats:FindFirstChild("Fragments")
+        
+        if level then
+            LevelLabel.Text = string.format("Level: %s", level.Value)
+        end
+        if beli then
+            BelliLabel.Text = string.format("Beli: %s", beli.Value)
+        end
+        if fragments then
+            FragmentsLabel.Text = string.format("Fragments: %s", fragments.Value)
+        end
+    end
+    
+    -- Get fighting style info
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    local character = LocalPlayer.Character
+    if backpack and character then
+        -- Check for fighting styles
+        local fightingStyles = {}
+        for _, item in pairs(backpack:GetChildren()) do
+            if item:FindFirstChild("FightingStyle") then
+                table.insert(fightingStyles, item.Name)
+            end
+        end
+        for _, item in pairs(character:GetChildren()) do
+            if item:FindFirstChild("FightingStyle") then
+                table.insert(fightingStyles, item.Name)
+            end
+        end
+        if #fightingStyles > 0 then
+            FightingStyleLabel.Text = string.format("Fighting Style: %s", table.concat(fightingStyles, ", "))
+        else
+            FightingStyleLabel.Text = "Fighting Style: None"
+        end
+        
+        -- Check for devil fruits
+        local devilFruits = {}
+        for _, item in pairs(backpack:GetChildren()) do
+            if item:FindFirstChild("DevilFruit") then
+                table.insert(devilFruits, item.Name)
+            end
+        end
+        for _, item in pairs(character:GetChildren()) do
+            if item:FindFirstChild("DevilFruit") then
+                table.insert(devilFruits, item.Name)
+            end
+        end
+        if #devilFruits > 0 then
+            DevilFruitLabel.Text = string.format("Devil Fruit: %s", table.concat(devilFruits, ", "))
+        else
+            DevilFruitLabel.Text = "Devil Fruit: None"
+        end
+        
+        -- Check for swords
+        local swords = {}
+        for _, item in pairs(backpack:GetChildren()) do
+            if item:FindFirstChild("SwordTool") then
+                table.insert(swords, item.Name)
+            end
+        end
+        for _, item in pairs(character:GetChildren()) do
+            if item:FindFirstChild("SwordTool") then
+                table.insert(swords, item.Name)
+            end
+        end
+        if #swords > 0 then
+            SwordLabel.Text = string.format("Swords: %s", table.concat(swords, ", "))
+        else
+            SwordLabel.Text = "Swords: None"
+        end
+    end
+    
+    -- Get race info
+    local race = LocalPlayer:FindFirstChild("Race")
+    if race then
+        RaceLabel.Text = string.format("Race: %s", race.Value)
+    else
+        RaceLabel.Text = "Race: Unknown"
+    end
+end
+
+-- Update loop
+game:GetService("RunService").RenderStepped:Connect(updateStats)
 
 -- Close Button Handler
 CloseButton.MouseButton1Click:Connect(function()
@@ -338,30 +461,3 @@ menuButtons[3].MouseButton1Click:Connect(function()
     menuButtons[3].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
     -- Add settings frame logic here
 end)
-
--- Update Function
-local function updateStats()
-    if LocalPlayer.Character then
-        local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-        if humanoid then
-            HealthLabel.Text = string.format("Health: %d/%d", humanoid.Health, humanoid.MaxHealth)
-        end
-    end
-    
-    -- Get player level and beli from leaderstats if available
-    local leaderstats = LocalPlayer:FindFirstChild("leaderstats")
-    if leaderstats then
-        local level = leaderstats:FindFirstChild("Level")
-        local beli = leaderstats:FindFirstChild("Beli")
-        
-        if level then
-            LevelLabel.Text = string.format("Level: %s", level.Value)
-        end
-        if beli then
-            BelliLabel.Text = string.format("Beli: %s", beli.Value)
-        end
-    end
-end
-
--- Update loop
-game:GetService("RunService").RenderStepped:Connect(updateStats)
