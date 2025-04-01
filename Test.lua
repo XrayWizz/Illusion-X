@@ -144,10 +144,9 @@ local function updatePlayerInfoDisplay(contentFrame)
     
     local stats, devilFruit, fightingStyle = getPlayerInfo()
     
-    -- Create info container with proper sizing and positioning
+    -- Create info container with proper styling
     local infoContainer = createUIElement("Frame", {
-        Size = UDim2.new(1, -20, 1, -20),
-        Position = UDim2.new(0, 10, 0, 10),
+        Size = UDim2.new(1, 0, 1, 0),
         BackgroundTransparency = 1,
         Parent = contentFrame
     })
@@ -159,10 +158,10 @@ local function updatePlayerInfoDisplay(contentFrame)
         Parent = infoContainer
     })
     
-    -- Helper function to create info sections with improved styling
+    -- Helper function to create info sections with glow effect
     local function createInfoSection(title, value, order)
         local section = createUIElement("Frame", {
-            Size = UDim2.new(1, 0, 0, 35), 
+            Size = UDim2.new(1, 0, 0, 35),
             BackgroundColor3 = CONFIG.COLORS.SECONDARY,
             BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
             LayoutOrder = order,
@@ -173,40 +172,78 @@ local function updatePlayerInfoDisplay(contentFrame)
             CornerRadius = UDim.new(0, 6),
         }, section)
         
-        createUIElement("TextLabel", {
+        -- Add subtle glow effect
+        local glow = createUIElement("ImageLabel", {
+            Size = UDim2.new(1, 20, 1, 20),
+            Position = UDim2.new(0, -10, 0, -10),
+            BackgroundTransparency = 1,
+            Image = "rbxassetid://4996891970",
+            ImageColor3 = CONFIG.COLORS.VERSION_BLUE,
+            ImageTransparency = 0.95,
+            Parent = section
+        })
+        
+        local titleLabel = createUIElement("TextLabel", {
             Size = UDim2.new(0.4, 0, 1, 0),
             Position = UDim2.new(0, 10, 0, 0),
             Text = title,
-            TextColor3 = CONFIG.COLORS.TEXT,
+            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
             TextSize = CONFIG.TEXT_SIZES.BODY,
-            TextXAlignment = Enum.TextXAlignment.Left,
+            Font = Enum.Font.SourceSansBold,
             BackgroundTransparency = 1,
+            TextXAlignment = Enum.TextXAlignment.Left,
             Parent = section
         })
         
-        createUIElement("TextLabel", {
+        local valueLabel = createUIElement("TextLabel", {
             Size = UDim2.new(0.6, -20, 1, 0),
             Position = UDim2.new(0.4, 10, 0, 0),
-            Text = tostring(value),
+            Text = value,
             TextColor3 = CONFIG.COLORS.TEXT,
             TextSize = CONFIG.TEXT_SIZES.BODY,
-            TextXAlignment = Enum.TextXAlignment.Left,
+            Font = Enum.Font.SourceSans,
             BackgroundTransparency = 1,
+            TextXAlignment = Enum.TextXAlignment.Left,
             Parent = section
         })
         
+        -- Initial state for animation
+        section.Position = UDim2.new(1, 0, 0, 0)
         return section
     end
     
-    -- Create info sections with proper error handling
-    pcall(function()
-        createInfoSection("Beli", string.format("%s", stats.Money), 1)
-        createInfoSection("Fragments", string.format("%s", stats.Fragments), 2)
-        createInfoSection("Health", string.format("%d/%d", stats.Health, stats.MaxHealth), 3)
-        createInfoSection("Level", stats.Level, 4)
-        createInfoSection("Devil Fruit", devilFruit ~= "" and devilFruit or "None", 5)
-        createInfoSection("Fighting Style", fightingStyle ~= "" and fightingStyle or "None", 6)
-    end)
+    -- Create sections with sequential animations
+    local function animateSection(section, index)
+        local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, index * 0.1)
+        local tween = game:GetService("TweenService"):Create(section, tweenInfo, {
+            Position = UDim2.new(0, 0, 0, 0)
+        })
+        tween:Play()
+    end
+    
+    -- Add stats with animations
+    local sections = {}
+    for i, stat in ipairs(stats) do
+        local section = createInfoSection(stat.name, tostring(stat.value), i)
+        table.insert(sections, {section = section, index = i})
+    end
+    
+    -- Add devil fruit info
+    if devilFruit then
+        local section = createInfoSection("Devil Fruit", devilFruit, #stats + 1)
+        table.insert(sections, {section = section, index = #stats + 1})
+    end
+    
+    -- Add fighting style
+    if fightingStyle then
+        local section = createInfoSection("Fighting Style", fightingStyle, #stats + 2)
+        table.insert(sections, {section = section, index = #stats + 2})
+    end
+    
+    -- Animate all sections
+    for _, item in ipairs(sections) do
+        animateSection(item.section, item.index)
+    end
 end
 
 -- Function to clear content
@@ -339,6 +376,17 @@ local TitleLabel = createUIElement("TextLabel", {
     Parent = TitleBar
 })
 
+-- Add glow effect to title
+local titleGlow = createUIElement("ImageLabel", {
+    Size = UDim2.new(1, 20, 1, 20),
+    Position = UDim2.new(0, -10, 0, -10),
+    BackgroundTransparency = 1,
+    Image = "rbxassetid://4996891970",
+    ImageColor3 = CONFIG.COLORS.VERSION_BLUE,
+    ImageTransparency = 0.9,
+    Parent = TitleLabel
+})
+
 -- Create version label
 local VersionLabel = createUIElement("TextLabel", {
     Size = UDim2.new(0, 60, 1, 0),
@@ -352,10 +400,32 @@ local VersionLabel = createUIElement("TextLabel", {
     Parent = TitleBar
 })
 
+-- Create close button
+local CloseButton = createUIElement("TextButton", {
+    Size = UDim2.new(0, 30, 0, 30),
+    Position = UDim2.new(1, -30, 0, 0),
+    Text = "×",
+    TextColor3 = CONFIG.COLORS.TEXT,
+    TextSize = CONFIG.TEXT_SIZES.HEADER + 4,
+    Font = Enum.Font.SourceSansBold,
+    BackgroundColor3 = CONFIG.COLORS.SECONDARY,
+    BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
+    Parent = TitleBar
+})
+createUIElement("UICorner", { CornerRadius = UDim.new(0, 6) }, CloseButton)
+
+-- Add hover effect to close button
+hoverEffect(CloseButton, CONFIG.COLORS.SECONDARY, CONFIG.COLORS.HOVER)
+
+-- Add close functionality
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
 -- Create minimize button
 local MinimizeButton = createUIElement("TextButton", {
     Size = UDim2.new(0, 30, 0, 30),
-    Position = UDim2.new(1, -35, 0, 0),
+    Position = UDim2.new(1, -65, 0, 0),
     Text = "–",
     TextColor3 = CONFIG.COLORS.TEXT,
     TextSize = CONFIG.TEXT_SIZES.HEADER,
@@ -366,8 +436,50 @@ local MinimizeButton = createUIElement("TextButton", {
 })
 createUIElement("UICorner", { CornerRadius = UDim.new(0, 6) }, MinimizeButton)
 
--- Add hover effect
+-- Add hover effect to minimize button
 hoverEffect(MinimizeButton, CONFIG.COLORS.SECONDARY, CONFIG.COLORS.HOVER)
+
+-- Toggle Minimize/Restore behavior with tweening
+local minimized = false
+MinimizeButton.MouseButton1Click:Connect(function()
+    if minimized then
+        -- Restore (two-step animation)
+        -- Step 1: Extend the minimized frame horizontally
+        local extendTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
+            Size = UDim2.new(0, CONFIG.MAIN_SIZE.X.Offset, 0, 40)
+        })
+        extendTween:Play()
+        extendTween.Completed:Wait()
+        
+        -- Step 2: Expand vertically and show content
+        local restoreTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
+            Size = CONFIG.MAIN_SIZE
+        })
+        restoreTween:Play()
+        restoreTween.Completed:Wait()
+        Sidebar.Visible = true
+        ContentArea.Visible = true
+        MinimizeButton.Text = "–"
+    else
+        -- Minimize (two-step animation)
+        -- Step 1: Collapse vertically
+        Sidebar.Visible = false
+        ContentArea.Visible = false
+        local collapseTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
+            Size = UDim2.new(0, CONFIG.MAIN_SIZE.X.Offset, 0, 40)
+        })
+        collapseTween:Play()
+        collapseTween.Completed:Wait()
+        
+        -- Step 2: Shrink horizontally
+        local shrinkTween = game:GetService("TweenService"):Create(MainFrame, CONFIG.TWEEN_INFO, {
+            Size = UDim2.new(0, CONFIG.MAIN_SIZE.X.Offset/2, 0, 40)
+        })
+        shrinkTween:Play()
+        MinimizeButton.Text = "+"
+    end
+    minimized = not minimized
+end)
 
 -- Create sidebar with proper styling
 local Sidebar = createUIElement("Frame", {
@@ -464,7 +576,7 @@ end
 
 -- Function to create sidebar buttons (context menu)
 local selectedButton = nil
-local function createSidebarButton(text, positionY, content, displayFunction)
+local function createSidebarButton(text, positionY, content, displayFunction, iconId)
     local Button = createUIElement("Frame", {
         Size = UDim2.new(1, -10, 0, CONFIG.BUTTON_HEIGHT),
         Position = UDim2.new(0, 5, 0, positionY),
@@ -475,24 +587,35 @@ local function createSidebarButton(text, positionY, content, displayFunction)
 
     -- Create indicator (pill shape) (initially invisible)
     local Indicator = createUIElement("Frame", {
-        Size = UDim2.new(0, 3, 0, 16), 
-        Position = UDim2.new(0, -6, 0.5, -8), 
+        Size = UDim2.new(0, 3, 0, 16),
+        Position = UDim2.new(0, -6, 0.5, -8),
         BackgroundColor3 = CONFIG.COLORS.INDICATOR,
         BackgroundTransparency = 1,
         Parent = Button
     })
     createUIElement("UICorner", {
-        CornerRadius = UDim.new(1, 0), 
+        CornerRadius = UDim.new(1, 0),
     }, Indicator)
 
+    -- Create icon
+    local Icon = createUIElement("ImageLabel", {
+        Size = UDim2.new(0, 16, 0, 16),
+        Position = UDim2.new(0, 8, 0.5, -8),
+        BackgroundTransparency = 1,
+        Image = iconId,
+        ImageColor3 = CONFIG.COLORS.TEXT,
+        Parent = Button
+    })
+
     local ButtonText = createUIElement("TextButton", {
-        Size = UDim2.new(1, 0, 1, 0),
+        Size = UDim2.new(1, -32, 1, 0),
+        Position = UDim2.new(0, 32, 0, 0),
         BackgroundTransparency = 1,
         Text = text,
         TextColor3 = CONFIG.COLORS.TEXT,
         TextSize = CONFIG.TEXT_SIZES.BODY,
         Font = Enum.Font.SourceSans,
-        TextXAlignment = Enum.TextXAlignment.Center,
+        TextXAlignment = Enum.TextXAlignment.Left,
         Parent = Button
     })
 
@@ -509,11 +632,17 @@ local function createSidebarButton(text, positionY, content, displayFunction)
             if prevIndicator then
                 prevIndicator.BackgroundTransparency = 1
             end
+            -- Reset previous icon color
+            local prevIcon = selectedButton:FindFirstChild("ImageLabel")
+            if prevIcon then
+                prevIcon.ImageColor3 = CONFIG.COLORS.TEXT
+            end
         end
 
         -- Update current button
         Button.BackgroundColor3 = CONFIG.COLORS.SELECTED_BLUE
         Indicator.BackgroundTransparency = 0
+        Icon.ImageColor3 = CONFIG.COLORS.VERSION_BLUE
         selectedButton = Button
 
         -- Clear and update content area
@@ -527,12 +656,14 @@ local function createSidebarButton(text, positionY, content, displayFunction)
     ButtonText.MouseEnter:Connect(function()
         if Button ~= selectedButton then
             Button.BackgroundColor3 = CONFIG.COLORS.HOVER
+            Icon.ImageColor3 = CONFIG.COLORS.VERSION_BLUE
         end
     end)
 
     ButtonText.MouseLeave:Connect(function()
         if Button ~= selectedButton then
             Button.BackgroundColor3 = CONFIG.COLORS.SECONDARY
+            Icon.ImageColor3 = CONFIG.COLORS.TEXT
         end
     end)
 
@@ -544,35 +675,56 @@ local function showOverviewContent(contentFrame)
     -- Clear existing content
     clearContent(contentFrame)
     
-    -- Create main container
-    local mainContainer = createUIElement("Frame", {
+    -- Create main container with glow effect
+    local container = createUIElement("Frame", {
         Size = UDim2.new(1, -20, 1, -20),
         Position = UDim2.new(0, 10, 0, 10),
         BackgroundTransparency = 1,
         Parent = contentFrame
     })
     
-    -- Welcome section
+    -- Create header with glow
+    local headerContainer = createUIElement("Frame", {
+        Size = UDim2.new(1, 0, 0, 40),
+        BackgroundColor3 = CONFIG.COLORS.SECONDARY,
+        BackgroundTransparency = 1 - CONFIG.TRANSPARENCY,
+        Parent = container
+    })
+    createUIElement("UICorner", { CornerRadius = UDim.new(0, 6) }, headerContainer)
+    
+    -- Add glow effect to header
+    local headerGlow = createUIElement("ImageLabel", {
+        Size = UDim2.new(1, 20, 1, 20),
+        Position = UDim2.new(0, -10, 0, -10),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://4996891970",
+        ImageColor3 = CONFIG.COLORS.VERSION_BLUE,
+        ImageTransparency = 0.9,
+        Parent = headerContainer
+    })
+    
+    -- Create welcome text with animation
     local welcomeText = createUIElement("TextLabel", {
-        Size = UDim2.new(1, 0, 0, 30),
-        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, -20, 1, 0),
+        Position = UDim2.new(0, 10, 0, 0),
         Text = "Welcome to Ray'z Hub",
         TextColor3 = CONFIG.COLORS.VERSION_BLUE,
-        Font = Enum.Font.SourceSansBold,
         TextSize = CONFIG.TEXT_SIZES.HEADER,
+        Font = Enum.Font.SourceSansBold,
         BackgroundTransparency = 1,
-        Parent = mainContainer
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = headerContainer
     })
     
-    -- Create player info container below welcome text
+    -- Create player info container
     local playerInfoContainer = createUIElement("Frame", {
-        Size = UDim2.new(1, 0, 1, -40),  -- Leave space for welcome text
-        Position = UDim2.new(0, 0, 0, 40),
+        Size = UDim2.new(1, 0, 1, -50),
+        Position = UDim2.new(0, 0, 0, 50),
         BackgroundTransparency = 1,
-        Parent = mainContainer
+        Parent = container
     })
     
-    -- Update player info display
+    -- Update player info display with animations
     updatePlayerInfoDisplay(playerInfoContainer)
 end
 
@@ -663,229 +815,25 @@ local function createDropdown(parent, options, callback)
 end
 
 local buttonList = {
-    { "Overview", "View your player information and hub status.", showOverviewContent },
+    { "Overview", "View your player information and hub status.", showOverviewContent, "rbxassetid://3926305904", Vector2.new(964, 204) }, -- User icon
     { "Auto Farm", "Configure and control auto-farming settings.", function(contentFrame)
-        -- Create auto farm settings container
-        local container = createUIElement("Frame", {
-            Size = UDim2.new(1, -20, 1, -20),
-            Position = UDim2.new(0, 10, 0, 10),
-            BackgroundTransparency = 1,
-            Parent = contentFrame
-        })
-        
-        -- Add auto farm settings here
-        local title = createUIElement("TextLabel", {
-            Size = UDim2.new(1, 0, 0, 30),
-            Text = "Auto Farm Settings",
-            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
-            Font = Enum.Font.SourceSansBold,
-            TextSize = CONFIG.TEXT_SIZES.HEADER,
-            BackgroundTransparency = 1,
-            Parent = container
-        })
-        
-        -- Add farm settings controls
-        local settingsContainer = createUIElement("Frame", {
-            Size = UDim2.new(1, 0, 1, -40),
-            Position = UDim2.new(0, 0, 0, 40),
-            BackgroundTransparency = 1,
-            Parent = container
-        })
-        
-        -- Add your auto farm settings UI elements here
-    end },
-    { "Farming Tweaks", "Adjust farming settings and configurations.", function(contentFrame)
-        local container = createUIElement("Frame", {
-            Size = UDim2.new(1, -20, 1, -20),
-            Position = UDim2.new(0, 10, 0, 10),
-            BackgroundTransparency = 1,
-            Parent = contentFrame
-        })
-        
-        local title = createUIElement("TextLabel", {
-            Size = UDim2.new(1, 0, 0, 30),
-            Text = "Farming Tweaks",
-            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
-            Font = Enum.Font.SourceSansBold,
-            TextSize = CONFIG.TEXT_SIZES.HEADER,
-            BackgroundTransparency = 1,
-            Parent = container
-        })
-        
-        -- Add farming tweaks UI elements here
-    end },
-    { "Sea Events", "Monitor and interact with sea-based events.", function(contentFrame)
-        local container = createUIElement("Frame", {
-            Size = UDim2.new(1, -20, 1, -20),
-            Position = UDim2.new(0, 10, 0, 10),
-            BackgroundTransparency = 1,
-            Parent = contentFrame
-        })
-        
-        local title = createUIElement("TextLabel", {
-            Size = UDim2.new(1, 0, 0, 30),
-            Text = "Sea Events",
-            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
-            Font = Enum.Font.SourceSansBold,
-            TextSize = CONFIG.TEXT_SIZES.HEADER,
-            BackgroundTransparency = 1,
-            Parent = container
-        })
-        
-        -- Add sea events UI elements here
-    end },
-    { "Teleport", "Teleport to various locations.", function(contentFrame)
-        local container = createUIElement("Frame", {
-            Size = UDim2.new(1, -20, 1, -20),
-            Position = UDim2.new(0, 10, 0, 10),
-            BackgroundTransparency = 1,
-            Parent = contentFrame
-        })
-        
-        local title = createUIElement("TextLabel", {
-            Size = UDim2.new(1, 0, 0, 30),
-            Text = "Teleport Locations",
-            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
-            Font = Enum.Font.SourceSansBold,
-            TextSize = CONFIG.TEXT_SIZES.HEADER,
-            BackgroundTransparency = 1,
-            Parent = container
-        })
-        
-        -- Add teleport location buttons here
-    end },
-    { "Fruit Tweaks", "Customize fruit-related settings and tweaks.", function(contentFrame)
-        local container = createUIElement("Frame", {
-            Size = UDim2.new(1, -20, 1, -20),
-            Position = UDim2.new(0, 10, 0, 10),
-            BackgroundTransparency = 1,
-            Parent = contentFrame
-        })
-        
-        local title = createUIElement("TextLabel", {
-            Size = UDim2.new(1, 0, 0, 30),
-            Text = "Fruit Tweaks",
-            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
-            Font = Enum.Font.SourceSansBold,
-            TextSize = CONFIG.TEXT_SIZES.HEADER,
-            BackgroundTransparency = 1,
-            Parent = container
-        })
-        
-        -- Add fruit tweaks UI elements here
-    end },
-    { "Miscellaneous", "Access other features and tools.", function(contentFrame)
-        local container = createUIElement("Frame", {
-            Size = UDim2.new(1, -20, 1, -20),
-            Position = UDim2.new(0, 10, 0, 10),
-            BackgroundTransparency = 1,
-            Parent = contentFrame
-        })
-        
-        local title = createUIElement("TextLabel", {
-            Size = UDim2.new(1, 0, 0, 30),
-            Text = "Miscellaneous Features",
-            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
-            Font = Enum.Font.SourceSansBold,
-            TextSize = CONFIG.TEXT_SIZES.HEADER,
-            BackgroundTransparency = 1,
-            Parent = container
-        })
-        
-        -- Add miscellaneous feature UI elements here
-    end },
-    { "UI Settings", "Modify and personalize the UI.", function(contentFrame)
-        local container = createUIElement("Frame", {
-            Size = UDim2.new(1, -20, 1, -20),
-            Position = UDim2.new(0, 10, 0, 10),
-            BackgroundTransparency = 1,
-            Parent = contentFrame
-        })
-        
-        local title = createUIElement("TextLabel", {
-            Size = UDim2.new(1, 0, 0, 30),
-            Text = "UI Settings",
-            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
-            Font = Enum.Font.SourceSansBold,
-            TextSize = CONFIG.TEXT_SIZES.HEADER,
-            BackgroundTransparency = 1,
-            Parent = container
-        })
-        
-        -- Size settings section
-        local sizeSection = createUIElement("Frame", {
-            Size = UDim2.new(1, 0, 0, 80),
-            Position = UDim2.new(0, 0, 0, 40),
-            BackgroundTransparency = 1,
-            Parent = container
-        })
-        
-        local sizeLabel = createUIElement("TextLabel", {
-            Size = UDim2.new(1, 0, 0, 20),
-            Text = "UI Size",
-            TextColor3 = CONFIG.COLORS.TEXT,
-            Font = Enum.Font.SourceSansBold,
-            TextSize = CONFIG.TEXT_SIZES.BODY,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            BackgroundTransparency = 1,
-            Parent = sizeSection
-        })
-        
-        -- Create size dropdown
-        local sizeOptions = {"Small", "Medium", "Large"}
-        createDropdown(sizeSection, sizeOptions, function(selected)
-            local preset = CONFIG.SIZE_PRESETS[selected:upper()]
-            if preset then
-                updateUISize(preset.width, preset.height)
-            end
-        end)
-    end },
-    { "Settings", "General settings for the hub.", function(contentFrame)
-        local container = createUIElement("Frame", {
-            Size = UDim2.new(1, -20, 1, -20),
-            Position = UDim2.new(0, 10, 0, 10),
-            BackgroundTransparency = 1,
-            Parent = contentFrame
-        })
-        
-        local title = createUIElement("TextLabel", {
-            Size = UDim2.new(1, 0, 0, 30),
-            Text = "Settings",
-            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
-            Font = Enum.Font.SourceSansBold,
-            TextSize = CONFIG.TEXT_SIZES.HEADER,
-            BackgroundTransparency = 1,
-            Parent = container
-        })
-        
-        -- Add settings controls here
-    end },
-    { "Help & Feedback", "Provide feedback or get help.", function(contentFrame)
-        local container = createUIElement("Frame", {
-            Size = UDim2.new(1, -20, 1, -20),
-            Position = UDim2.new(0, 10, 0, 10),
-            BackgroundTransparency = 1,
-            Parent = contentFrame
-        })
-        
-        local title = createUIElement("TextLabel", {
-            Size = UDim2.new(1, 0, 0, 30),
-            Text = "Help & Feedback",
-            TextColor3 = CONFIG.COLORS.VERSION_BLUE,
-            Font = Enum.Font.SourceSansBold,
-            TextSize = CONFIG.TEXT_SIZES.HEADER,
-            BackgroundTransparency = 1,
-            Parent = container
-        })
-        
-        -- Add help and feedback UI elements here
-    end }
+        -- Auto farm content
+    end, "rbxassetid://3926307971", Vector2.new(964, 4) }, -- Target/farming icon
+    { "Teleport", "Quick access to various locations.", function(contentFrame)
+        -- Teleport content
+    end, "rbxassetid://3926305904", Vector2.new(924, 684) }, -- Navigation icon
+    { "UI Settings", "Customize the interface appearance.", function(contentFrame)
+        -- Settings content
+    end, "rbxassetid://3926307971", Vector2.new(84, 44) }, -- Gear icon
+    { "Help", "Get help and provide feedback.", function(contentFrame)
+        -- Help content
+    end, "rbxassetid://3926305904", Vector2.new(204, 644) }  -- Question mark icon
 }
 
 -- Create buttons and set Overview as default active
 local buttons = {}
 for i, btnInfo in ipairs(buttonList) do
-    local button = createSidebarButton(btnInfo[1], (i-1)*(CONFIG.BUTTON_HEIGHT + CONFIG.BUTTON_SPACING), btnInfo[2], btnInfo[3])
+    local button = createSidebarButton(btnInfo[1], (i-1)*(CONFIG.BUTTON_HEIGHT + CONFIG.BUTTON_SPACING), btnInfo[2], btnInfo[3], btnInfo[4])
     buttons[i] = button
     
     -- Activate Overview button by default
@@ -895,6 +843,10 @@ for i, btnInfo in ipairs(buttonList) do
         local indicator = button:FindFirstChild("Frame")
         if indicator then
             indicator.BackgroundTransparency = 0
+        end
+        local icon = button:FindFirstChild("ImageLabel")
+        if icon then
+            icon.ImageColor3 = CONFIG.COLORS.VERSION_BLUE
         end
         if btnInfo[3] then
             btnInfo[3](ContentArea)
