@@ -218,24 +218,91 @@ MenuFrame.Name = "MenuFrame"
 MenuFrame.Parent = MainFrame
 MenuFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 MenuFrame.Position = UDim2.new(0, 0, 0, 24)
-MenuFrame.Size = UDim2.new(0, 75, 1, -24)  -- Even narrower menu
+MenuFrame.Size = UDim2.new(0, 75, 1, -24)
 
-local menuLayout = Instance.new("UIListLayout")
-menuLayout.Parent = MenuFrame
-menuLayout.SortOrder = Enum.SortOrder.LayoutOrder
-menuLayout.Padding = UDim.new(0, 3)  -- Tighter padding
-menuLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+-- Add corner radius to MenuFrame
+local menuCorner = Instance.new("UICorner")
+menuCorner.Parent = MenuFrame
+menuCorner.CornerRadius = UDim.new(0, 8)
 
--- Menu Padding
-local menuPadding = Instance.new("UIPadding")
-menuPadding.Parent = MenuFrame
-menuPadding.PaddingTop = UDim.new(0, 4)  -- Less top padding
+-- Add a frame to cover the top corners of MenuFrame
+local menuTopCover = Instance.new("Frame")
+menuTopCover.Name = "MenuTopCover"
+menuTopCover.Parent = MenuFrame
+menuTopCover.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+menuTopCover.BorderSizePixel = 0
+menuTopCover.Position = UDim2.new(0, 0, 0, 0)
+menuTopCover.Size = UDim2.new(1, 0, 0, 10)
 
--- Menu Divider
-MenuDivider.Parent = MainFrame
-MenuDivider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-MenuDivider.Position = UDim2.new(0, 75, 0, 24)
-MenuDivider.Size = UDim2.new(0, 1, 1, -24)
+-- Section spacing and organization
+UIListLayout.Parent = StatsFrame
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 6)  -- Increased spacing between major sections
+
+-- Update the section header style
+local function CreateSectionHeader(text)
+    local header = Instance.new("Frame")
+    header.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    header.Size = UDim2.new(1, 0, 0, 22)
+    
+    local headerLabel = Instance.new("TextLabel")
+    headerLabel.Parent = header
+    headerLabel.BackgroundTransparency = 1
+    headerLabel.Position = UDim2.new(0, 8, 0, 0)
+    headerLabel.Size = UDim2.new(1, -16, 1, 0)
+    headerLabel.Font = Enum.Font.GothamBold
+    headerLabel.Text = text
+    headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    headerLabel.TextSize = 11
+    headerLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local headerCorner = Instance.new("UICorner")
+    headerCorner.Parent = header
+    headerCorner.CornerRadius = UDim.new(0, 4)
+    
+    return header
+end
+
+-- Update section style
+local function CreateSection()
+    local section = Instance.new("Frame")
+    section.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    section.Size = UDim2.new(1, 0, 0, 0)  -- Height will be set dynamically
+    
+    local sectionCorner = Instance.new("UICorner")
+    sectionCorner.Parent = section
+    sectionCorner.CornerRadius = UDim.new(0, 4)
+    
+    local sectionPadding = Instance.new("UIPadding")
+    sectionPadding.Parent = section
+    sectionPadding.PaddingTop = UDim.new(0, 6)
+    sectionPadding.PaddingBottom = UDim.new(0, 6)
+    sectionPadding.PaddingLeft = UDim.new(0, 8)
+    sectionPadding.PaddingRight = UDim.new(0, 8)
+    
+    local sectionList = Instance.new("UIListLayout")
+    sectionList.Parent = section
+    sectionList.SortOrder = Enum.SortOrder.LayoutOrder
+    sectionList.Padding = UDim.new(0, 4)  -- Consistent spacing within sections
+    
+    return section, sectionList
+end
+
+-- Update section sizes function
+local function updateSectionSizes()
+    local function updateSection(section, list)
+        local contentSize = list.AbsoluteContentSize
+        section.Size = UDim2.new(1, 0, 0, contentSize.Y + 12)  -- Increased padding
+    end
+    
+    updateSection(basicInfoSection, basicInfoList)
+    updateSection(combatSection, combatList)
+    updateSection(equipmentSection, equipmentList)
+    
+    -- Update overall canvas size
+    local totalSize = UIListLayout.AbsoluteContentSize
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, totalSize.Y + 12)
+end
 
 -- Create Menu Button
 local function CreateMenuButton(name)
@@ -276,55 +343,6 @@ local function CreateInfoLabel()
     return label
 end
 
--- Create Section Header Function
-local function CreateSectionHeader(text)
-    local header = Instance.new("Frame")
-    header.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    header.Size = UDim2.new(1, 0, 0, 22)
-    
-    local headerLabel = Instance.new("TextLabel")
-    headerLabel.Parent = header
-    headerLabel.BackgroundTransparency = 1
-    headerLabel.Position = UDim2.new(0, 8, 0, 0)
-    headerLabel.Size = UDim2.new(1, -16, 1, 0)
-    headerLabel.Font = Enum.Font.GothamBold
-    headerLabel.Text = text
-    headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    headerLabel.TextSize = 11
-    headerLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local headerCorner = Instance.new("UICorner")
-    headerCorner.Parent = header
-    headerCorner.CornerRadius = UDim.new(0, 3)
-    
-    return header
-end
-
--- Create Section Function
-local function CreateSection()
-    local section = Instance.new("Frame")
-    section.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    section.Size = UDim2.new(1, 0, 0, 0)  -- Height will be set dynamically
-    
-    local sectionCorner = Instance.new("UICorner")
-    sectionCorner.Parent = section
-    sectionCorner.CornerRadius = UDim.new(0, 3)
-    
-    local sectionPadding = Instance.new("UIPadding")
-    sectionPadding.Parent = section
-    sectionPadding.PaddingTop = UDim.new(0, 4)
-    sectionPadding.PaddingBottom = UDim.new(0, 4)
-    sectionPadding.PaddingLeft = UDim.new(0, 8)
-    sectionPadding.PaddingRight = UDim.new(0, 8)
-    
-    local sectionList = Instance.new("UIListLayout")
-    sectionList.Parent = section
-    sectionList.SortOrder = Enum.SortOrder.LayoutOrder
-    sectionList.Padding = UDim.new(0, 2)
-    
-    return section, sectionList
-end
-
 -- Create sections for different types of information
 local basicInfoSection, basicInfoList = CreateSection()
 basicInfoSection.Parent = StatsFrame
@@ -362,22 +380,6 @@ FightingStyleLabel.Parent = combatSection
 DevilFruitLabel.Parent = combatSection
 
 SwordLabel.Parent = equipmentSection
-
--- Update function to handle section sizes
-local function updateSectionSizes()
-    local function updateSection(section, list)
-        local contentSize = list.AbsoluteContentSize
-        section.Size = UDim2.new(1, 0, 0, contentSize.Y + 8)  -- Add padding
-    end
-    
-    updateSection(basicInfoSection, basicInfoList)
-    updateSection(combatSection, combatList)
-    updateSection(equipmentSection, equipmentList)
-    
-    -- Update overall canvas size
-    local totalSize = UIListLayout.AbsoluteContentSize
-    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, totalSize.Y + 8)
-end
 
 -- Connect size updates
 basicInfoList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSizes)
@@ -545,5 +547,8 @@ menuButtons[3].MouseButton1Click:Connect(function()
     -- Add settings frame logic here
 end)
 
--- Update UIListLayout padding
-UIListLayout.Padding = UDim.new(0, 2)  -- Tighter spacing between items
+-- Menu Divider
+MenuDivider.Parent = MainFrame
+MenuDivider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+MenuDivider.Position = UDim2.new(0, 75, 0, 24)
+MenuDivider.Size = UDim2.new(0, 1, 1, -24)
