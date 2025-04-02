@@ -7,6 +7,28 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
+-- Utility Functions
+local function safeGet(instance, ...)
+    local current = instance
+    for _, propertyName in ipairs({...}) do
+        if not current then return nil end
+        current = current:FindFirstChild(propertyName)
+    end
+    return current
+end
+
+local function getItemsWithProperty(container, propertyName)
+    local items = {}
+    if not container then return items end
+    
+    for _, item in ipairs(container:GetChildren()) do
+        if item:FindFirstChild(propertyName) then
+            table.insert(items, item.Name)
+        end
+    end
+    return items
+end
+
 -- Constants for configuration
 local CONFIG = {
     UPDATE_INTERVAL = 0.1,
@@ -816,86 +838,21 @@ SettingsList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     SettingsContainer.CanvasSize = UDim2.new(0, 0, 0, SettingsList.AbsoluteContentSize.Y + 24)
 end)
 
--- Update Function
-local lastUpdate = 0
+-- Stats update function
 local function updateStats()
-    -- Throttle updates
-    local now = tick()
-    if now - lastUpdate < CONFIG.UPDATE_INTERVAL then return end
-    lastUpdate = now
+    -- Only update if containers exist
+    if not ContentScroll then return end
     
-    -- Get character safely
+    -- Get player containers
     local character = LocalPlayer.Character
-    if not character then return end
-    
-    -- Update Basic Info
-    local leaderstats = safeGet(LocalPlayer, "leaderstats")
-    if leaderstats then
-        local level = safeGet(leaderstats, "Level")
-        local beli = safeGet(leaderstats, "Beli")
-        local fragments = safeGet(leaderstats, "Fragments")
-        
-        if level then LevelValue.Text = tostring(level.Value) end
-        if beli then BelliValue.Text = tostring(beli.Value) end
-        if fragments then FragmentsValue.Text = tostring(fragments.Value) end
-    end
-    
-    -- Update Race
-    local race = safeGet(LocalPlayer, "Data", "Race")
-    if race then
-        RaceValue.Text = tostring(race.Value)
-    else
-        RaceValue.Text = "Unknown"
-    end
-    
-    -- Update Health
-    local humanoid = safeGet(character, "Humanoid")
-    if humanoid then
-        local healthPercent = humanoid.Health / humanoid.MaxHealth
-        local healthColor = healthPercent > 0.5 and CONFIG.COLORS.POSITIVE
-            or healthPercent > 0.25 and CONFIG.COLORS.WARNING
-            or CONFIG.COLORS.NEGATIVE
-        
-        HealthValue.TextColor3 = healthColor
-        HealthValue.Text = string.format("%d/%d", humanoid.Health, humanoid.MaxHealth)
-    end
-    
-    -- Get inventory items
     local backpack = LocalPlayer:FindFirstChild("Backpack")
-    if backpack and character then
-        -- Update Fighting Styles
-        local fightingStyles = {}
-        for _, container in ipairs({backpack, character}) do
-            for _, item in ipairs(getItemsWithProperty(container, "FightingStyle")) do
-                table.insert(fightingStyles, item)
-            end
-        end
-        FightingStyleValue.Text = #fightingStyles > 0 
-            and table.concat(fightingStyles, ", ")
-            or "None"
-            
-        -- Update Devil Fruits
-        local devilFruits = {}
-        for _, container in ipairs({backpack, character}) do
-            for _, item in ipairs(getItemsWithProperty(container, "DevilFruit")) do
-                table.insert(devilFruits, item)
-            end
-        end
-        DevilFruitValue.Text = #devilFruits > 0
-            and table.concat(devilFruits, ", ")
-            or "None"
-            
-        -- Update Swords
-        local swords = {}
-        for _, container in ipairs({backpack, character}) do
-            for _, item in ipairs(getItemsWithProperty(container, "SwordTool")) do
-                table.insert(swords, item)
-            end
-        end
-        SwordValue.Text = #swords > 0
-            and table.concat(swords, ", ")
-            or "None"
-    end
+    
+    if not character or not backpack then return end
+    
+    -- Update stats here if needed
+    -- For now, we'll just update the canvas size
+    ContentScroll.CanvasSize = UDim2.new(0, 0, 0, ContentList.AbsoluteContentSize.Y + 16)
+    SettingsScroll.CanvasSize = UDim2.new(0, 0, 0, SettingsList.AbsoluteContentSize.Y + 16)
 end
 
 -- Connect update loop with error handling
@@ -906,8 +863,13 @@ local function safeUpdate()
     end
 end
 
--- Start update loop
-RunService.RenderStepped:Connect(safeUpdate)
+-- Start update loop with a lower frequency
+task.spawn(function()
+    while true do
+        safeUpdate()
+        task.wait(0.5) -- Update every 0.5 seconds instead of every frame
+    end
+end)
 
 -- Clean up on script end
 local function cleanup()
@@ -916,7 +878,7 @@ local function cleanup()
     end
 end
 
-ScreenGui.Destroying:Connect(cleanup)
+game:BindToClose(cleanup)
 
 -- Close Button Handler
 CloseButton.MouseButton1Click:Connect(function()
