@@ -22,27 +22,22 @@ local CONFIG = {
     TITLE_HEIGHT = 30
 }
 
--- Menu items with icons
+-- Menu items with icons and layout order
 local MENU_ITEMS = {
-    {order = 1, name = "Overview", icon = "👤"},     -- Profile
-    {order = 2, name = "Farming", icon = "🏰"},      -- Castle
-    {order = 3, name = "Sea Events", icon = "🌊"},   -- Wave
-    {order = 4, name = "Islands", icon = "🏝️"},     -- Island
-    {order = 5, name = "Quests/Raids", icon = "⚔️"}, -- Crossed swords
-    {order = 6, name = "Fruit", icon = "🍒"},        -- Cherry
-    {order = 7, name = "Teleport", icon = "⚡"},     -- Lightning
-    {order = 8, name = "Status", icon = "📜"},       -- Scroll
-    {order = 9, name = "Visual", icon = "👁️"},       -- Eye
-    {order = 10, name = "Shop", icon = "🛒"},        -- Shopping cart
-    {order = 11, name = "Misc.", icon = "🔩"},       -- Nut and bolt
-    {order = 12, name = "Settings", icon = "⚙️"},    -- Gear
-    {order = 13, name = "Feedback", icon = "💬"}     -- Speech bubble
+    {layoutOrder = 1, name = "Overview", icon = "👤"},     -- Profile
+    {layoutOrder = 2, name = "Farming", icon = "🏰"},      -- Castle
+    {layoutOrder = 3, name = "Sea Events", icon = "🌊"},   -- Wave
+    {layoutOrder = 4, name = "Islands", icon = "🏝️"},     -- Island
+    {layoutOrder = 5, name = "Quests/Raids", icon = "⚔️"}, -- Crossed swords
+    {layoutOrder = 6, name = "Fruit", icon = "🍒"},        -- Cherry
+    {layoutOrder = 7, name = "Teleport", icon = "⚡"},     -- Lightning
+    {layoutOrder = 8, name = "Status", icon = "📜"},       -- Scroll
+    {layoutOrder = 9, name = "Visual", icon = "👁️"},       -- Eye
+    {layoutOrder = 10, name = "Shop", icon = "🛒"},        -- Shopping cart
+    {layoutOrder = 11, name = "Misc.", icon = "🔩"},       -- Nut and bolt
+    {layoutOrder = 12, name = "Settings", icon = "⚙️"},    -- Gear
+    {layoutOrder = 13, name = "Feedback", icon = "💬"}     -- Speech bubble
 }
-
--- Sort menu items by order
-table.sort(MENU_ITEMS, function(a, b)
-    return a.order < b.order
-end)
 
 -- Function to get wireframe version of text
 local function getWireframeIcon(icon)
@@ -122,28 +117,20 @@ CloseButton.TextSize = 20
 CloseButton.Font = Enum.Font.SourceSansBold
 CloseButton.Parent = TitleBar
 
--- Create side menu container
-local MenuContainer = Instance.new("Frame")
-MenuContainer.Name = "MenuContainer"
-MenuContainer.Size = UDim2.new(0, CONFIG.MENU_WIDTH, 1, -CONFIG.TITLE_HEIGHT)
-MenuContainer.Position = UDim2.new(0, 0, 0, CONFIG.TITLE_HEIGHT)
-MenuContainer.BackgroundTransparency = 1
-MenuContainer.Parent = MainFrame
-
--- Create scrolling frame for menu items
+-- Create ScrollingFrame for menu items
 local MenuScroll = Instance.new("ScrollingFrame")
 MenuScroll.Name = "MenuScroll"
-MenuScroll.Size = UDim2.new(1, -5, 1, -5)
-MenuScroll.Position = UDim2.new(0, 5, 0, 5)
+MenuScroll.Size = UDim2.new(1, -10, 1, -50)
+MenuScroll.Position = UDim2.new(0, 5, 0, 45)
 MenuScroll.BackgroundTransparency = 1
-MenuScroll.BorderSizePixel = 0
-MenuScroll.ScrollBarThickness = 2
-MenuScroll.ScrollBarImageColor3 = CONFIG.THEME.ACCENT
-MenuScroll.Parent = MenuContainer
+MenuScroll.ScrollBarThickness = 0
+MenuScroll.Parent = MainFrame
 
--- Add list layout for menu items
+-- Create UIListLayout
 local ListLayout = Instance.new("UIListLayout")
-ListLayout.Padding = UDim.new(0, 4)
+ListLayout.Name = "ListLayout"
+ListLayout.Padding = UDim.new(0, 5)
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 ListLayout.Parent = MenuScroll
 
 -- Create menu buttons
@@ -154,6 +141,7 @@ for _, item in ipairs(MENU_ITEMS) do
     Button.Size = UDim2.new(1, -10, 0, 30)
     Button.BackgroundTransparency = 1
     Button.Text = ""
+    Button.LayoutOrder = item.layoutOrder
     Button.Parent = MenuScroll
     
     -- Create icon
