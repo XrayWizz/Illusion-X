@@ -123,24 +123,6 @@ local MENU_ITEMS = {
     {layoutOrder = 13, name = "Feedback", icon = "💬"}     -- Speech bubble
 }
 
--- Function to get wireframe version of text
-local function getWireframeIcon(icon)
-    -- Map regular icons to wireframe versions where possible
-    local wireframeMap = {
-        ["👤"] = "󰀄",  -- Person wireframe
-        ["🏠"] = "󱃾",  -- Simple house wireframe (just outline and door)
-        ["⚔️"] = "󰢤",  -- Sword wireframe
-        ["🧭"] = "󰑣",  -- Compass wireframe
-        ["📜"] = "󰈙",  -- Scroll/document wireframe
-        ["👁️"] = "󰈈",  -- Eye wireframe
-        ["🛒"] = "󰒋",  -- Cart wireframe
-        ["🔧"] = "󰖷",  -- Tools wireframe
-        ["⚙️"] = "󰒓",  -- Gear wireframe
-        ["💬"] = "󰍩",  -- Chat wireframe
-    }
-    return wireframeMap[icon] or icon
-end
-
 -- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "SuperGui"
