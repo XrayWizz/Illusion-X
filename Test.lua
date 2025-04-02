@@ -520,20 +520,48 @@ local function createTeleportButton(island, posY)
             currentDestination = island
             local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
             
-            -- Set the CFrame directly
-            humanoidRootPart.CFrame = island.cframe
-            
-            -- Check if player reached destination
-            local function checkDestination()
-                wait(0.5) -- Wait for teleport
-                if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    local distance = (player.Character.HumanoidRootPart.Position - island.cframe.Position).Magnitude
-                    if distance < 50 then -- If player is within 50 studs of destination
-                        disableTeleport()
-                    end
-                end
+            -- Disable character movement during teleport
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.PlatformStand = true
             end
-            coroutine.wrap(checkDestination)()
+            
+            -- Smooth teleport implementation
+            local startPos = humanoidRootPart.Position
+            local endPos = island.cframe.Position
+            local startTime = tick()
+            local duration = 0.5 -- Teleport duration in seconds
+            
+            -- Create a connection to update position
+            local teleportConnection
+            teleportConnection = game:GetService("RunService").RenderStepped:Connect(function()
+                local elapsed = tick() - startTime
+                local alpha = math.min(elapsed / duration, 1)
+                
+                -- Smooth lerp
+                if humanoidRootPart and humanoidRootPart.Parent then
+                    local newPos = startPos:Lerp(endPos, alpha)
+                    humanoidRootPart.CFrame = CFrame.new(newPos) * island.cframe.Rotation
+                    
+                    -- If teleport is complete
+                    if alpha >= 1 then
+                        teleportConnection:Disconnect()
+                        
+                        -- Re-enable character movement
+                        if humanoid then
+                            humanoid.PlatformStand = false
+                        end
+                        
+                        -- Check if teleport was successful
+                        local finalDistance = (humanoidRootPart.Position - endPos).Magnitude
+                        if finalDistance < 50 then
+                            disableTeleport()
+                        end
+                    end
+                else
+                    teleportConnection:Disconnect()
+                end
+            end)
         end
     end)
     
