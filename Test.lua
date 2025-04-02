@@ -24,19 +24,19 @@ local CONFIG = {
 
 -- Menu items with icons
 local MENU_ITEMS = {
-    {name = "Overview", icon = "👤"},  -- Profile icon
-    {name = "Farming", icon = "🏠"},   -- House icon
-    {name = "Sea Events", icon = "🌊"},
-    {name = "Islands", icon = "🏝️"},
-    {name = "Quests/Raids", icon = "⚔️"},
-    {name = "Fruit", icon = "🍒"},     -- Cherry icon
-    {name = "Teleport", icon = "🧭"},  -- Compass icon
-    {name = "Status", icon = "📜"},    -- Scroll icon
-    {name = "Visual", icon = "👁️"},
-    {name = "Shop", icon = "🛒"},
-    {name = "Misc.", icon = "🔧"},
-    {name = "Settings", icon = "⚙️"},
-    {name = "Feedback", icon = "💬"}
+    {name = "Overview", icon = "👤"},    -- Profile icon
+    {name = "Farming", icon = "🏡"},     -- Simple house
+    {name = "Sea Events", icon = "🌊"},  -- Wave
+    {name = "Islands", icon = "🏝️"},    -- Island
+    {name = "Quests/Raids", icon = "⚔️"}, -- Swords
+    {name = "Fruit", icon = "🍒"},       -- Cherry
+    {name = "Teleport", icon = "🧭"},    -- Compass
+    {name = "Status", icon = "📜"},      -- Scroll
+    {name = "Visual", icon = "👁️"},      -- Eye
+    {name = "Shop", icon = "🛒"},        -- Cart
+    {name = "Misc.", icon = "🔧"},       -- Wrench
+    {name = "Settings", icon = "⚙️"},    -- Gear
+    {name = "Feedback", icon = "💬"}     -- Chat
 }
 
 -- Function to get wireframe version of text
@@ -157,7 +157,7 @@ for _, item in ipairs(MENU_ITEMS) do
     Icon.Size = UDim2.new(0, 30, 1, 0)
     Icon.Position = UDim2.new(0, 0, 0, 0)
     Icon.BackgroundTransparency = 1
-    Icon.Text = getWireframeIcon(item.icon)
+    Icon.Text = item.icon
     Icon.TextColor3 = CONFIG.THEME.TEXT_SECONDARY
     Icon.TextSize = 16
     Icon.Font = Enum.Font.SourceSansBold
