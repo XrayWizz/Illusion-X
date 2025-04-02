@@ -19,7 +19,21 @@ local CONFIG = {
         WIDTH = 600,
         HEIGHT = 350
     },
-    TITLE_HEIGHT = 30
+    TITLE_HEIGHT = 30,
+    SIZES = {
+        Small = {
+            WIDTH = 400,
+            HEIGHT = 300
+        },
+        Normal = {
+            WIDTH = 500,
+            HEIGHT = 350
+        },
+        Large = {
+            WIDTH = 600,
+            HEIGHT = 400
+        }
+    }
 }
 
 -- Menu items with icons and layout order
@@ -179,6 +193,83 @@ local function createInfoLabel(text, posY)
     return label
 end
 
+-- Create dropdown menu
+local function createDropdown(options, defaultOption, callback, posY)
+    local dropdownContainer = Instance.new("Frame")
+    dropdownContainer.Size = UDim2.new(1, -40, 0, 30)
+    dropdownContainer.Position = UDim2.new(0, 20, 0, posY)
+    dropdownContainer.BackgroundTransparency = 0.9
+    dropdownContainer.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    dropdownContainer.BorderSizePixel = 0
+
+    local dropdownButton = Instance.new("TextButton")
+    dropdownButton.Size = UDim2.new(1, 0, 1, 0)
+    dropdownButton.BackgroundTransparency = 1
+    dropdownButton.Text = defaultOption
+    dropdownButton.TextColor3 = CONFIG.THEME.TEXT
+    dropdownButton.TextSize = 14
+    dropdownButton.Font = Enum.Font.SourceSans
+    dropdownButton.Parent = dropdownContainer
+
+    local optionsList = Instance.new("Frame")
+    optionsList.Size = UDim2.new(1, 0, 0, #options * 30)
+    optionsList.Position = UDim2.new(0, 0, 1, 0)
+    optionsList.BackgroundTransparency = 0.9
+    optionsList.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    optionsList.BorderSizePixel = 0
+    optionsList.Visible = false
+    optionsList.ZIndex = 2
+    optionsList.Parent = dropdownContainer
+
+    for i, option in ipairs(options) do
+        local optionButton = Instance.new("TextButton")
+        optionButton.Size = UDim2.new(1, 0, 0, 30)
+        optionButton.Position = UDim2.new(0, 0, 0, (i-1) * 30)
+        optionButton.BackgroundTransparency = 1
+        optionButton.Text = option
+        optionButton.TextColor3 = CONFIG.THEME.TEXT
+        optionButton.TextSize = 14
+        optionButton.Font = Enum.Font.SourceSans
+        optionButton.ZIndex = 2
+        optionButton.Parent = optionsList
+
+        optionButton.MouseButton1Click:Connect(function()
+            dropdownButton.Text = option
+            optionsList.Visible = false
+            callback(option)
+        end)
+
+        optionButton.MouseEnter:Connect(function()
+            TweenService:Create(optionButton, TweenInfo.new(0.2), {
+                BackgroundTransparency = 0.8
+            }):Play()
+        end)
+
+        optionButton.MouseLeave:Connect(function()
+            TweenService:Create(optionButton, TweenInfo.new(0.2), {
+                BackgroundTransparency = 1
+            }):Play()
+        end)
+    end
+
+    dropdownButton.MouseButton1Click:Connect(function()
+        optionsList.Visible = not optionsList.Visible
+    end)
+
+    return dropdownContainer
+end
+
+-- Function to change GUI size
+local function changeGuiSize(sizeName)
+    local size = CONFIG.SIZES[sizeName]
+    local newSize = UDim2.new(0, size.WIDTH, 0, size.HEIGHT)
+    
+    TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+        Size = newSize,
+        Position = UDim2.new(0.5, -size.WIDTH/2, 0.5, -size.HEIGHT/2)
+    }):Play()
+end
+
 -- Create menu buttons
 local selectedButton = nil
 for _, item in ipairs(MENU_ITEMS) do
@@ -266,6 +357,20 @@ for _, item in ipairs(MENU_ITEMS) do
             
             local playerDisplayName = createInfoLabel("Display Name: " .. player.DisplayName, 80)
             playerDisplayName.Parent = ContentArea
+        elseif item.name == "Settings" then
+            -- Create UI Settings section
+            local header = createSectionHeader("UI Settings")
+            header.Parent = ContentArea
+            
+            -- Create size dropdown
+            local sizeLabel = createInfoLabel("GUI Size:", 50)
+            sizeLabel.Parent = ContentArea
+            
+            local sizeOptions = {"Small", "Normal", "Large"}
+            local sizeDropdown = createDropdown(sizeOptions, "Normal", function(selected)
+                changeGuiSize(selected)
+            end, 80)
+            sizeDropdown.Parent = ContentArea
         end
     end)
 end
