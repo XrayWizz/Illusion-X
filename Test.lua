@@ -84,19 +84,19 @@ local CONFIG = {
 
 -- Menu items with icons
 local MENU_ITEMS = {
-    {layoutOrder = 1, name = "Overview", icon = ""},
-    {layoutOrder = 2, name = "Farming", icon = ""},
-    {layoutOrder = 3, name = "Sea Events", icon = ""},
-    {layoutOrder = 4, name = "Islands", icon = ""},
-    {layoutOrder = 5, name = "Quests/Raids", icon = ""},
-    {layoutOrder = 6, name = "Fruit", icon = ""},
-    {layoutOrder = 7, name = "Teleport", icon = ""},
-    {layoutOrder = 8, name = "Status", icon = ""},
-    {layoutOrder = 9, name = "Visual", icon = ""},
-    {layoutOrder = 10, name = "Shop", icon = ""},
-    {layoutOrder = 11, name = "Misc.", icon = ""},
-    {layoutOrder = 12, name = "Settings", icon = ""},
-    {layoutOrder = 13, name = "Feedback", icon = ""}
+    {layoutOrder = 1, name = "Overview", icon = "👤"},     -- Profile
+    {layoutOrder = 2, name = "Farming", icon = "🏰"},      -- Castle
+    {layoutOrder = 3, name = "Sea Events", icon = "🌊"},   -- Wave
+    {layoutOrder = 4, name = "Islands", icon = "🏝️"},     -- Island
+    {layoutOrder = 5, name = "Quests/Raids", icon = "⚔️"}, -- Crossed swords
+    {layoutOrder = 6, name = "Fruit", icon = "🍒"},        -- Cherry
+    {layoutOrder = 7, name = "Teleport", icon = "⚡"},     -- Lightning
+    {layoutOrder = 8, name = "Status", icon = "📜"},       -- Scroll
+    {layoutOrder = 9, name = "Visual", icon = "👁️"},       -- Eye
+    {layoutOrder = 10, name = "Shop", icon = "🛒"},        -- Shopping cart
+    {layoutOrder = 11, name = "Misc.", icon = "🔩"},       -- Nut and bolt
+    {layoutOrder = 12, name = "Settings", icon = "⚙️"},    -- Gear
+    {layoutOrder = 13, name = "Feedback", icon = "💬"}     -- Speech bubble
 }
 
 -- Create ScreenGui
@@ -264,6 +264,305 @@ CloseButton.Parent = TitleBar
 
 CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
+end)
+
+-- Create ScrollingFrame for menu items
+local MenuScroll = Instance.new("ScrollingFrame")
+MenuScroll.Name = "MenuScroll"
+MenuScroll.Size = UDim2.new(0, CONFIG.MENU_WIDTH, 1, -CONFIG.TITLE_HEIGHT - CUSTOM.LAYOUT.PADDING)
+MenuScroll.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CONFIG.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING/2)
+MenuScroll.BackgroundTransparency = 1
+MenuScroll.ScrollBarThickness = 2
+MenuScroll.ScrollBarImageColor3 = CUSTOM.THEME.ACCENT
+MenuScroll.Parent = MainFrame
+
+-- Create UIListLayout for menu items
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.Name = "ListLayout"
+ListLayout.Padding = UDim.new(0, CUSTOM.LAYOUT.PADDING/2)
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout.Parent = MenuScroll
+
+-- Create content area
+local ContentArea = Instance.new("Frame")
+ContentArea.Name = "ContentArea"
+ContentArea.Size = UDim2.new(1, -(CONFIG.MENU_WIDTH + CUSTOM.LAYOUT.PADDING * 3), 1, -(CONFIG.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING * 2))
+ContentArea.Position = UDim2.new(0, CONFIG.MENU_WIDTH + CUSTOM.LAYOUT.PADDING * 2, 0, CONFIG.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING)
+ContentArea.BackgroundColor3 = CUSTOM.THEME.BACKGROUND
+ContentArea.BackgroundTransparency = 0.5
+ContentArea.BorderSizePixel = 0
+ContentArea.Parent = MainFrame
+
+-- Add corner rounding to content area
+local ContentCorner = Instance.new("UICorner")
+ContentCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+ContentCorner.Parent = ContentArea
+
+-- Function to clear content area
+local function clearContentArea()
+    for _, child in ipairs(ContentArea:GetChildren()) do
+        if child:IsA("GuiObject") and child ~= ContentCorner then
+            child:Destroy()
+        end
+    end
+end
+
+-- Function to create section header
+local function createSectionHeader(title)
+    local headerContainer = Instance.new("Frame")
+    headerContainer.Name = "SectionHeader"
+    headerContainer.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    headerContainer.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.PADDING)
+    headerContainer.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    headerContainer.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+    headerContainer.BorderSizePixel = 0
+    
+    -- Add corner rounding
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    corner.Parent = headerContainer
+    
+    -- Add header text
+    local headerText = Instance.new("TextLabel")
+    headerText.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 1, 0)
+    headerText.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, 0)
+    headerText.BackgroundTransparency = 1
+    headerText.Text = title
+    headerText.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+    headerText.TextSize = 16
+    headerText.Font = CUSTOM.FONTS.TITLE
+    headerText.TextXAlignment = Enum.TextXAlignment.Left
+    headerText.Parent = headerContainer
+    
+    return headerContainer
+end
+
+-- Function to create info label
+local function createInfoLabel(text, posY)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    label.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+    label.TextSize = 14
+    label.Font = CUSTOM.FONTS.TEXT
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = ContentArea
+    return label
+end
+
+-- Function to create toggle button
+local function createToggle(text, posY, default)
+    local toggleContainer = Instance.new("Frame")
+    toggleContainer.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    toggleContainer.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
+    toggleContainer.BackgroundTransparency = 1
+    toggleContainer.Parent = ContentArea
+    
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -50, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+    label.TextSize = 14
+    label.Font = CUSTOM.FONTS.TEXT
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = toggleContainer
+    
+    local toggle = Instance.new("TextButton")
+    toggle.Size = UDim2.new(0, 40, 0, 20)
+    toggle.Position = UDim2.new(1, -40, 0.5, -10)
+    toggle.BackgroundColor3 = default and CUSTOM.THEME.ACCENT or CUSTOM.THEME.BUTTON_NORMAL
+    toggle.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+    toggle.Text = ""
+    toggle.Parent = toggleContainer
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    corner.Parent = toggle
+    
+    local circle = Instance.new("Frame")
+    circle.Size = UDim2.new(0, 16, 0, 16)
+    circle.Position = UDim2.new(default and 1 or 0, default and -18 or 2, 0.5, -8)
+    circle.BackgroundColor3 = CUSTOM.THEME.TEXT_PRIMARY
+    circle.Parent = toggle
+    
+    local circleCorner = Instance.new("UICorner")
+    circleCorner.CornerRadius = UDim.new(1, 0)
+    circleCorner.Parent = circle
+    
+    local enabled = default
+    toggle.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        TweenService:Create(toggle, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            BackgroundColor3 = enabled and CUSTOM.THEME.ACCENT or CUSTOM.THEME.BUTTON_NORMAL
+        }):Play()
+        TweenService:Create(circle, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            Position = enabled and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+        }):Play()
+    end)
+    
+    return toggle, enabled
+end
+
+-- Create menu buttons
+local selectedButton = nil
+for _, item in ipairs(MENU_ITEMS) do
+    local Button = Instance.new("TextButton")
+    Button.Name = item.name .. "Button"
+    Button.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    Button.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    Button.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+    Button.Text = ""
+    Button.LayoutOrder = item.layoutOrder
+    Button.Parent = MenuScroll
+    
+    -- Add corner rounding to button
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    ButtonCorner.Parent = Button
+    
+    -- Create icon
+    local Icon = Instance.new("TextLabel")
+    Icon.Name = "Icon"
+    Icon.Size = UDim2.new(0, CUSTOM.LAYOUT.BUTTON_HEIGHT, 1, 0)
+    Icon.Position = UDim2.new(0, 0, 0, 0)
+    Icon.BackgroundTransparency = 1
+    Icon.Text = item.icon
+    Icon.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+    Icon.TextSize = 16
+    Icon.Font = CUSTOM.FONTS.TEXT
+    Icon.Parent = Button
+    
+    -- Create text label
+    local TextLabel = Instance.new("TextLabel")
+    TextLabel.Name = "Text"
+    TextLabel.Size = UDim2.new(1, -CUSTOM.LAYOUT.BUTTON_HEIGHT - CUSTOM.LAYOUT.PADDING, 1, 0)
+    TextLabel.Position = UDim2.new(0, CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING/2, 0, 0)
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Text = item.name
+    TextLabel.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+    TextLabel.TextSize = 14
+    TextLabel.Font = CUSTOM.FONTS.TEXT
+    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TextLabel.Parent = Button
+    
+    -- Button hover effect
+    Button.MouseEnter:Connect(function()
+        if Button ~= selectedButton then
+            TweenService:Create(Button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundTransparency = CUSTOM.THEME.BUTTON_HOVER_TRANSPARENCY,
+                BackgroundColor3 = CUSTOM.THEME.BUTTON_HOVER
+            }):Play()
+            TweenService:Create(Icon, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            }):Play()
+            TweenService:Create(TextLabel, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            }):Play()
+        end
+    end)
+    
+    Button.MouseLeave:Connect(function()
+        if Button ~= selectedButton then
+            TweenService:Create(Button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY,
+                BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+            }):Play()
+            TweenService:Create(Icon, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            }):Play()
+            TweenService:Create(TextLabel, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            }):Play()
+        end
+    end)
+    
+    Button.MouseButton1Click:Connect(function()
+        if selectedButton then
+            TweenService:Create(selectedButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY,
+                BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+            }):Play()
+            TweenService:Create(selectedButton:FindFirstChild("Icon"), TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            }):Play()
+            TweenService:Create(selectedButton:FindFirstChild("Text"), TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            }):Play()
+        end
+        
+        selectedButton = Button
+        TweenService:Create(Button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            BackgroundTransparency = 0,
+            BackgroundColor3 = CUSTOM.THEME.ACCENT
+        }):Play()
+        TweenService:Create(Icon, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        }):Play()
+        TweenService:Create(TextLabel, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        }):Play()
+        
+        clearContentArea()
+        
+        -- Handle content for each section
+        if item.name == "Overview" then
+            local header = createSectionHeader("Player Info")
+            header.Parent = ContentArea
+            
+            local player = game.Players.LocalPlayer
+            createInfoLabel("Username: " .. player.Name, 50)
+            createInfoLabel("Display Name: " .. player.DisplayName, 90)
+            createInfoLabel("Account Age: " .. player.AccountAge .. " days", 130)
+            
+        elseif item.name == "Settings" then
+            local header = createSectionHeader("UI Settings")
+            header.Parent = ContentArea
+            
+            createInfoLabel("GUI Size", 50)
+            local sizeY = 90
+            for _, size in ipairs({"Small", "Normal", "Large"}) do
+                local btn = Instance.new("TextButton")
+                btn.Size = UDim2.new(0, 80, 0, 30)
+                btn.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING + (sizeY - 90), 0, sizeY)
+                btn.BackgroundColor3 = currentState.size == size and CUSTOM.THEME.ACCENT or CUSTOM.THEME.BUTTON_NORMAL
+                btn.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+                btn.Text = size
+                btn.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+                btn.Font = CUSTOM.FONTS.BUTTON
+                btn.Parent = ContentArea
+                
+                local corner = Instance.new("UICorner")
+                corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+                corner.Parent = btn
+                
+                btn.MouseButton1Click:Connect(function()
+                    changeGuiSize(size)
+                end)
+                
+                sizeY = sizeY + 40
+            end
+            
+            local visualHeader = createSectionHeader("Visual Settings")
+            visualHeader.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, sizeY + 20)
+            visualHeader.Parent = ContentArea
+            
+            createToggle("Enable Animations", sizeY + 70, true)
+            createToggle("Show Tooltips", sizeY + 110, true)
+            
+        else
+            local header = createSectionHeader(item.name)
+            header.Parent = ContentArea
+            createInfoLabel("Coming soon...", 50)
+        end
+    end)
+end
+
+-- Update canvas size
+ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    MenuScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y)
 end)
 
 -- Dragging functionality
