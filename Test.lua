@@ -187,13 +187,58 @@ TitleText.Font = Enum.Font.SourceSansBold
 TitleText.TextXAlignment = Enum.TextXAlignment.Left
 TitleText.Parent = TitleBar
 
+-- Create size control buttons
+local function createSizeButton(name, position)
+    local button = Instance.new("TextButton")
+    button.Name = name .. "SizeButton"
+    button.Size = UDim2.new(0, 50, 0, 20)
+    button.Position = UDim2.new(0, position, 0.5, -10)
+    button.BackgroundTransparency = 0.8
+    button.BackgroundColor3 = CONFIG.THEME.ACCENT
+    button.Text = name
+    button.TextColor3 = CONFIG.THEME.TEXT
+    button.TextSize = 12
+    button.Font = Enum.Font.SourceSansBold
+    button.Parent = TitleBar
+    
+    -- Add corner rounding
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 4)
+    corner.Parent = button
+    
+    -- Add click handler
+    button.MouseButton1Click:Connect(function()
+        changeGuiSize(name)
+    end)
+    
+    -- Add hover effect
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {
+            BackgroundTransparency = 0.6
+        }):Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {
+            BackgroundTransparency = 0.8
+        }):Play()
+    end)
+    
+    return button
+end
+
+-- Create size buttons with proper positioning
+local smallButton = createSizeButton("Small", 120)
+local normalButton = createSizeButton("Normal", 180)
+local largeButton = createSizeButton("Large", 240)
+
 -- Create minimize button
 local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Name = "MinimizeButton"
 MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
-MinimizeButton.Position = UDim2.new(1, -60, 0, 0)  -- Position it before close button
+MinimizeButton.Position = UDim2.new(1, -60, 0, 0)
 MinimizeButton.BackgroundTransparency = 1
-MinimizeButton.Text = "─"  -- Minimize symbol
+MinimizeButton.Text = "─"
 MinimizeButton.TextColor3 = CONFIG.THEME.TEXT_SECONDARY
 MinimizeButton.TextSize = 16
 MinimizeButton.Font = Enum.Font.SourceSansBold
@@ -213,45 +258,6 @@ MinimizeButton.MouseLeave:Connect(function()
         TextColor3 = CONFIG.THEME.TEXT_SECONDARY
     }):Play()
 end)
-
--- Create size control buttons
-local SizeControlsFrame = Instance.new("Frame")
-SizeControlsFrame.Name = "SizeControls"
-SizeControlsFrame.Size = UDim2.new(0, 180, 0, 30)
-SizeControlsFrame.Position = UDim2.new(1, -250, 0, 0)  -- Position it before minimize button
-SizeControlsFrame.BackgroundTransparency = 1
-SizeControlsFrame.Parent = TitleBar
-
-local function createSizeButton(name, position)
-    local button = Instance.new("TextButton")
-    button.Name = name .. "SizeButton"
-    button.Size = UDim2.new(0, 50, 1, 0)
-    button.Position = UDim2.new(0, position, 0, 0)
-    button.BackgroundTransparency = 0.8
-    button.BackgroundColor3 = CONFIG.THEME.ACCENT
-    button.Text = name
-    button.TextColor3 = CONFIG.THEME.TEXT
-    button.TextSize = 14
-    button.Font = Enum.Font.SourceSansBold
-    button.Parent = SizeControlsFrame
-    
-    -- Add corner rounding
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 4)
-    corner.Parent = button
-    
-    -- Add click handler
-    button.MouseButton1Click:Connect(function()
-        changeGuiSize(name)
-    end)
-    
-    return button
-end
-
--- Create size buttons
-local smallButton = createSizeButton("Small", 0)
-local normalButton = createSizeButton("Normal", 60)
-local largeButton = createSizeButton("Large", 120)
 
 -- Create close button (updated position)
 local CloseButton = Instance.new("TextButton")
