@@ -11,7 +11,8 @@ local CONFIG = {
         TEXT = Color3.fromRGB(255, 255, 255),
         TEXT_SECONDARY = Color3.fromRGB(180, 180, 180),
         ACCENT = Color3.fromRGB(70, 130, 240),
-        CLOSE_BUTTON = Color3.fromRGB(220, 20, 60)
+        CLOSE_BUTTON = Color3.fromRGB(220, 20, 60),
+        TEXT_PRIMARY = Color3.fromRGB(255, 255, 255)
     },
     CORNER_RADIUS = 6,
     MENU_WIDTH = 150,
@@ -166,17 +167,34 @@ end
 
 -- Function to create section header
 local function createSectionHeader(title)
+    local headerContainer = Instance.new("Frame")
+    headerContainer.Name = "SectionHeader"
+    headerContainer.Size = UDim2.new(1, -20, 0, 35)
+    headerContainer.Position = UDim2.new(0, 10, 0, 10)
+    headerContainer.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    headerContainer.BackgroundTransparency = 0.7
+    headerContainer.BorderSizePixel = 0
+
     local header = Instance.new("TextLabel")
-    header.Name = "SectionHeader"
-    header.Size = UDim2.new(1, -20, 0, 30)
-    header.Position = UDim2.new(0, 10, 0, 10)
+    header.Size = UDim2.new(1, -20, 1, 0)
+    header.Position = UDim2.new(0, 10, 0, 0)
     header.BackgroundTransparency = 1
     header.Text = title
-    header.TextColor3 = CONFIG.THEME.ACCENT
-    header.TextSize = 18
+    header.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
+    header.TextSize = 16
     header.Font = Enum.Font.SourceSansBold
     header.TextXAlignment = Enum.TextXAlignment.Left
-    return header
+    header.Parent = headerContainer
+
+    -- Add subtle accent line on the left
+    local accentLine = Instance.new("Frame")
+    accentLine.Size = UDim2.new(0, 2, 1, -10)
+    accentLine.Position = UDim2.new(0, 0, 0, 5)
+    accentLine.BackgroundColor3 = CONFIG.THEME.ACCENT
+    accentLine.BorderSizePixel = 0
+    accentLine.Parent = headerContainer
+
+    return headerContainer
 end
 
 -- Function to create info label
@@ -196,8 +214,8 @@ end
 -- Create dropdown menu
 local function createDropdown(options, defaultOption, callback, posY)
     local dropdownContainer = Instance.new("Frame")
-    dropdownContainer.Size = UDim2.new(1, -40, 0, 30)
-    dropdownContainer.Position = UDim2.new(0, 20, 0, posY)
+    dropdownContainer.Size = UDim2.new(0, 120, 0, 30)  -- Fixed width for dropdown
+    dropdownContainer.Position = UDim2.new(1, -140, 0, posY)  -- Positioned from right side
     dropdownContainer.BackgroundTransparency = 0.9
     dropdownContainer.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     dropdownContainer.BorderSizePixel = 0
@@ -206,10 +224,21 @@ local function createDropdown(options, defaultOption, callback, posY)
     dropdownButton.Size = UDim2.new(1, 0, 1, 0)
     dropdownButton.BackgroundTransparency = 1
     dropdownButton.Text = defaultOption
-    dropdownButton.TextColor3 = CONFIG.THEME.TEXT
+    dropdownButton.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
     dropdownButton.TextSize = 14
     dropdownButton.Font = Enum.Font.SourceSans
     dropdownButton.Parent = dropdownContainer
+
+    -- Add dropdown arrow
+    local arrow = Instance.new("TextLabel")
+    arrow.Size = UDim2.new(0, 20, 1, 0)
+    arrow.Position = UDim2.new(1, -20, 0, 0)
+    arrow.BackgroundTransparency = 1
+    arrow.Text = "▼"
+    arrow.TextColor3 = CONFIG.THEME.TEXT_SECONDARY
+    arrow.TextSize = 12
+    arrow.Font = Enum.Font.SourceSans
+    arrow.Parent = dropdownButton
 
     local optionsList = Instance.new("Frame")
     optionsList.Size = UDim2.new(1, 0, 0, #options * 30)
@@ -227,7 +256,7 @@ local function createDropdown(options, defaultOption, callback, posY)
         optionButton.Position = UDim2.new(0, 0, 0, (i-1) * 30)
         optionButton.BackgroundTransparency = 1
         optionButton.Text = option
-        optionButton.TextColor3 = CONFIG.THEME.TEXT
+        optionButton.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
         optionButton.TextSize = 14
         optionButton.Font = Enum.Font.SourceSans
         optionButton.ZIndex = 2
@@ -362,15 +391,23 @@ for _, item in ipairs(MENU_ITEMS) do
             local header = createSectionHeader("UI Settings")
             header.Parent = ContentArea
             
-            -- Create size dropdown
-            local sizeLabel = createInfoLabel("GUI Size:", 50)
-            sizeLabel.Parent = ContentArea
+            -- Create size label and dropdown on the same line
+            local settingsContainer = Instance.new("Frame")
+            settingsContainer.Size = UDim2.new(1, -20, 0, 30)
+            settingsContainer.Position = UDim2.new(0, 10, 0, 55)
+            settingsContainer.BackgroundTransparency = 1
+            settingsContainer.Parent = ContentArea
+            
+            local sizeLabel = createInfoLabel("GUI Size:", 0)
+            sizeLabel.Size = UDim2.new(0, 100, 1, 0)  -- Fixed width for label
+            sizeLabel.Position = UDim2.new(0, 10, 0, 0)
+            sizeLabel.Parent = settingsContainer
             
             local sizeOptions = {"Small", "Normal", "Large"}
             local sizeDropdown = createDropdown(sizeOptions, "Normal", function(selected)
                 changeGuiSize(selected)
-            end, 80)
-            sizeDropdown.Parent = ContentArea
+            end, 0)
+            sizeDropdown.Parent = settingsContainer
         end
     end)
 end
