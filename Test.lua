@@ -22,22 +22,40 @@ local CONFIG = {
     TITLE_HEIGHT = 30
 }
 
--- Menu items
+-- Menu items with icons
 local MENU_ITEMS = {
-    "Overview",
-    "Farming",
-    "Sea Events",
-    "Islands",
-    "Quests/Raids",
-    "Fruit",
-    "Teleport",
-    "Status",
-    "Visual",
-    "Shop",
-    "Misc.",
-    "Settings",
-    "Feedback"
+    {name = "Overview", icon = "👤"},  -- Profile icon
+    {name = "Farming", icon = "🏠"},   -- House icon
+    {name = "Sea Events", icon = "🌊"},
+    {name = "Islands", icon = "🏝️"},
+    {name = "Quests/Raids", icon = "⚔️"},
+    {name = "Fruit", icon = "🍒"},     -- Cherry icon
+    {name = "Teleport", icon = "🧭"},  -- Compass icon
+    {name = "Status", icon = "📜"},    -- Scroll icon
+    {name = "Visual", icon = "👁️"},
+    {name = "Shop", icon = "🛒"},
+    {name = "Misc.", icon = "🔧"},
+    {name = "Settings", icon = "⚙️"},
+    {name = "Feedback", icon = "💬"}
 }
+
+-- Function to get wireframe version of text
+local function getWireframeIcon(icon)
+    -- Map regular icons to wireframe versions where possible
+    local wireframeMap = {
+        ["👤"] = "󰀄",  -- Person wireframe
+        ["🏠"] = "󱃾",  -- Simple house wireframe (just outline and door)
+        ["⚔️"] = "󰢤",  -- Sword wireframe
+        ["🧭"] = "󰑣",  -- Compass wireframe
+        ["📜"] = "󰈙",  -- Scroll/document wireframe
+        ["👁️"] = "󰈈",  -- Eye wireframe
+        ["🛒"] = "󰒋",  -- Cart wireframe
+        ["🔧"] = "󰖷",  -- Tools wireframe
+        ["⚙️"] = "󰒓",  -- Gear wireframe
+        ["💬"] = "󰍩",  -- Chat wireframe
+    }
+    return wireframeMap[icon] or icon
+end
 
 -- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
@@ -125,21 +143,45 @@ ListLayout.Parent = MenuScroll
 
 -- Create menu buttons
 local selectedButton = nil
-for _, itemName in ipairs(MENU_ITEMS) do
+for _, item in ipairs(MENU_ITEMS) do
     local Button = Instance.new("TextButton")
-    Button.Name = itemName .. "Button"
+    Button.Name = item.name .. "Button"
     Button.Size = UDim2.new(1, -10, 0, 30)
     Button.BackgroundTransparency = 1
-    Button.Text = itemName
-    Button.TextColor3 = CONFIG.THEME.TEXT_SECONDARY
-    Button.TextSize = 14
-    Button.Font = Enum.Font.SourceSansBold
-    Button.TextXAlignment = Enum.TextXAlignment.Left
+    Button.Text = ""
     Button.Parent = MenuScroll
+    
+    -- Create icon
+    local Icon = Instance.new("TextLabel")
+    Icon.Name = "Icon"
+    Icon.Size = UDim2.new(0, 30, 1, 0)
+    Icon.Position = UDim2.new(0, 0, 0, 0)
+    Icon.BackgroundTransparency = 1
+    Icon.Text = getWireframeIcon(item.icon)
+    Icon.TextColor3 = CONFIG.THEME.TEXT_SECONDARY
+    Icon.TextSize = 16
+    Icon.Font = Enum.Font.SourceSansBold
+    Icon.Parent = Button
+    
+    -- Create text label
+    local TextLabel = Instance.new("TextLabel")
+    TextLabel.Name = "Text"
+    TextLabel.Size = UDim2.new(1, -35, 1, 0)
+    TextLabel.Position = UDim2.new(0, 35, 0, 0)
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Text = item.name
+    TextLabel.TextColor3 = CONFIG.THEME.TEXT_SECONDARY
+    TextLabel.TextSize = 14
+    TextLabel.Font = Enum.Font.SourceSansBold
+    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TextLabel.Parent = Button
     
     Button.MouseEnter:Connect(function()
         if Button ~= selectedButton then
-            TweenService:Create(Button, TweenInfo.new(0.2), {
+            TweenService:Create(Icon, TweenInfo.new(0.2), {
+                TextColor3 = CONFIG.THEME.TEXT
+            }):Play()
+            TweenService:Create(TextLabel, TweenInfo.new(0.2), {
                 TextColor3 = CONFIG.THEME.TEXT
             }):Play()
         end
@@ -147,7 +189,10 @@ for _, itemName in ipairs(MENU_ITEMS) do
     
     Button.MouseLeave:Connect(function()
         if Button ~= selectedButton then
-            TweenService:Create(Button, TweenInfo.new(0.2), {
+            TweenService:Create(Icon, TweenInfo.new(0.2), {
+                TextColor3 = CONFIG.THEME.TEXT_SECONDARY
+            }):Play()
+            TweenService:Create(TextLabel, TweenInfo.new(0.2), {
                 TextColor3 = CONFIG.THEME.TEXT_SECONDARY
             }):Play()
         end
@@ -155,12 +200,16 @@ for _, itemName in ipairs(MENU_ITEMS) do
     
     Button.MouseButton1Click:Connect(function()
         if selectedButton then
-            TweenService:Create(selectedButton, TweenInfo.new(0.2), {
+            TweenService:Create(selectedButton:FindFirstChild("Icon"), TweenInfo.new(0.2), {
+                TextColor3 = CONFIG.THEME.TEXT_SECONDARY
+            }):Play()
+            TweenService:Create(selectedButton:FindFirstChild("Text"), TweenInfo.new(0.2), {
                 TextColor3 = CONFIG.THEME.TEXT_SECONDARY
             }):Play()
         end
         selectedButton = Button
-        Button.TextColor3 = CONFIG.THEME.ACCENT
+        Icon.TextColor3 = CONFIG.THEME.ACCENT
+        TextLabel.TextColor3 = CONFIG.THEME.ACCENT
     end)
 end
 
