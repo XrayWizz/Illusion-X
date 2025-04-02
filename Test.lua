@@ -41,6 +41,71 @@ local CONFIG = {
     }
 }
 
+-- Track current state
+local currentState = {
+    size = "Normal",
+    isMinimized = false,
+    width = CONFIG.SIZES.Normal.WIDTH,
+    height = CONFIG.SIZES.Normal.HEIGHT
+}
+
+-- Function to toggle minimize
+local function toggleMinimize()
+    currentState.isMinimized = not currentState.isMinimized
+    
+    local targetSize, targetPosition
+    
+    if currentState.isMinimized then
+        -- Minimize animation
+        targetSize = UDim2.new(0, CONFIG.MINIMIZED.WIDTH, 0, CONFIG.MINIMIZED.HEIGHT)
+        targetPosition = UDim2.new(0.5, -CONFIG.MINIMIZED.WIDTH/2, 0.5, -CONFIG.MINIMIZED.HEIGHT/2)
+        
+        -- Hide content
+        for _, child in ipairs(MainFrame:GetChildren()) do
+            if child ~= TitleBar then
+                child.Visible = false
+            end
+        end
+    else
+        -- Maximize animation
+        targetSize = UDim2.new(0, currentState.width, 0, currentState.height)
+        targetPosition = UDim2.new(0.5, -currentState.width/2, 0.5, -currentState.height/2)
+        
+        -- Show content with slight delay to allow animation to start
+        task.delay(0.1, function()
+            for _, child in ipairs(MainFrame:GetChildren()) do
+                child.Visible = true
+            end
+        end)
+    end
+    
+    -- Animate the change
+    TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+        Size = targetSize,
+        Position = targetPosition
+    }):Play()
+    
+    -- Rotate minimize button
+    TweenService:Create(MinimizeButton, TweenInfo.new(0.3), {
+        Rotation = currentState.isMinimized and 180 or 0
+    }):Play()
+end
+
+-- Function to change GUI size
+local function changeGuiSize(sizeName)
+    if not currentState.isMinimized then
+        local size = CONFIG.SIZES[sizeName]
+        currentState.size = sizeName
+        currentState.width = size.WIDTH
+        currentState.height = size.HEIGHT
+        
+        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(0, size.WIDTH, 0, size.HEIGHT),
+            Position = UDim2.new(0.5, -size.WIDTH/2, 0.5, -size.HEIGHT/2)
+        }):Play()
+    end
+end
+
 -- Menu items with icons and layout order
 local MENU_ITEMS = {
     {layoutOrder = 1, name = "Overview", icon = "👤"},     -- Profile
@@ -90,71 +155,6 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
 
--- Track current state
-local currentState = {
-    size = "Normal",
-    isMinimized = false,
-    width = CONFIG.SIZES.Normal.WIDTH,
-    height = CONFIG.SIZES.Normal.HEIGHT
-}
-
--- Function to change GUI size
-local function changeGuiSize(sizeName)
-    if not currentState.isMinimized then
-        local size = CONFIG.SIZES[sizeName]
-        currentState.size = sizeName
-        currentState.width = size.WIDTH
-        currentState.height = size.HEIGHT
-        
-        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-            Size = UDim2.new(0, size.WIDTH, 0, size.HEIGHT),
-            Position = UDim2.new(0.5, -size.WIDTH/2, 0.5, -size.HEIGHT/2)
-        }):Play()
-    end
-end
-
--- Function to toggle minimize
-local function toggleMinimize()
-    currentState.isMinimized = not currentState.isMinimized
-    
-    local targetSize, targetPosition
-    
-    if currentState.isMinimized then
-        -- Minimize animation
-        targetSize = UDim2.new(0, CONFIG.MINIMIZED.WIDTH, 0, CONFIG.MINIMIZED.HEIGHT)
-        targetPosition = UDim2.new(0.5, -CONFIG.MINIMIZED.WIDTH/2, 0.5, -CONFIG.MINIMIZED.HEIGHT/2)
-        
-        -- Hide content
-        for _, child in ipairs(MainFrame:GetChildren()) do
-            if child ~= TitleBar then
-                child.Visible = false
-            end
-        end
-    else
-        -- Maximize animation
-        targetSize = UDim2.new(0, currentState.width, 0, currentState.height)
-        targetPosition = UDim2.new(0.5, -currentState.width/2, 0.5, -currentState.height/2)
-        
-        -- Show content with slight delay to allow animation to start
-        task.delay(0.1, function()
-            for _, child in ipairs(MainFrame:GetChildren()) do
-                child.Visible = true
-            end
-        end)
-    end
-    
-    -- Animate the change
-    TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-        Size = targetSize,
-        Position = targetPosition
-    }):Play()
-    
-    -- Rotate minimize button
-    TweenService:Create(MinimizeButton, TweenInfo.new(0.3), {
-        Rotation = currentState.isMinimized and 180 or 0
-    }):Play()
-end
-
 -- Add corner rounding
 local Corner = Instance.new("UICorner")
 Corner.CornerRadius = UDim.new(0, CONFIG.CORNER_RADIUS)
@@ -199,8 +199,22 @@ MinimizeButton.TextSize = 16
 MinimizeButton.Font = Enum.Font.SourceSansBold
 MinimizeButton.Parent = TitleBar
 
--- Connect minimize button
-MinimizeButton.MouseButton1Click:Connect(toggleMinimize)
+-- Connect minimize button and its effects
+MinimizeButton.MouseButton1Click:Connect(function()
+    toggleMinimize()
+end)
+
+MinimizeButton.MouseEnter:Connect(function()
+    TweenService:Create(MinimizeButton, TweenInfo.new(0.2), {
+        TextColor3 = CONFIG.THEME.TEXT_PRIMARY
+    }):Play()
+end)
+
+MinimizeButton.MouseLeave:Connect(function()
+    TweenService:Create(MinimizeButton, TweenInfo.new(0.2), {
+        TextColor3 = CONFIG.THEME.TEXT_SECONDARY
+    }):Play()
+end)
 
 -- Create close button (updated position)
 local CloseButton = Instance.new("TextButton")
