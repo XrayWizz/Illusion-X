@@ -59,6 +59,62 @@ local MINIMIZE_SETTINGS = {
     }
 }
 
+-- Current states
+local isMinimized = false
+local currentSize = "EXTRA_LARGE"
+
+-- Size switching function
+local function switchSize(sizeName)
+    currentSize = sizeName
+    local size = CONFIG.SIZES[sizeName]
+    
+    -- Update minimize settings for current size
+    MINIMIZE_SETTINGS.NORMAL = {
+        Size = UDim2.new(0, size.WIDTH, 0, size.HEIGHT),
+        Position = UDim2.new(0.5, -size.WIDTH/2, 0.5, -size.HEIGHT/2)
+    }
+    MINIMIZE_SETTINGS.MINIMIZED = {
+        Size = UDim2.new(0, size.WIDTH/2, 0, 24),
+        Position = UDim2.new(0.5, -size.WIDTH/4, 0, 5)
+    }
+    
+    -- Only update if not minimized
+    if not isMinimized then
+        TweenService:Create(MainFrame, CONFIG.ANIMATION.TWEEN_INFO, {
+            Size = MINIMIZE_SETTINGS.NORMAL.Size,
+            Position = MINIMIZE_SETTINGS.NORMAL.Position
+        }):Play()
+    end
+    
+    -- Save size preference
+    pcall(function()
+        writefile("size_preference.txt", sizeName)
+    end)
+end
+
+-- Minimize button handler
+MinimizeButton.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    local targetState = isMinimized and MINIMIZE_SETTINGS.MINIMIZED or MINIMIZE_SETTINGS.NORMAL
+    
+    TweenService:Create(MainFrame, CONFIG.ANIMATION.TWEEN_INFO, {
+        Size = targetState.Size,
+        Position = targetState.Position
+    }):Play()
+    
+    -- Hide content when minimized
+    if isMinimized then
+        ContentFrame.Visible = false
+        MenuFrame.Visible = false
+        MenuDivider.Visible = false
+    else
+        task.wait(CONFIG.ANIMATION.TWEEN_INFO.Time)
+        ContentFrame.Visible = true
+        MenuFrame.Visible = true
+        MenuDivider.Visible = true
+    end
+end)
+
 -- Services
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
@@ -546,196 +602,6 @@ UIListLayout.Parent = StatsFrame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, CONFIG.PADDING.ITEM)
 
--- Minimize state
-local isMinimized = false
-
--- Minimize animation function
-local function toggleMinimize()
-    isMinimized = not isMinimized
-    local targetState = isMinimized and MINIMIZE_SETTINGS.MINIMIZED or MINIMIZE_SETTINGS.NORMAL
-    
-    -- Create smooth animations
-    local sizeTween = TweenService:Create(
-        MainFrame,
-        CONFIG.ANIMATION.TWEEN_INFO,
-        { Size = targetState.Size }
-    )
-    
-    local positionTween = TweenService:Create(
-        MainFrame,
-        CONFIG.ANIMATION.TWEEN_INFO,
-        { Position = targetState.Position }
-    )
-    
-    -- Play animations
-    sizeTween:Play()
-    positionTween:Play()
-    
-    -- Update minimize button appearance
-    MinimizeButton.Text = isMinimized and "+" or "-"
-    
-    -- Optional: Add rotation animation to the button text
-    local rotation = isMinimized and 180 or 0
-    TweenService:Create(
-        MinimizeButton,
-        CONFIG.ANIMATION.TWEEN_INFO,
-        { Rotation = rotation }
-    ):Play()
-end
-
--- Connect minimize button
-MinimizeButton.MouseButton1Click:Connect(toggleMinimize)
-
--- Make title bar draggable
-local function enableDragging()
-    local dragging = false
-    local dragStart = nil
-    local startPos = nil
-    
-    TitleBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = MainFrame.Position
-        end
-    end)
-    
-    TitleBar.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - dragStart
-            -- Create smooth drag animation
-            TweenService:Create(
-                MainFrame,
-                TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {
-                    Position = UDim2.new(
-                        startPos.X.Scale,
-                        startPos.X.Offset + delta.X,
-                        startPos.Y.Scale,
-                        startPos.Y.Offset + delta.Y
-                    )
-                }
-            ):Play()
-        end
-    end)
-end
-
--- Initialize dragging
-enableDragging()
-
--- Update Function
-local lastUpdate = 0
-local function updateStats()
-    -- Throttle updates
-    local now = tick()
-    if now - lastUpdate < CONFIG.UPDATE_INTERVAL then return end
-    lastUpdate = now
-    
-    -- Get character safely
-    local character = LocalPlayer.Character
-    if not character then return end
-    
-    -- Update Basic Info
-    local leaderstats = safeGet(LocalPlayer, "leaderstats")
-    if leaderstats then
-        local level = safeGet(leaderstats, "Level")
-        local beli = safeGet(leaderstats, "Beli")
-        local fragments = safeGet(leaderstats, "Fragments")
-        
-        if level then LevelValue.Text = tostring(level.Value) end
-        if beli then BelliValue.Text = tostring(beli.Value) end
-        if fragments then FragmentsValue.Text = tostring(fragments.Value) end
-    end
-    
-    -- Update Race
-    local race = safeGet(LocalPlayer, "Data", "Race")
-    if race then
-        RaceValue.Text = tostring(race.Value)
-    else
-        RaceValue.Text = "Unknown"
-    end
-    
-    -- Update Health
-    local humanoid = safeGet(character, "Humanoid")
-    if humanoid then
-        local healthPercent = humanoid.Health / humanoid.MaxHealth
-        local healthColor = healthPercent > 0.5 and CONFIG.COLORS.POSITIVE
-            or healthPercent > 0.25 and CONFIG.COLORS.WARNING
-            or CONFIG.COLORS.NEGATIVE
-        
-        HealthValue.TextColor3 = healthColor
-        HealthValue.Text = string.format("%d/%d", humanoid.Health, humanoid.MaxHealth)
-    end
-    
-    -- Get inventory items
-    local backpack = LocalPlayer:FindFirstChild("Backpack")
-    if backpack and character then
-        -- Update Fighting Styles
-        local fightingStyles = {}
-        for _, container in ipairs({backpack, character}) do
-            for _, item in ipairs(getItemsWithProperty(container, "FightingStyle")) do
-                table.insert(fightingStyles, item)
-            end
-        end
-        FightingStyleValue.Text = #fightingStyles > 0 
-            and table.concat(fightingStyles, ", ")
-            or "None"
-            
-        -- Update Devil Fruits
-        local devilFruits = {}
-        for _, container in ipairs({backpack, character}) do
-            for _, item in ipairs(getItemsWithProperty(container, "DevilFruit")) do
-                table.insert(devilFruits, item)
-            end
-        end
-        DevilFruitValue.Text = #devilFruits > 0
-            and table.concat(devilFruits, ", ")
-            or "None"
-            
-        -- Update Swords
-        local swords = {}
-        for _, container in ipairs({backpack, character}) do
-            for _, item in ipairs(getItemsWithProperty(container, "SwordTool")) do
-                table.insert(swords, item)
-            end
-        end
-        SwordValue.Text = #swords > 0
-            and table.concat(swords, ", ")
-            or "None"
-    end
-end
-
--- Connect update loop with error handling
-local function safeUpdate()
-    local success, error = pcall(updateStats)
-    if not success then
-        warn("Error in update loop:", error)
-    end
-end
-
--- Start update loop
-RunService.RenderStepped:Connect(safeUpdate)
-
--- Clean up on script end
-local function cleanup()
-    if ScreenGui then
-        ScreenGui:Destroy()
-    end
-end
-
-ScreenGui.Destroying:Connect(cleanup)
-
--- Close Button Handler
-CloseButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
-
 -- Create Settings Content
 local function CreateSettingsSection(title)
     local section = Instance.new("Frame")
@@ -877,43 +743,6 @@ local sizeDropdown = CreateDropdown(
     UDim2.new(0, 8, 0, 36)
 )
 
--- Current size
-local currentSize = "EXTRA_LARGE"
-
--- Size switching function
-local function switchSize(sizeName)
-    currentSize = sizeName
-    local size = CONFIG.SIZES[sizeName]
-    
-    -- Only update if not minimized
-    if not isMinimized then
-        MINIMIZE_SETTINGS.NORMAL.Size = UDim2.new(0, size.WIDTH, 0, size.HEIGHT)
-        MINIMIZE_SETTINGS.NORMAL.Position = UDim2.new(0.5, -size.WIDTH/2, 0.5, -size.HEIGHT/2)
-        
-        TweenService:Create(MainFrame, CONFIG.ANIMATION.TWEEN_INFO, {
-            Size = MINIMIZE_SETTINGS.NORMAL.Size,
-            Position = MINIMIZE_SETTINGS.NORMAL.Position
-        }):Play()
-    else
-        -- Update minimized width if size changes while minimized
-        MINIMIZE_SETTINGS.MINIMIZED.Size = UDim2.new(0, size.WIDTH/2, 0, 24)
-        MINIMIZE_SETTINGS.MINIMIZED.Position = UDim2.new(0.5, -size.WIDTH/4, 0, 5)
-        
-        TweenService:Create(MainFrame, CONFIG.ANIMATION.TWEEN_INFO, {
-            Size = MINIMIZE_SETTINGS.MINIMIZED.Size,
-            Position = MINIMIZE_SETTINGS.MINIMIZED.Position
-        }):Play()
-    end
-    
-    -- Save size preference
-    if pcall(function()
-        local success = writefile("size_preference.txt", sizeName)
-        return success
-    end) then
-        print("Size preference saved")
-    end
-end
-
 -- Try to load saved size preference
 pcall(function()
     if isfile("size_preference.txt") then
@@ -933,3 +762,153 @@ SettingsButton.MouseButton1Click:Connect(function()
     ContentContainer.Visible = false
     SettingsContainer.Visible = true
 end)
+
+-- Update Function
+local lastUpdate = 0
+local function updateStats()
+    -- Throttle updates
+    local now = tick()
+    if now - lastUpdate < CONFIG.UPDATE_INTERVAL then return end
+    lastUpdate = now
+    
+    -- Get character safely
+    local character = LocalPlayer.Character
+    if not character then return end
+    
+    -- Update Basic Info
+    local leaderstats = safeGet(LocalPlayer, "leaderstats")
+    if leaderstats then
+        local level = safeGet(leaderstats, "Level")
+        local beli = safeGet(leaderstats, "Beli")
+        local fragments = safeGet(leaderstats, "Fragments")
+        
+        if level then LevelValue.Text = tostring(level.Value) end
+        if beli then BelliValue.Text = tostring(beli.Value) end
+        if fragments then FragmentsValue.Text = tostring(fragments.Value) end
+    end
+    
+    -- Update Race
+    local race = safeGet(LocalPlayer, "Data", "Race")
+    if race then
+        RaceValue.Text = tostring(race.Value)
+    else
+        RaceValue.Text = "Unknown"
+    end
+    
+    -- Update Health
+    local humanoid = safeGet(character, "Humanoid")
+    if humanoid then
+        local healthPercent = humanoid.Health / humanoid.MaxHealth
+        local healthColor = healthPercent > 0.5 and CONFIG.COLORS.POSITIVE
+            or healthPercent > 0.25 and CONFIG.COLORS.WARNING
+            or CONFIG.COLORS.NEGATIVE
+        
+        HealthValue.TextColor3 = healthColor
+        HealthValue.Text = string.format("%d/%d", humanoid.Health, humanoid.MaxHealth)
+    end
+    
+    -- Get inventory items
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    if backpack and character then
+        -- Update Fighting Styles
+        local fightingStyles = {}
+        for _, container in ipairs({backpack, character}) do
+            for _, item in ipairs(getItemsWithProperty(container, "FightingStyle")) do
+                table.insert(fightingStyles, item)
+            end
+        end
+        FightingStyleValue.Text = #fightingStyles > 0 
+            and table.concat(fightingStyles, ", ")
+            or "None"
+            
+        -- Update Devil Fruits
+        local devilFruits = {}
+        for _, container in ipairs({backpack, character}) do
+            for _, item in ipairs(getItemsWithProperty(container, "DevilFruit")) do
+                table.insert(devilFruits, item)
+            end
+        end
+        DevilFruitValue.Text = #devilFruits > 0
+            and table.concat(devilFruits, ", ")
+            or "None"
+            
+        -- Update Swords
+        local swords = {}
+        for _, container in ipairs({backpack, character}) do
+            for _, item in ipairs(getItemsWithProperty(container, "SwordTool")) do
+                table.insert(swords, item)
+            end
+        end
+        SwordValue.Text = #swords > 0
+            and table.concat(swords, ", ")
+            or "None"
+    end
+end
+
+-- Connect update loop with error handling
+local function safeUpdate()
+    local success, error = pcall(updateStats)
+    if not success then
+        warn("Error in update loop:", error)
+    end
+end
+
+-- Start update loop
+RunService.RenderStepped:Connect(safeUpdate)
+
+-- Clean up on script end
+local function cleanup()
+    if ScreenGui then
+        ScreenGui:Destroy()
+    end
+end
+
+ScreenGui.Destroying:Connect(cleanup)
+
+-- Close Button Handler
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- Make title bar draggable
+local function enableDragging()
+    local dragging = false
+    local dragStart = nil
+    local startPos = nil
+    
+    TitleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+        end
+    end)
+    
+    TitleBar.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            -- Create smooth drag animation
+            TweenService:Create(
+                MainFrame,
+                TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                {
+                    Position = UDim2.new(
+                        startPos.X.Scale,
+                        startPos.X.Offset + delta.X,
+                        startPos.Y.Scale,
+                        startPos.Y.Offset + delta.Y
+                    )
+                }
+            ):Play()
+        end
+    end)
+end
+
+-- Initialize dragging
+enableDragging()
