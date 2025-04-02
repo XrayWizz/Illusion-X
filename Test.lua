@@ -120,7 +120,7 @@ CloseButton.Parent = TitleBar
 -- Create ScrollingFrame for menu items
 local MenuScroll = Instance.new("ScrollingFrame")
 MenuScroll.Name = "MenuScroll"
-MenuScroll.Size = UDim2.new(1, -10, 1, -50)
+MenuScroll.Size = UDim2.new(0, CONFIG.MENU_WIDTH, 1, -50)
 MenuScroll.Position = UDim2.new(0, 5, 0, 45)
 MenuScroll.BackgroundTransparency = 1
 MenuScroll.ScrollBarThickness = 0
@@ -132,6 +132,52 @@ ListLayout.Name = "ListLayout"
 ListLayout.Padding = UDim.new(0, 5)
 ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 ListLayout.Parent = MenuScroll
+
+-- Create content area
+local ContentArea = Instance.new("Frame")
+ContentArea.Name = "ContentArea"
+ContentArea.Size = UDim2.new(1, -CONFIG.MENU_WIDTH - 10, 1, -CONFIG.TITLE_HEIGHT - 10)
+ContentArea.Position = UDim2.new(0, CONFIG.MENU_WIDTH + 5, 0, CONFIG.TITLE_HEIGHT + 5)
+ContentArea.BackgroundTransparency = 0.9
+ContentArea.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ContentArea.BorderSizePixel = 0
+ContentArea.Parent = MainFrame
+
+-- Function to clear content area
+local function clearContentArea()
+    for _, child in ipairs(ContentArea:GetChildren()) do
+        child:Destroy()
+    end
+end
+
+-- Function to create section header
+local function createSectionHeader(title)
+    local header = Instance.new("TextLabel")
+    header.Name = "SectionHeader"
+    header.Size = UDim2.new(1, -20, 0, 30)
+    header.Position = UDim2.new(0, 10, 0, 10)
+    header.BackgroundTransparency = 1
+    header.Text = title
+    header.TextColor3 = CONFIG.THEME.ACCENT
+    header.TextSize = 18
+    header.Font = Enum.Font.SourceSansBold
+    header.TextXAlignment = Enum.TextXAlignment.Left
+    return header
+end
+
+-- Function to create info label
+local function createInfoLabel(text, posY)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -40, 0, 25)
+    label.Position = UDim2.new(0, 20, 0, posY)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = CONFIG.THEME.TEXT_SECONDARY
+    label.TextSize = 14
+    label.Font = Enum.Font.SourceSans
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    return label
+end
 
 -- Create menu buttons
 local selectedButton = nil
@@ -159,16 +205,17 @@ for _, item in ipairs(MENU_ITEMS) do
     -- Create text label
     local TextLabel = Instance.new("TextLabel")
     TextLabel.Name = "Text"
-    TextLabel.Size = UDim2.new(1, -35, 1, 0)
+    TextLabel.Size = UDim2.new(1, -40, 1, 0)
     TextLabel.Position = UDim2.new(0, 35, 0, 0)
     TextLabel.BackgroundTransparency = 1
     TextLabel.Text = item.name
     TextLabel.TextColor3 = CONFIG.THEME.TEXT_SECONDARY
     TextLabel.TextSize = 14
-    TextLabel.Font = Enum.Font.SourceSansBold
+    TextLabel.Font = Enum.Font.SourceSans
     TextLabel.TextXAlignment = Enum.TextXAlignment.Left
     TextLabel.Parent = Button
     
+    -- Button hover effect
     Button.MouseEnter:Connect(function()
         if Button ~= selectedButton then
             TweenService:Create(Icon, TweenInfo.new(0.2), {
@@ -203,6 +250,23 @@ for _, item in ipairs(MENU_ITEMS) do
         selectedButton = Button
         Icon.TextColor3 = CONFIG.THEME.ACCENT
         TextLabel.TextColor3 = CONFIG.THEME.ACCENT
+        
+        -- Handle button functionality
+        clearContentArea()
+        
+        if item.name == "Overview" then
+            -- Create Player Info section
+            local header = createSectionHeader("Player Info")
+            header.Parent = ContentArea
+            
+            -- Get player info
+            local player = game.Players.LocalPlayer
+            local playerName = createInfoLabel("Name: " .. player.Name, 50)
+            playerName.Parent = ContentArea
+            
+            local playerDisplayName = createInfoLabel("Display Name: " .. player.DisplayName, 80)
+            playerDisplayName.Parent = ContentArea
+        end
     end)
 end
 
