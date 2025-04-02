@@ -117,6 +117,10 @@ local currentState = {
     startPos = nil
 }
 
+-- Teleport state
+local isTeleportEnabled = false
+local currentDestination = nil
+
 -- Create main frame
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
@@ -372,6 +376,190 @@ local function createToggle(text, posY, default)
     return toggle, enabled
 end
 
+-- Function to create teleport toggle
+local function createTeleportToggle()
+    local toggleContainer = Instance.new("Frame")
+    toggleContainer.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    toggleContainer.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING*2)
+    toggleContainer.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    toggleContainer.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+    toggleContainer.Parent = ContentArea
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    corner.Parent = toggleContainer
+    
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -50, 1, 0)
+    label.Position = UDim2.new(0, 10, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = "🔒 Enable Teleport"
+    label.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+    label.TextSize = 14
+    label.Font = CUSTOM.FONTS.BUTTON
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = toggleContainer
+    
+    local toggle = Instance.new("TextButton")
+    toggle.Size = UDim2.new(0, 40, 0, 20)
+    toggle.Position = UDim2.new(1, -45, 0.5, -10)
+    toggle.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    toggle.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+    toggle.Text = ""
+    toggle.Parent = toggleContainer
+    
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(1, 0)
+    toggleCorner.Parent = toggle
+    
+    local circle = Instance.new("Frame")
+    circle.Size = UDim2.new(0, 16, 0, 16)
+    circle.Position = UDim2.new(0, 2, 0.5, -8)
+    circle.BackgroundColor3 = CUSTOM.THEME.TEXT_PRIMARY
+    circle.Parent = toggle
+    
+    local circleCorner = Instance.new("UICorner")
+    circleCorner.CornerRadius = UDim.new(1, 0)
+    circleCorner.Parent = circle
+    
+    -- Toggle functionality
+    toggle.MouseButton1Click:Connect(function()
+        isTeleportEnabled = not isTeleportEnabled
+        label.Text = isTeleportEnabled and "🔓 Teleport Enabled" or "🔒 Enable Teleport"
+        label.TextColor3 = isTeleportEnabled and CUSTOM.THEME.ACCENT or CUSTOM.THEME.TEXT_SECONDARY
+        
+        TweenService:Create(toggle, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            BackgroundColor3 = isTeleportEnabled and CUSTOM.THEME.ACCENT or CUSTOM.THEME.BUTTON_NORMAL
+        }):Play()
+        
+        TweenService:Create(circle, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            Position = isTeleportEnabled and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+        }):Play()
+        
+        if not isTeleportEnabled then
+            currentDestination = nil
+        end
+    end)
+    
+    return toggleContainer, function() 
+        isTeleportEnabled = false
+        label.Text = "🔒 Enable Teleport"
+        label.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+        TweenService:Create(toggle, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+        }):Play()
+        TweenService:Create(circle, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            Position = UDim2.new(0, 2, 0.5, -8)
+        }):Play()
+    end
+end
+
+-- Function to create teleport button
+local function createTeleportButton(island, posY)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    button.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
+    button.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    button.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+    button.Text = island.name
+    button.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+    button.TextSize = 14
+    button.Font = CUSTOM.FONTS.BUTTON
+    button.TextXAlignment = Enum.TextXAlignment.Left
+    button.Parent = ContentArea
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    corner.Parent = button
+    
+    -- Add hover effect
+    button.MouseEnter:Connect(function()
+        if not isTeleportEnabled then return end
+        TweenService:Create(button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            BackgroundTransparency = CUSTOM.THEME.BUTTON_HOVER_TRANSPARENCY,
+            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        }):Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        if currentDestination ~= island then
+            TweenService:Create(button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY,
+                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            }):Play()
+        end
+    end)
+    
+    -- Add click effect and teleport functionality
+    button.MouseButton1Click:Connect(function()
+        if not isTeleportEnabled then
+            -- Visual feedback for disabled state
+            for i = 1, 3 do
+                TweenService:Create(button, TweenInfo.new(0.1), {
+                    BackgroundTransparency = 0.3
+                }):Play()
+                wait(0.1)
+                TweenService:Create(button, TweenInfo.new(0.1), {
+                    BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+                }):Play()
+                wait(0.1)
+            end
+            return
+        end
+        
+        -- Visual feedback
+        TweenService:Create(button, TweenInfo.new(0.1), {
+            BackgroundColor3 = CUSTOM.THEME.ACCENT,
+            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY,
+            BackgroundTransparency = 0
+        }):Play()
+        
+        -- Attempt to teleport
+        local player = game.Players.LocalPlayer
+        if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            currentDestination = island
+            player.Character.HumanoidRootPart.CFrame = island.cframe
+            
+            -- Check if player reached destination
+            local function checkDestination()
+                wait(0.5) -- Wait for teleport
+                local distance = (player.Character.HumanoidRootPart.Position - island.cframe.Position).Magnitude
+                if distance < 50 then -- If player is within 50 studs of destination
+                    disableTeleport()
+                end
+            end
+            coroutine.wrap(checkDestination)()
+        end
+    end)
+    
+    return button
+end
+
+-- Blox Fruits Island Data
+local ISLANDS = {
+    {name = "Starter Island", cframe = CFrame.new(1071.2832, 16.3085976, 1426.86792)},
+    {name = "Marine Fortress", cframe = CFrame.new(-4984.47461, 20.6520348, 4305.39795)},
+    {name = "Middle Town", cframe = CFrame.new(-655.824158, 7.88708115, 1436.67908)},
+    {name = "Jungle", cframe = CFrame.new(-1249.77222, 11.8870859, 341.356476)},
+    {name = "Pirate Village", cframe = CFrame.new(-1122.34998, 4.78708982, 3855.91992)},
+    {name = "Desert", cframe = CFrame.new(1094.14587, 6.47350502, 4192.88721)},
+    {name = "Frozen Village", cframe = CFrame.new(1198.00928, 27.0074959, -1211.73376)},
+    {name = "MarineFord", cframe = CFrame.new(-4882.8623, 22.6520386, 4255.53516)},
+    {name = "Colosseum", cframe = CFrame.new(-1836.58191, 44.8870926, 1360.30652)},
+    {name = "Sky Island 1", cframe = CFrame.new(-4970.21875, 717.707275, -2622.35449)},
+    {name = "Prison", cframe = CFrame.new(4875.330078125, 5.6519818305969, 734.85021972656)},
+    {name = "Magma Village", cframe = CFrame.new(-5231.75879, 8.61593437, 8467.87695)},
+    {name = "Sky Island 2", cframe = CFrame.new(-7894.6176757813, 5545.6416015625, -380.29119873047)},
+    {name = "Sky Island 3", cframe = CFrame.new(-7994.48389, 5756.22461, -1088.39246)},
+    {name = "Snow Island", cframe = CFrame.new(-4706.36768, 20.8098927, -2635.82104)},
+    {name = "Sea Restaurant", cframe = CFrame.new(-1839.63574, 40.6520386, -2971.47314)},
+    {name = "Fishman Island", cframe = CFrame.new(3893.953125, 5.3989524841309, -1893.4851074219)},
+    {name = "Fountain City", cframe = CFrame.new(5244.7124, 38.526943, 4073.3413)},
+    {name = "Green Zone", cframe = CFrame.new(-2448.5300292969, 73.016105651855, -3210.6306152344)},
+    {name = "Cafe", cframe = CFrame.new(-385.250916, 73.0458984, 297.388397)},
+    {name = "Mansion", cframe = CFrame.new(-390.096313, 331.886475, 673.464966)}
+}
+
 -- Create menu buttons
 local selectedButton = nil
 for _, item in ipairs(MENU_ITEMS) do
@@ -474,7 +662,70 @@ for _, item in ipairs(MENU_ITEMS) do
         clearContentArea()
         
         -- Handle content for each section
-        if item.name == "Overview" then
+        if item.name == "Teleport" then
+            local header = createSectionHeader("🏝️ Blox Fruits Islands")
+            header.Parent = ContentArea
+            
+            -- Create teleport toggle
+            local toggleContainer, disableTeleport = createTeleportToggle()
+            toggleContainer.Parent = ContentArea
+            
+            -- Create search bar
+            local searchBox = Instance.new("TextBox")
+            searchBox.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+            searchBox.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT*2 + CUSTOM.LAYOUT.PADDING*3)
+            searchBox.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+            searchBox.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+            searchBox.PlaceholderText = "🔍 Search islands..."
+            searchBox.Text = ""
+            searchBox.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            searchBox.PlaceholderColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            searchBox.TextSize = 14
+            searchBox.Font = CUSTOM.FONTS.TEXT
+            searchBox.Parent = ContentArea
+            
+            local searchCorner = Instance.new("UICorner")
+            searchCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+            searchCorner.Parent = searchBox
+            
+            -- Create island buttons container
+            local islandContainer = Instance.new("Frame")
+            islandContainer.Name = "IslandContainer"
+            islandContainer.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, 0)
+            islandContainer.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT*3 + CUSTOM.LAYOUT.PADDING*4)
+            islandContainer.BackgroundTransparency = 1
+            islandContainer.AutomaticSize = Enum.AutomaticSize.Y
+            islandContainer.Parent = ContentArea
+            
+            -- Create and add island buttons
+            local function updateIslands(filter)
+                -- Clear existing buttons
+                for _, child in ipairs(islandContainer:GetChildren()) do
+                    if child:IsA("TextButton") then
+                        child:Destroy()
+                    end
+                end
+                
+                -- Add filtered buttons
+                local posY = 0
+                for _, island in ipairs(ISLANDS) do
+                    if not filter or string.find(string.lower(island.name), string.lower(filter)) then
+                        local button = createTeleportButton(island, posY)
+                        button.Parent = islandContainer
+                        posY = posY + CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING
+                    end
+                end
+            end
+            
+            -- Initial island list
+            updateIslands()
+            
+            -- Search functionality
+            searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+                updateIslands(searchBox.Text)
+            end)
+            
+        elseif item.name == "Overview" then
             local header = createSectionHeader("Player Info")
             header.Parent = ContentArea
             
