@@ -570,48 +570,123 @@ end
 
 -- Blox Fruits Island Data
 local ISLANDS = {
-    -- First Sea
-    {name = "Starter Island", cframe = CFrame.new(1071.2832, 16.3085976, 1426.86792)},
-    {name = "Marine Start", cframe = CFrame.new(-2573.3374, 6.88881969, 2046.99817)},
-    {name = "Middle Town", cframe = CFrame.new(-655.824158, 7.88708115, 1436.67908)},
-    {name = "Jungle", cframe = CFrame.new(-1249.77222, 11.8870859, 341.356476)},
-    {name = "Pirate Village", cframe = CFrame.new(-1122.34998, 4.78708982, 3855.91992)},
-    {name = "Desert", cframe = CFrame.new(1094.14587, 6.47350502, 4192.88721)},
-    {name = "Frozen Village", cframe = CFrame.new(1198.00928, 27.0074959, -1211.73376)},
-    {name = "MarineFord", cframe = CFrame.new(-4882.8623, 22.6520386, 4255.53516)},
-    {name = "Colosseum", cframe = CFrame.new(-1836.58191, 44.8870926, 1360.30652)},
-    {name = "Sky 1st Floor", cframe = CFrame.new(-4970.21875, 717.707275, -2622.35449)},
-    {name = "Prison", cframe = CFrame.new(4875.330078125, 5.6519818305969, 734.85021972656)},
-    {name = "Magma Village", cframe = CFrame.new(-5231.75879, 8.61593437, 8467.87695)},
-    {name = "Sky 2nd Floor", cframe = CFrame.new(-7894.6176757813, 5545.6416015625, -380.29119873047)},
-    {name = "Sky 3rd Floor", cframe = CFrame.new(-7994.48389, 5756.22461, -1088.39246)},
-    {name = "Snow Island", cframe = CFrame.new(-4706.36768, 20.8098927, -2635.82104)},
-    
-    -- Second Sea
-    {name = "First Spot", cframe = CFrame.new(82.9490662, 18.0710983, 2834.98779)},
-    {name = "Kingdom of Rose", cframe = CFrame.new(-394.983521, 118.503128, 1245.8446)},
-    {name = "Dark Arena", cframe = CFrame.new(3464.7163085938, 13.375151634216, -3368.90234375)},
-    {name = "Flamingo Mansion", cframe = CFrame.new(-483.73370361328, 332.0383605957, 595.32708740234)},
-    {name = "Flamingo Room", cframe = CFrame.new(2284.4140625, 15.152037620544, 875.72534179688)},
-    {name = "Green Zone", cframe = CFrame.new(-2448.5300292969, 73.016105651855, -3210.6306152344)},
-    {name = "Factory", cframe = CFrame.new(430.42569, 210.019623, -432.504791)},
-    {name = "Cafe", cframe = CFrame.new(-385.250916, 73.0458984, 297.388397)},
-    {name = "Mansion", cframe = CFrame.new(-390.096313, 331.886475, 673.464966)},
-    {name = "Swan Room", cframe = CFrame.new(2302.19019, 15.1778421, 663.811035)},
-    {name = "Beautiful Pirate Domain", cframe = CFrame.new(5310.8095703125, 21.594484329224, 129.39053344727)},
-    
-    -- Third Sea
-    {name = "Port Town", cframe = CFrame.new(-275.21615600586, 43.755737304688, 5451.0659179688)},
-    {name = "Hydra Island", cframe = CFrame.new(5753.5478515625, 610.44677734375, -282.33172607422)},
-    {name = "Great Tree", cframe = CFrame.new(2681.2736816406, 1682.8092041016, -7190.9853515625)},
-    {name = "Castle on the Sea", cframe = CFrame.new(-5074.45556640625, 314.5155334472656, -2991.054443359375)},
-    {name = "Floating Turtle", cframe = CFrame.new(-10919.401367188, 331.78845214844, -8637.57421875)},
-    {name = "Mansion", cframe = CFrame.new(-12548.998046875, 332.41268920898, -7603.1865234375)},
-    {name = "Secret Temple", cframe = CFrame.new(5217.35107, 6.56511116, 1100.88159)},
-    {name = "Friendly Arena", cframe = CFrame.new(5220.28955078125, 72.82353973388672, -1450.72998046875)},
-    {name = "Beautiful Pirate Domain", cframe = CFrame.new(-11990.9189453125, 331.8649597167969, -8845.3125)},
-    {name = "Tiki Outpost", cframe = CFrame.new(-11993.580078125, 331.8649597167969, -8844.1826171875)}
+    ["First Sea"] = {
+        {name = "Starter Island", cframe = CFrame.new(1071.2832, 16.3085976, 1426.86792)},
+        {name = "Marine Start", cframe = CFrame.new(-2573.3374, 6.88881969, 2046.99817)},
+        {name = "Middle Town", cframe = CFrame.new(-655.824158, 7.88708115, 1436.67908)},
+        {name = "Jungle", cframe = CFrame.new(-1249.77222, 11.8870859, 341.356476)},
+        {name = "Pirate Village", cframe = CFrame.new(-1122.34998, 4.78708982, 3855.91992)},
+        {name = "Desert", cframe = CFrame.new(1094.14587, 6.47350502, 4192.88721)},
+        {name = "Frozen Village", cframe = CFrame.new(1198.00928, 27.0074959, -1211.73376)},
+        {name = "MarineFord", cframe = CFrame.new(-4505.375, 20.687294, 4260.55908)},
+        {name = "Colosseum", cframe = CFrame.new(-1428.35474, 7.38933945, -3014.37305)},
+        {name = "Sky 1st Floor", cframe = CFrame.new(-4970.21875, 717.707275, -2622.35449)},
+        {name = "Sky 2nd Floor", cframe = CFrame.new(-4813.0249, 903.708557, -1912.69055)},
+        {name = "Sky 3rd Floor", cframe = CFrame.new(-7952.31006, 5545.52832, -320.704956)},
+        {name = "Prison", cframe = CFrame.new(4854.16455, 5.68742752, 740.194641)},
+        {name = "Magma Village", cframe = CFrame.new(-5231.75879, 8.61593437, 8467.87695)},
+        {name = "Underwater City", cframe = CFrame.new(61163.8516, 11.7796879, 1819.78418)},
+        {name = "Fountain City", cframe = CFrame.new(5132.7124, 4.53632832, 4037.8562)}
+    },
+    ["Second Sea"] = {
+        {name = "First Spot", cframe = CFrame.new(-11.845, 29.3297, 2771.026)},
+        {name = "Kingdom of Rose", cframe = CFrame.new(-390.096466, 321.886353, 869.049377)},
+        {name = "Mansion", cframe = CFrame.new(-390.096466, 321.886353, 869.049377)},
+        {name = "Flamingo Room", cframe = CFrame.new(2284.43335, 15.152359, 875.790771)},
+        {name = "Green Zone", cframe = CFrame.new(-2448.5300292969, 73.016105651855, -3210.6306152344)},
+        {name = "Cafe", cframe = CFrame.new(-385.250916, 73.0458984, 297.388397)},
+        {name = "Factory", cframe = CFrame.new(430.42569, 210.019623, -432.504791)},
+        {name = "Colosseum", cframe = CFrame.new(-1836.58191, 44.5890656, 1360.30652)},
+        {name = "Ghost Island", cframe = CFrame.new(-5571.84424, 195.182297, -795.432922)},
+        {name = "Ghost Island 2nd", cframe = CFrame.new(-5931.77979, 5.19706631, -1189.6908)},
+        {name = "Snow Mountain", cframe = CFrame.new(1384.68298, 453.569031, -4990.09766)},
+        {name = "Hot and Cold", cframe = CFrame.new(-6026.96484, 14.7461271, -5071.96338)},
+        {name = "Magma Side", cframe = CFrame.new(-5478.39209, 15.9775667, -5246.9126)},
+        {name = "Cursed Ship", cframe = CFrame.new(923.21252441406, 125.05712890625, 32885.875)},
+        {name = "Ice Castle", cframe = CFrame.new(6148.4116210938, 294.38687133789, -6741.1166992188)},
+        {name = "Forgotten Island", cframe = CFrame.new(-3032.7641601563, 317.89672851563, -10075.373046875)},
+        {name = "Usoapp Island", cframe = CFrame.new(4748.78857, 8.35370827, 2849.57959)},
+        {name = "Minisky Island", cframe = CFrame.new(-260.358917, 49325.7031, -35259.3008)}
+    },
+    ["Third Sea"] = {
+        {name = "Port Town", cframe = CFrame.new(-610.309692, 57.8323097, 6436.33594)},
+        {name = "Hydra Island", cframe = CFrame.new(5229.99561, 603.916565, 345.154022)},
+        {name = "Great Tree", cframe = CFrame.new(2174.94873, 28.7312393, -6728.83154)},
+        {name = "Castle on the Sea", cframe = CFrame.new(-5477.62842, 313.794739, -2808.4585)},
+        {name = "Floating Turtle", cframe = CFrame.new(-10919.2998, 331.788452, -8637.57227)},
+        {name = "Mansion", cframe = CFrame.new(-12553.8125, 332.403961, -7621.91748)},
+        {name = "Secret Temple", cframe = CFrame.new(5217.35693, 6.56511116, 1100.88159)},
+        {name = "Friendly Arena", cframe = CFrame.new(5220.28955, 72.8193436, -1450.86304)},
+        {name = "Beautiful Pirate Domain", cframe = CFrame.new(5310.8095703125, 160.75230407715, 129.29544067383)},
+        {name = "Tiki Outpost", cframe = CFrame.new(-11355.0557, 367.994995, -10225.1641)},
+        {name = "Peanut Island", cframe = CFrame.new(-2062.67773, 38.1294556, -10287.752)},
+        {name = "Ice Cream Island", cframe = CFrame.new(-880.894531, 118.245354, -11030.7607)},
+        {name = "Cake Loaf", cframe = CFrame.new(-2099.33154, 37.8250542, -11892.959)}
+    }
 }
+
+-- Function to create a dropdown section
+local function createDropdownSection(title, items, startY)
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    container.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, startY)
+    container.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    container.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+    container.Parent = ContentArea
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    corner.Parent = container
+    
+    local titleButton = Instance.new("TextButton")
+    titleButton.Size = UDim2.new(1, 0, 1, 0)
+    titleButton.BackgroundTransparency = 1
+    titleButton.Text = "▶ " .. title
+    titleButton.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+    titleButton.TextSize = 14
+    titleButton.Font = CUSTOM.FONTS.BUTTON
+    titleButton.TextXAlignment = Enum.TextXAlignment.Left
+    titleButton.Parent = container
+    
+    local itemsContainer = Instance.new("Frame")
+    itemsContainer.Size = UDim2.new(1, 0, 0, 0)
+    itemsContainer.Position = UDim2.new(0, 0, 1, 0)
+    itemsContainer.BackgroundTransparency = 1
+    itemsContainer.ClipsDescendants = true
+    itemsContainer.Parent = container
+    
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayout.Parent = itemsContainer
+    
+    local isExpanded = false
+    local buttons = {}
+    
+    -- Create teleport buttons
+    for i, island in ipairs(items) do
+        local button = createTeleportButton(island, (i-1) * (CUSTOM.LAYOUT.BUTTON_HEIGHT + 2))
+        button.Parent = itemsContainer
+        button.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+        button.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, (i-1) * (CUSTOM.LAYOUT.BUTTON_HEIGHT + 2))
+        table.insert(buttons, button)
+    end
+    
+    -- Toggle dropdown
+    titleButton.MouseButton1Click:Connect(function()
+        isExpanded = not isExpanded
+        titleButton.Text = (isExpanded and "▼ " or "▶ ") .. title
+        
+        local targetSize = isExpanded and 
+            UDim2.new(1, 0, 0, #items * (CUSTOM.LAYOUT.BUTTON_HEIGHT + 2)) or 
+            UDim2.new(1, 0, 0, 0)
+        
+        TweenService:Create(itemsContainer, TweenInfo.new(0.3), {
+            Size = targetSize
+        }):Play()
+    end)
+    
+    return container, CUSTOM.LAYOUT.BUTTON_HEIGHT + (isExpanded and #items * (CUSTOM.LAYOUT.BUTTON_HEIGHT + 2) or 0)
+end
 
 -- Create menu buttons
 local selectedButton = nil
@@ -716,67 +791,22 @@ for _, item in ipairs(MENU_ITEMS) do
         
         -- Handle content for each section
         if item.name == "Teleport" then
-            local header = createSectionHeader("🏝️ Blox Fruits Islands")
+            local header = createSectionHeader("🗺️ Teleport Menu")
             header.Parent = ContentArea
             
-            -- Create teleport toggle
-            local toggleContainer, disableTeleport = createTeleportToggle()
+            local toggleContainer, disableTeleportFunc = createTeleportToggle()
             toggleContainer.Parent = ContentArea
             
-            -- Create search bar
-            local searchBox = Instance.new("TextBox")
-            searchBox.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-            searchBox.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT*2 + CUSTOM.LAYOUT.PADDING*3)
-            searchBox.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
-            searchBox.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
-            searchBox.PlaceholderText = "🔍 Search islands..."
-            searchBox.Text = ""
-            searchBox.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
-            searchBox.PlaceholderColor3 = CUSTOM.THEME.TEXT_SECONDARY
-            searchBox.TextSize = 14
-            searchBox.Font = CUSTOM.FONTS.TEXT
-            searchBox.Parent = ContentArea
+            local yOffset = CUSTOM.LAYOUT.BUTTON_HEIGHT * 2 + CUSTOM.LAYOUT.PADDING * 3
             
-            local searchCorner = Instance.new("UICorner")
-            searchCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
-            searchCorner.Parent = searchBox
+            -- Create dropdowns for each sea
+            local firstSeaSection, firstHeight = createDropdownSection("First Sea", ISLANDS["First Sea"], yOffset)
+            local secondSeaSection, secondHeight = createDropdownSection("Second Sea", ISLANDS["Second Sea"], yOffset + firstHeight + CUSTOM.LAYOUT.PADDING)
+            local thirdSeaSection, thirdHeight = createDropdownSection("Third Sea", ISLANDS["Third Sea"], yOffset + firstHeight + secondHeight + CUSTOM.LAYOUT.PADDING * 2)
             
-            -- Create island buttons container
-            local islandContainer = Instance.new("Frame")
-            islandContainer.Name = "IslandContainer"
-            islandContainer.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, 0)
-            islandContainer.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT*3 + CUSTOM.LAYOUT.PADDING*4)
-            islandContainer.BackgroundTransparency = 1
-            islandContainer.AutomaticSize = Enum.AutomaticSize.Y
-            islandContainer.Parent = ContentArea
-            
-            -- Create and add island buttons
-            local function updateIslands(filter)
-                -- Clear existing buttons
-                for _, child in ipairs(islandContainer:GetChildren()) do
-                    if child:IsA("TextButton") then
-                        child:Destroy()
-                    end
-                end
-                
-                -- Add filtered buttons
-                local posY = 0
-                for _, island in ipairs(ISLANDS) do
-                    if not filter or string.find(string.lower(island.name), string.lower(filter)) then
-                        local button = createTeleportButton(island, posY)
-                        button.Parent = islandContainer
-                        posY = posY + CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING
-                    end
-                end
-            end
-            
-            -- Initial island list
-            updateIslands()
-            
-            -- Search functionality
-            searchBox:GetPropertyChangedSignal("Text"):Connect(function()
-                updateIslands(searchBox.Text)
-            end)
+            firstSeaSection.Parent = ContentArea
+            secondSeaSection.Parent = ContentArea
+            thirdSeaSection.Parent = ContentArea
             
         elseif item.name == "Overview" then
             local header = createSectionHeader("Player Info")
