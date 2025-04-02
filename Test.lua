@@ -7,6 +7,7 @@ local UserInputService = game:GetService("UserInputService")
 local CONFIG = {
     THEME = {
         BACKGROUND = Color3.fromRGB(20, 20, 20),
+        TITLE_BAR = Color3.fromRGB(30, 30, 30),
         TEXT = Color3.fromRGB(255, 255, 255),
         TEXT_SECONDARY = Color3.fromRGB(180, 180, 180),
         ACCENT = Color3.fromRGB(70, 130, 240),
@@ -16,8 +17,9 @@ local CONFIG = {
     MENU_WIDTH = 150,
     WINDOW_SIZE = {
         WIDTH = 600,
-        HEIGHT = 400
-    }
+        HEIGHT = 350
+    },
+    TITLE_HEIGHT = 30
 }
 
 -- Menu items
@@ -58,22 +60,50 @@ local Corner = Instance.new("UICorner")
 Corner.CornerRadius = UDim.new(0, CONFIG.CORNER_RADIUS)
 Corner.Parent = MainFrame
 
+-- Create title bar
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Size = UDim2.new(1, 0, 0, CONFIG.TITLE_HEIGHT)
+TitleBar.Position = UDim2.new(0, 0, 0, 0)
+TitleBar.BackgroundColor3 = CONFIG.THEME.TITLE_BAR
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+
+-- Add corner rounding to title bar
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, CONFIG.CORNER_RADIUS)
+TitleCorner.Parent = TitleBar
+
+-- Create title text
+local TitleText = Instance.new("TextLabel")
+TitleText.Name = "TitleText"
+TitleText.Size = UDim2.new(1, -100, 1, 0)
+TitleText.Position = UDim2.new(0, 10, 0, 0)
+TitleText.BackgroundTransparency = 1
+TitleText.Text = "Super"
+TitleText.TextColor3 = CONFIG.THEME.TEXT
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+TitleText.TextSize = 16
+TitleText.Font = Enum.Font.SourceSansBold
+TitleText.Parent = TitleBar
+
 -- Create close button
 local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseButton"
-CloseButton.Size = UDim2.new(0, 24, 0, 24)
-CloseButton.Position = UDim2.new(1, -24, 0, 0)
+CloseButton.Size = UDim2.new(0, CONFIG.TITLE_HEIGHT, 0, CONFIG.TITLE_HEIGHT)
+CloseButton.Position = UDim2.new(1, -CONFIG.TITLE_HEIGHT, 0, 0)
 CloseButton.BackgroundTransparency = 1
 CloseButton.Text = "×"
 CloseButton.TextColor3 = CONFIG.THEME.TEXT
 CloseButton.TextSize = 20
 CloseButton.Font = Enum.Font.SourceSansBold
-CloseButton.Parent = MainFrame
+CloseButton.Parent = TitleBar
 
 -- Create side menu container
 local MenuContainer = Instance.new("Frame")
 MenuContainer.Name = "MenuContainer"
-MenuContainer.Size = UDim2.new(0, CONFIG.MENU_WIDTH, 1, 0)
+MenuContainer.Size = UDim2.new(0, CONFIG.MENU_WIDTH, 1, -CONFIG.TITLE_HEIGHT)
+MenuContainer.Position = UDim2.new(0, 0, 0, CONFIG.TITLE_HEIGHT)
 MenuContainer.BackgroundTransparency = 1
 MenuContainer.Parent = MainFrame
 
@@ -156,7 +186,7 @@ local function updateDrag(input)
     end
 end
 
-MainFrame.InputBegan:Connect(function(input)
+TitleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
@@ -164,7 +194,7 @@ MainFrame.InputBegan:Connect(function(input)
     end
 end)
 
-MainFrame.InputEnded:Connect(function(input)
+TitleBar.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = false
     end
