@@ -31,25 +31,26 @@ local CUSTOM = {
     
     SIZES = {
         Small = {
-            WIDTH = 450,                                -- Wider small size
-            HEIGHT = 300
+            WIDTH = 400,                                -- Smaller width
+            HEIGHT = 280                                -- Smaller height
         },
         Normal = {
-            WIDTH = 550,                                -- Wider normal size
-            HEIGHT = 350
+            WIDTH = 500,                                -- Normal width
+            HEIGHT = 320                                -- Normal height
         },
         Large = {
-            WIDTH = 650,                                -- Wider large size
-            HEIGHT = 400
+            WIDTH = 600,                                -- Large width
+            HEIGHT = 360                                -- Large height
         }
     },
     
     LAYOUT = {
-        CORNER_RADIUS = 8,                              -- Rounder corners
-        TITLE_HEIGHT = 32,                              -- Taller title bar
-        MENU_WIDTH = 160,                               -- Wider menu
-        BUTTON_HEIGHT = 32,                             -- Taller buttons
-        PADDING = 10,                                   -- Space between elements
+        CORNER_RADIUS = 6,                              -- Smaller corners
+        TITLE_HEIGHT = 28,                              -- Smaller title bar
+        MENU_WIDTH = 140,                               -- Narrower menu
+        BUTTON_HEIGHT = 28,                             -- Smaller buttons
+        PADDING = 8,                                    -- Smaller padding
+        SCROLL_BAR_THICKNESS = 3,                       -- Thin scrollbar
     },
     
     FONTS = {
@@ -194,53 +195,11 @@ local function toggleMinimize()
     }):Play()
 end
 
--- Create size buttons
-local function createSizeButton(name, position)
-    local button = Instance.new("TextButton")
-    button.Name = name .. "SizeButton"
-    button.Size = UDim2.new(0, 50, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-    button.Position = UDim2.new(0, position, 0.5, -CUSTOM.LAYOUT.BUTTON_HEIGHT/2)
-    button.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
-    button.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
-    button.Text = name
-    button.TextColor3 = CONFIG.THEME.TEXT
-    button.TextSize = 12
-    button.Font = CUSTOM.FONTS.BUTTON
-    button.Parent = TitleBar
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 4)
-    corner.Parent = button
-    
-    button.MouseButton1Click:Connect(function()
-        changeGuiSize(name)
-    end)
-    
-    button.MouseEnter:Connect(function()
-        TweenService:Create(button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
-            BackgroundTransparency = CUSTOM.THEME.BUTTON_HOVER_TRANSPARENCY
-        }):Play()
-    end)
-    
-    button.MouseLeave:Connect(function()
-        TweenService:Create(button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
-            BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
-        }):Play()
-    end)
-    
-    return button
-end
-
--- Create size control buttons
-local smallButton = createSizeButton("Small", 120)
-local normalButton = createSizeButton("Normal", 180)
-local largeButton = createSizeButton("Large", 240)
-
--- Create minimize button
+-- Create minimize button (moved to right)
 local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Name = "MinimizeButton"
-MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
-MinimizeButton.Position = UDim2.new(1, -60, 0, 0)
+MinimizeButton.Size = UDim2.new(0, CUSTOM.LAYOUT.BUTTON_HEIGHT, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+MinimizeButton.Position = UDim2.new(1, -CUSTOM.LAYOUT.BUTTON_HEIGHT*2, 0, 0)
 MinimizeButton.BackgroundTransparency = 1
 MinimizeButton.Text = "─"
 MinimizeButton.TextColor3 = CONFIG.THEME.TEXT_SECONDARY
@@ -253,8 +212,8 @@ MinimizeButton.MouseButton1Click:Connect(toggleMinimize)
 -- Create close button
 local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseButton"
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -30, 0, 0)
+CloseButton.Size = UDim2.new(0, CUSTOM.LAYOUT.BUTTON_HEIGHT, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+CloseButton.Position = UDim2.new(1, -CUSTOM.LAYOUT.BUTTON_HEIGHT, 0, 0)
 CloseButton.BackgroundTransparency = 1
 CloseButton.Text = "×"
 CloseButton.TextColor3 = CONFIG.THEME.CLOSE_BUTTON
@@ -272,7 +231,7 @@ MenuScroll.Name = "MenuScroll"
 MenuScroll.Size = UDim2.new(0, CONFIG.MENU_WIDTH, 1, -CONFIG.TITLE_HEIGHT - CUSTOM.LAYOUT.PADDING)
 MenuScroll.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CONFIG.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING/2)
 MenuScroll.BackgroundTransparency = 1
-MenuScroll.ScrollBarThickness = 2
+MenuScroll.ScrollBarThickness = CUSTOM.LAYOUT.SCROLL_BAR_THICKNESS
 MenuScroll.ScrollBarImageColor3 = CUSTOM.THEME.ACCENT
 MenuScroll.Parent = MainFrame
 
@@ -284,13 +243,15 @@ ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 ListLayout.Parent = MenuScroll
 
 -- Create content area
-local ContentArea = Instance.new("Frame")
+local ContentArea = Instance.new("ScrollingFrame")
 ContentArea.Name = "ContentArea"
 ContentArea.Size = UDim2.new(1, -(CONFIG.MENU_WIDTH + CUSTOM.LAYOUT.PADDING * 3), 1, -(CONFIG.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING * 2))
 ContentArea.Position = UDim2.new(0, CONFIG.MENU_WIDTH + CUSTOM.LAYOUT.PADDING * 2, 0, CONFIG.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING)
 ContentArea.BackgroundColor3 = CUSTOM.THEME.BACKGROUND
 ContentArea.BackgroundTransparency = 0.5
 ContentArea.BorderSizePixel = 0
+ContentArea.ScrollBarThickness = CUSTOM.LAYOUT.SCROLL_BAR_THICKNESS
+ContentArea.ScrollBarImageColor3 = CUSTOM.THEME.ACCENT
 ContentArea.Parent = MainFrame
 
 -- Add corner rounding to content area
@@ -298,10 +259,15 @@ local ContentCorner = Instance.new("UICorner")
 ContentCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
 ContentCorner.Parent = ContentArea
 
+-- Create content layout
+local ContentLayout = Instance.new("UIListLayout")
+ContentLayout.Padding = UDim.new(0, CUSTOM.LAYOUT.PADDING)
+ContentLayout.Parent = ContentArea
+
 -- Function to clear content area
 local function clearContentArea()
     for _, child in ipairs(ContentArea:GetChildren()) do
-        if child:IsA("GuiObject") and child ~= ContentCorner then
+        if child:IsA("GuiObject") and child ~= ContentCorner and child ~= ContentLayout then
             child:Destroy()
         end
     end
@@ -563,6 +529,11 @@ end
 -- Update canvas size
 ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     MenuScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y)
+end)
+
+-- Update canvas size for content area
+ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ContentArea.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + CUSTOM.LAYOUT.PADDING)
 end)
 
 -- Dragging functionality
