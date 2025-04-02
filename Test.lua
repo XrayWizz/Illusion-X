@@ -24,19 +24,19 @@ local CONFIG = {
 
 -- Menu items with icons
 local MENU_ITEMS = {
-    {name = "Overview", icon = "👤"},    -- Profile icon
-    {name = "Farming", icon = "🏡"},     -- Simple house
-    {name = "Sea Events", icon = "🌊"},  -- Wave
-    {name = "Islands", icon = "🏝️"},    -- Island
-    {name = "Quests/Raids", icon = "⚔️"}, -- Swords
-    {name = "Fruit", icon = "🍒"},       -- Cherry
-    {name = "Teleport", icon = "🧭"},    -- Compass
-    {name = "Status", icon = "📜"},      -- Scroll
-    {name = "Visual", icon = "👁️"},      -- Eye
-    {name = "Shop", icon = "🛒"},        -- Cart
-    {name = "Misc.", icon = "🔧"},       -- Wrench
-    {name = "Settings", icon = "⚙️"},    -- Gear
-    {name = "Feedback", icon = "💬"}     -- Chat
+    {name = "Overview", icon = "👤"},     -- Profile
+    {name = "Farming", icon = "🏰"},      -- Castle
+    {name = "Sea Events", icon = "🌊"},   -- Wave
+    {name = "Islands", icon = "🏝️"},     -- Island
+    {name = "Quests/Raids", icon = "⚔️"}, -- Crossed swords
+    {name = "Fruit", icon = "🍎"},        -- Apple
+    {name = "Teleport", icon = "⚡"},     -- Lightning
+    {name = "Status", icon = "📜"},       -- Scroll
+    {name = "Visual", icon = "👁️"},       -- Eye
+    {name = "Shop", icon = "🛒"},         -- Shopping cart
+    {name = "Misc.", icon = "🔩"},        -- Nut and bolt
+    {name = "Settings", icon = "⚙️"},     -- Gear
+    {name = "Feedback", icon = "💬"}      -- Speech bubble
 }
 
 -- Function to get wireframe version of text
