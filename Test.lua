@@ -34,6 +34,10 @@ local CONFIG = {
             WIDTH = 600,
             HEIGHT = 400
         }
+    },
+    MINIMIZED = {
+        WIDTH = 250,  -- Half of normal width
+        HEIGHT = 30   -- Just title bar height
     }
 }
 
@@ -97,8 +101,8 @@ Corner.Parent = MainFrame
 local TitleBar = Instance.new("Frame")
 TitleBar.Name = "TitleBar"
 TitleBar.Size = UDim2.new(1, 0, 0, CONFIG.TITLE_HEIGHT)
-TitleBar.Position = UDim2.new(0, 0, 0, 0)
-TitleBar.BackgroundColor3 = CONFIG.THEME.TITLE_BAR
+TitleBar.BackgroundTransparency = 0.9
+TitleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 TitleBar.BorderSizePixel = 0
 TitleBar.Parent = MainFrame
 
@@ -110,27 +114,93 @@ TitleCorner.Parent = TitleBar
 -- Create title text
 local TitleText = Instance.new("TextLabel")
 TitleText.Name = "TitleText"
-TitleText.Size = UDim2.new(1, -100, 1, 0)
+TitleText.Size = UDim2.new(1, -100, 1, 0)  -- Make room for buttons
 TitleText.Position = UDim2.new(0, 10, 0, 0)
 TitleText.BackgroundTransparency = 1
 TitleText.Text = "Super"
-TitleText.TextColor3 = CONFIG.THEME.TEXT
-TitleText.TextXAlignment = Enum.TextXAlignment.Left
+TitleText.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
 TitleText.TextSize = 16
 TitleText.Font = Enum.Font.SourceSansBold
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
 TitleText.Parent = TitleBar
 
--- Create close button
+-- Create minimize button
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+MinimizeButton.Position = UDim2.new(1, -60, 0, 0)  -- Position it before close button
+MinimizeButton.BackgroundTransparency = 1
+MinimizeButton.Text = "─"  -- Minimize symbol
+MinimizeButton.TextColor3 = CONFIG.THEME.TEXT_SECONDARY
+MinimizeButton.TextSize = 16
+MinimizeButton.Font = Enum.Font.SourceSansBold
+MinimizeButton.Parent = TitleBar
+
+-- Create close button (updated position)
 local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseButton"
-CloseButton.Size = UDim2.new(0, CONFIG.TITLE_HEIGHT, 0, CONFIG.TITLE_HEIGHT)
-CloseButton.Position = UDim2.new(1, -CONFIG.TITLE_HEIGHT, 0, 0)
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -30, 0, 0)
 CloseButton.BackgroundTransparency = 1
 CloseButton.Text = "×"
-CloseButton.TextColor3 = CONFIG.THEME.TEXT
+CloseButton.TextColor3 = CONFIG.THEME.CLOSE_BUTTON
 CloseButton.TextSize = 20
 CloseButton.Font = Enum.Font.SourceSansBold
 CloseButton.Parent = TitleBar
+
+-- Minimize/Maximize functionality
+local isMinimized = false
+local currentSize = "Normal"
+
+local function toggleMinimize()
+    isMinimized = not isMinimized
+    
+    local targetSize, targetPosition
+    if isMinimized then
+        -- Minimize animation
+        targetSize = UDim2.new(0, CONFIG.MINIMIZED.WIDTH, 0, CONFIG.MINIMIZED.HEIGHT)
+        targetPosition = UDim2.new(0.5, -CONFIG.MINIMIZED.WIDTH/2, 0.5, -CONFIG.MINIMIZED.HEIGHT/2)
+        
+        -- Hide content
+        for _, child in ipairs(MainFrame:GetChildren()) do
+            if child ~= TitleBar then
+                child.Visible = false
+            end
+        end
+    else
+        -- Maximize animation
+        local size = CONFIG.SIZES[currentSize]
+        targetSize = UDim2.new(0, size.WIDTH, 0, size.HEIGHT)
+        targetPosition = UDim2.new(0.5, -size.WIDTH/2, 0.5, -size.HEIGHT/2)
+        
+        -- Show content
+        for _, child in ipairs(MainFrame:GetChildren()) do
+            child.Visible = true
+        end
+    end
+    
+    -- Animate the change
+    TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+        Size = targetSize,
+        Position = targetPosition
+    }):Play()
+end
+
+-- Connect minimize button
+MinimizeButton.MouseButton1Click:Connect(toggleMinimize)
+
+-- Update hover effects
+MinimizeButton.MouseEnter:Connect(function()
+    TweenService:Create(MinimizeButton, TweenInfo.new(0.2), {
+        TextColor3 = CONFIG.THEME.TEXT_PRIMARY
+    }):Play()
+end)
+
+MinimizeButton.MouseLeave:Connect(function()
+    TweenService:Create(MinimizeButton, TweenInfo.new(0.2), {
+        TextColor3 = CONFIG.THEME.TEXT_SECONDARY
+    }):Play()
+end)
 
 -- Create ScrollingFrame for menu items
 local MenuScroll = Instance.new("ScrollingFrame")
@@ -214,8 +284,8 @@ end
 -- Create dropdown menu
 local function createDropdown(options, defaultOption, callback, posY)
     local dropdownContainer = Instance.new("Frame")
-    dropdownContainer.Size = UDim2.new(0, 120, 0, 30)  -- Fixed width for dropdown
-    dropdownContainer.Position = UDim2.new(1, -140, 0, posY)  -- Positioned from right side
+    dropdownContainer.Size = UDim2.new(0, 120, 0, 30)
+    dropdownContainer.Position = UDim2.new(1, -140, 0, posY)
     dropdownContainer.BackgroundTransparency = 0.9
     dropdownContainer.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     dropdownContainer.BorderSizePixel = 0
@@ -234,7 +304,7 @@ local function createDropdown(options, defaultOption, callback, posY)
     arrow.Size = UDim2.new(0, 20, 1, 0)
     arrow.Position = UDim2.new(1, -20, 0, 0)
     arrow.BackgroundTransparency = 1
-    arrow.Text = "▼"
+    arrow.Text = "⮟"
     arrow.TextColor3 = CONFIG.THEME.TEXT_SECONDARY
     arrow.TextSize = 12
     arrow.Font = Enum.Font.SourceSans
