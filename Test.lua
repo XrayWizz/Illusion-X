@@ -24,20 +24,25 @@ local CONFIG = {
 
 -- Menu items with icons
 local MENU_ITEMS = {
-    {name = "Overview", icon = "👤"},     -- Profile
-    {name = "Farming", icon = "🏰"},      -- Castle
-    {name = "Sea Events", icon = "🌊"},   -- Wave
-    {name = "Islands", icon = "🏝️"},     -- Island
-    {name = "Quests/Raids", icon = "⚔️"}, -- Crossed swords
-    {name = "Fruit", icon = "🍎"},        -- Apple
-    {name = "Teleport", icon = "⚡"},     -- Lightning
-    {name = "Status", icon = "📜"},       -- Scroll
-    {name = "Visual", icon = "👁️"},       -- Eye
-    {name = "Shop", icon = "🛒"},         -- Shopping cart
-    {name = "Misc.", icon = "🔩"},        -- Nut and bolt
-    {name = "Settings", icon = "⚙️"},     -- Gear
-    {name = "Feedback", icon = "💬"}      -- Speech bubble
+    {order = 1, name = "Overview", icon = "👤"},     -- Profile
+    {order = 2, name = "Farming", icon = "🏰"},      -- Castle
+    {order = 3, name = "Sea Events", icon = "🌊"},   -- Wave
+    {order = 4, name = "Islands", icon = "🏝️"},     -- Island
+    {order = 5, name = "Quests/Raids", icon = "⚔️"}, -- Crossed swords
+    {order = 6, name = "Fruit", icon = "🍒"},        -- Cherry
+    {order = 7, name = "Teleport", icon = "⚡"},     -- Lightning
+    {order = 8, name = "Status", icon = "📜"},       -- Scroll
+    {order = 9, name = "Visual", icon = "👁️"},       -- Eye
+    {order = 10, name = "Shop", icon = "🛒"},        -- Shopping cart
+    {order = 11, name = "Misc.", icon = "🔩"},       -- Nut and bolt
+    {order = 12, name = "Settings", icon = "⚙️"},    -- Gear
+    {order = 13, name = "Feedback", icon = "💬"}     -- Speech bubble
 }
+
+-- Sort menu items by order
+table.sort(MENU_ITEMS, function(a, b)
+    return a.order < b.order
+end)
 
 -- Function to get wireframe version of text
 local function getWireframeIcon(icon)
