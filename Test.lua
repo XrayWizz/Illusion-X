@@ -801,25 +801,119 @@ local sizeSection = CreateSettingsSection("UI Size")
 sizeSection.Parent = SettingsContainer
 sizeSection.Position = UDim2.new(0, 8, 0, 96)
 
--- Size Buttons
-local function CreateSizeButton(sizeName, position)
-    local button = Instance.new("TextButton")
-    button.Parent = sizeSection
-    button.BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_DARK
-    button.Position = position
-    button.Size = UDim2.new(0.33, -10, 0, 32)
-    button.Font = Enum.Font.GothamBold
-    button.Text = sizeName
-    button.TextColor3 = CONFIG.THEMES[currentTheme].TEXT_PRIMARY
-    button.TextSize = 11
-    createCorner(button, CONFIG.CORNER_RADIUS)
-    return button
+-- Create Dropdown
+local function CreateDropdown(options, defaultOption, position)
+    local dropdownContainer = Instance.new("Frame")
+    dropdownContainer.Name = "DropdownContainer"
+    dropdownContainer.Parent = sizeSection
+    dropdownContainer.BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_DARK
+    dropdownContainer.Position = position
+    dropdownContainer.Size = UDim2.new(1, -16, 0, 32)
+    createCorner(dropdownContainer, CONFIG.CORNER_RADIUS)
+    
+    local dropdownButton = Instance.new("TextButton")
+    dropdownButton.Name = "DropdownButton"
+    dropdownButton.Parent = dropdownContainer
+    dropdownButton.BackgroundTransparency = 1
+    dropdownButton.Size = UDim2.new(1, 0, 1, 0)
+    dropdownButton.Font = Enum.Font.GothamBold
+    dropdownButton.Text = defaultOption
+    dropdownButton.TextColor3 = CONFIG.THEMES[currentTheme].TEXT_PRIMARY
+    dropdownButton.TextSize = 11
+    
+    local dropdownArrow = Instance.new("TextLabel")
+    dropdownArrow.Name = "DropdownArrow"
+    dropdownArrow.Parent = dropdownContainer
+    dropdownArrow.BackgroundTransparency = 1
+    dropdownArrow.Position = UDim2.new(1, -24, 0, 0)
+    dropdownArrow.Size = UDim2.new(0, 24, 1, 0)
+    dropdownArrow.Font = Enum.Font.GothamBold
+    dropdownArrow.Text = "▼"
+    dropdownArrow.TextColor3 = CONFIG.THEMES[currentTheme].TEXT_PRIMARY
+    dropdownArrow.TextSize = 11
+    
+    local optionsFrame = Instance.new("Frame")
+    optionsFrame.Name = "OptionsFrame"
+    optionsFrame.Parent = dropdownContainer
+    optionsFrame.BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_DARK
+    optionsFrame.Position = UDim2.new(0, 0, 1, 4)
+    optionsFrame.Size = UDim2.new(1, 0, 0, #options * 32)
+    optionsFrame.Visible = false
+    optionsFrame.ZIndex = 10
+    createCorner(optionsFrame, CONFIG.CORNER_RADIUS)
+    
+    local optionsList = Instance.new("UIListLayout")
+    optionsList.Parent = optionsFrame
+    optionsList.SortOrder = Enum.SortOrder.LayoutOrder
+    optionsList.Padding = UDim.new(0, 0)
+    
+    local isOpen = false
+    
+    -- Create option buttons
+    for i, option in ipairs(options) do
+        local optionButton = Instance.new("TextButton")
+        optionButton.Name = option
+        optionButton.Parent = optionsFrame
+        optionButton.BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_DARK
+        optionButton.Size = UDim2.new(1, 0, 0, 32)
+        optionButton.Font = Enum.Font.GothamBold
+        optionButton.Text = option
+        optionButton.TextColor3 = CONFIG.THEMES[currentTheme].TEXT_PRIMARY
+        optionButton.TextSize = 11
+        optionButton.ZIndex = 10
+        
+        optionButton.MouseButton1Click:Connect(function()
+            dropdownButton.Text = option
+            optionsFrame.Visible = false
+            isOpen = false
+            switchSize(string.upper(option):gsub(" ", "_"))
+        end)
+        
+        optionButton.MouseEnter:Connect(function()
+            TweenService:Create(optionButton, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
+                BackgroundColor3 = CONFIG.THEMES[currentTheme].BUTTON_HOVER
+            }):Play()
+        end)
+        
+        optionButton.MouseLeave:Connect(function()
+            TweenService:Create(optionButton, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
+                BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_DARK
+            }):Play()
+        end)
+    end
+    
+    dropdownButton.MouseButton1Click:Connect(function()
+        isOpen = not isOpen
+        optionsFrame.Visible = isOpen
+        dropdownArrow.Text = isOpen and "▲" or "▼"
+    end)
+    
+    -- Close dropdown when clicking outside
+    UserInputService.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            local position = input.Position
+            local inDropdown = position.X >= dropdownContainer.AbsolutePosition.X
+                and position.X <= dropdownContainer.AbsolutePosition.X + dropdownContainer.AbsoluteSize.X
+                and position.Y >= dropdownContainer.AbsolutePosition.Y
+                and position.Y <= dropdownContainer.AbsolutePosition.Y + dropdownContainer.AbsoluteSize.Y
+            
+            if not inDropdown and isOpen then
+                isOpen = false
+                optionsFrame.Visible = false
+                dropdownArrow.Text = "▼"
+            end
+        end
+    end)
+    
+    return dropdownContainer
 end
 
-local smallButton = CreateSizeButton("Small", UDim2.new(0, 8, 0, 36))
-local normalButton = CreateSizeButton("Normal", UDim2.new(0.33, 4, 0, 36))
-local largeButton = CreateSizeButton("Large", UDim2.new(0.66, 4, 0, 36))
-local extraLargeButton = CreateSizeButton("Extra Large", UDim2.new(0, 8, 0, 68))
+-- Create size dropdown
+local sizeDropdown = CreateDropdown(
+    {"Small", "Normal", "Large", "Extra Large"},
+    "Extra Large",
+    UDim2.new(0, 8, 0, 36)
+)
 
 -- Current size
 local currentSize = "EXTRA_LARGE"
@@ -941,23 +1035,6 @@ local function switchSize(sizeName)
         print("Size preference saved")
     end
 end
-
--- Connect size buttons
-smallButton.MouseButton1Click:Connect(function()
-    switchSize("SMALL")
-end)
-
-normalButton.MouseButton1Click:Connect(function()
-    switchSize("NORMAL")
-end)
-
-largeButton.MouseButton1Click:Connect(function()
-    switchSize("LARGE")
-end)
-
-extraLargeButton.MouseButton1Click:Connect(function()
-    switchSize("EXTRA_LARGE")
-end)
 
 -- Settings Button Handler
 SettingsButton.MouseButton1Click:Connect(function()
