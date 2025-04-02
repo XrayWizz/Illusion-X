@@ -1,31 +1,17 @@
 -- Constants for configuration
 local CONFIG = {
     UPDATE_INTERVAL = 0.1,
-    THEMES = {
-        DARK = {
-            BACKGROUND_DARK = Color3.fromRGB(18, 18, 18),
-            BACKGROUND_MEDIUM = Color3.fromRGB(24, 24, 24),
-            BACKGROUND_LIGHT = Color3.fromRGB(30, 30, 30),
-            ACCENT = Color3.fromRGB(70, 130, 240),
-            ACCENT_HOVER = Color3.fromRGB(90, 150, 255),
-            TEXT_PRIMARY = Color3.fromRGB(255, 255, 255),
-            TEXT_SECONDARY = Color3.fromRGB(200, 200, 200),
-            BORDER = Color3.fromRGB(40, 40, 40),
-            BUTTON_HOVER = Color3.fromRGB(35, 35, 35),
-            SHADOW = Color3.fromRGB(0, 0, 0),
-        },
-        LIGHT = {
-            BACKGROUND_DARK = Color3.fromRGB(240, 242, 245),
-            BACKGROUND_MEDIUM = Color3.fromRGB(248, 249, 251),
-            BACKGROUND_LIGHT = Color3.fromRGB(255, 255, 255),
-            ACCENT = Color3.fromRGB(45, 120, 255),
-            ACCENT_HOVER = Color3.fromRGB(65, 140, 255),
-            TEXT_PRIMARY = Color3.fromRGB(35, 42, 49),
-            TEXT_SECONDARY = Color3.fromRGB(90, 100, 110),
-            BORDER = Color3.fromRGB(225, 228, 232),
-            BUTTON_HOVER = Color3.fromRGB(245, 246, 248),
-            SHADOW = Color3.fromRGB(210, 215, 220),
-        }
+    THEME = {
+        BACKGROUND_DARK = Color3.fromRGB(18, 18, 18),
+        BACKGROUND_MEDIUM = Color3.fromRGB(24, 24, 24),
+        BACKGROUND_LIGHT = Color3.fromRGB(30, 30, 30),
+        ACCENT = Color3.fromRGB(70, 130, 240),
+        ACCENT_HOVER = Color3.fromRGB(90, 150, 255),
+        TEXT_PRIMARY = Color3.fromRGB(255, 255, 255),
+        TEXT_SECONDARY = Color3.fromRGB(200, 200, 200),
+        BORDER = Color3.fromRGB(40, 40, 40),
+        BUTTON_HOVER = Color3.fromRGB(35, 35, 35),
+        SHADOW = Color3.fromRGB(0, 0, 0),
     },
     COLORS = {
         POSITIVE = Color3.fromRGB(50, 205, 50),
@@ -120,7 +106,7 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_MEDIUM
+MainFrame.BackgroundColor3 = CONFIG.THEME.BACKGROUND_MEDIUM
 MainFrame.Size = MINIMIZE_SETTINGS.NORMAL.Size
 MainFrame.Position = MINIMIZE_SETTINGS.NORMAL.Position
 MainFrame.ClipsDescendants = true
@@ -131,7 +117,7 @@ local mainCorner = createCorner(MainFrame, CONFIG.CORNER_RADIUS)
 local TitleBar = Instance.new("Frame")
 TitleBar.Name = "TitleBar"
 TitleBar.Parent = MainFrame
-TitleBar.BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_LIGHT
+TitleBar.BackgroundColor3 = CONFIG.THEME.BACKGROUND_LIGHT
 TitleBar.Size = UDim2.new(1, 0, 0, 24)
 
 local titleBarCorner = createCorner(TitleBar, CONFIG.CORNER_RADIUS)
@@ -144,7 +130,7 @@ Title.Position = UDim2.new(0, 8, 0, 0)
 Title.Size = UDim2.new(1, -60, 1, 0)
 Title.Font = Enum.Font.GothamBold
 Title.Text = "Blox Fruits Info"
-Title.TextColor3 = CONFIG.THEMES.DARK.TEXT_PRIMARY
+Title.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
 Title.TextSize = 12
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -152,12 +138,12 @@ Title.TextXAlignment = Enum.TextXAlignment.Left
 local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Name = "MinimizeButton"
 MinimizeButton.Parent = TitleBar
-MinimizeButton.BackgroundColor3 = CONFIG.THEMES.DARK.BUTTON_HOVER
+MinimizeButton.BackgroundColor3 = CONFIG.THEME.BUTTON_HOVER
 MinimizeButton.Position = UDim2.new(1, -44, 0.5, -7)
 MinimizeButton.Size = UDim2.new(0, 14, 0, 14)
 MinimizeButton.Font = Enum.Font.GothamBold
 MinimizeButton.Text = "-"
-MinimizeButton.TextColor3 = CONFIG.THEMES.DARK.TEXT_PRIMARY
+MinimizeButton.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
 MinimizeButton.TextSize = 14
 MinimizeButton.AutoButtonColor = false
 
@@ -172,7 +158,7 @@ CloseButton.Position = UDim2.new(1, -24, 0.5, -7)
 CloseButton.Size = UDim2.new(0, 14, 0, 14)
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.Text = "×"
-CloseButton.TextColor3 = CONFIG.THEMES.DARK.TEXT_PRIMARY
+CloseButton.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
 CloseButton.TextSize = 14
 CloseButton.AutoButtonColor = false
 
@@ -182,7 +168,7 @@ local closeCorner = createCorner(CloseButton, CONFIG.CORNER_RADIUS)
 local MenuFrame = Instance.new("Frame")
 MenuFrame.Name = "MenuFrame"
 MenuFrame.Parent = MainFrame
-MenuFrame.BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_LIGHT
+MenuFrame.BackgroundColor3 = CONFIG.THEME.BACKGROUND_LIGHT
 MenuFrame.Position = UDim2.new(0, 0, 0, 24)
 MenuFrame.Size = UDim2.new(0, 75, 1, -24)
 
@@ -192,7 +178,7 @@ local menuCorner = createCorner(MenuFrame, CONFIG.CORNER_RADIUS)
 local menuTopCover = Instance.new("Frame")
 menuTopCover.Name = "MenuTopCover"
 menuTopCover.Parent = MenuFrame
-menuTopCover.BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_LIGHT
+menuTopCover.BackgroundColor3 = CONFIG.THEME.BACKGROUND_LIGHT
 menuTopCover.BorderSizePixel = 0
 menuTopCover.Position = UDim2.new(0, 0, 0, 0)
 menuTopCover.Size = UDim2.new(1, 0, 0, 10)
@@ -205,7 +191,7 @@ MenuScroll.BackgroundTransparency = 1
 MenuScroll.Position = UDim2.new(0, 0, 0, 0)
 MenuScroll.Size = UDim2.new(1, 0, 1, 0)
 MenuScroll.ScrollBarThickness = 2
-MenuScroll.ScrollBarImageColor3 = CONFIG.THEMES.DARK.TEXT_SECONDARY
+MenuScroll.ScrollBarImageColor3 = CONFIG.THEME.TEXT_SECONDARY
 MenuScroll.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
 
 -- Add UIListLayout for automatic button positioning
@@ -217,17 +203,16 @@ MenuList.SortOrder = Enum.SortOrder.LayoutOrder
 
 -- Menu button states
 local selectedButton = nil
-local currentTheme = "DARK"
 
 -- Create Menu Button
 local function CreateMenuButton(text, order)
     local button = Instance.new("TextButton")
-    button.BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_DARK
+    button.BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
     button.Size = UDim2.new(1, -8, 0, 28)
     button.Position = UDim2.new(0, 4, 0, 4 + (order * 32))
     button.Font = Enum.Font.GothamBold
     button.Text = text
-    button.TextColor3 = CONFIG.THEMES[currentTheme].TEXT_PRIMARY
+    button.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
     button.TextSize = 11
     button.AutoButtonColor = false
     button.LayoutOrder = order
@@ -239,7 +224,7 @@ local function CreateMenuButton(text, order)
     local selectedIndicator = Instance.new("Frame")
     selectedIndicator.Name = "SelectedIndicator"
     selectedIndicator.Parent = button
-    selectedIndicator.BackgroundColor3 = CONFIG.THEMES[currentTheme].ACCENT
+    selectedIndicator.BackgroundColor3 = CONFIG.THEME.ACCENT
     selectedIndicator.Position = UDim2.new(0, 0, 0.5, -1)
     selectedIndicator.Size = UDim2.new(0, 2, 0, 16)
     selectedIndicator.Visible = false
@@ -249,7 +234,7 @@ local function CreateMenuButton(text, order)
     button.MouseEnter:Connect(function()
         if button ~= selectedButton then
             TweenService:Create(button, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
-                BackgroundColor3 = CONFIG.THEMES[currentTheme].BUTTON_HOVER
+                BackgroundColor3 = CONFIG.THEME.BUTTON_HOVER
             }):Play()
         end
     end)
@@ -257,7 +242,7 @@ local function CreateMenuButton(text, order)
     button.MouseLeave:Connect(function()
         if button ~= selectedButton then
             TweenService:Create(button, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
-                BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_DARK
+                BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
             }):Play()
         end
     end)
@@ -269,13 +254,13 @@ end
 local function selectButton(button)
     if selectedButton then
         TweenService:Create(selectedButton, CONFIG.ANIMATION.TWEEN_INFO, {
-            BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_DARK
+            BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
         }):Play()
     end
     
     selectedButton = button
     TweenService:Create(button, CONFIG.ANIMATION.TWEEN_INFO, {
-        BackgroundColor3 = CONFIG.THEMES[currentTheme].ACCENT
+        BackgroundColor3 = CONFIG.THEME.ACCENT
     }):Play()
 end
 
@@ -315,11 +300,11 @@ ContentFrame.ClipsDescendants = true
 local ContentContainer = Instance.new("ScrollingFrame")
 ContentContainer.Name = "ContentContainer"
 ContentContainer.Parent = ContentFrame
-ContentContainer.BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_DARK
+ContentContainer.BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
 ContentContainer.Position = UDim2.new(0, 0, 0, 0)
 ContentContainer.Size = UDim2.new(1, 0, 1, 0)
 ContentContainer.ScrollBarThickness = 3
-ContentContainer.ScrollBarImageColor3 = CONFIG.THEMES.DARK.TEXT_SECONDARY
+ContentContainer.ScrollBarImageColor3 = CONFIG.THEME.TEXT_SECONDARY
 ContentContainer.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
 ContentContainer.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
 ContentContainer.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
@@ -328,7 +313,7 @@ ContentContainer.Visible = true
 -- Create Section Header
 local function CreateSectionHeader(text)
     local header = Instance.new("Frame")
-    header.BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_LIGHT
+    header.BackgroundColor3 = CONFIG.THEME.BACKGROUND_LIGHT
     header.Size = UDim2.new(1, -24, 0, 32)
     
     local headerContent = Instance.new("Frame")
@@ -344,14 +329,14 @@ local function CreateSectionHeader(text)
     headerLabel.Size = UDim2.new(1, -24, 1, 0)
     headerLabel.Font = Enum.Font.GothamBlack
     headerLabel.Text = text
-    headerLabel.TextColor3 = CONFIG.THEMES[currentTheme].TEXT_PRIMARY
+    headerLabel.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
     headerLabel.TextSize = 12
     headerLabel.TextXAlignment = Enum.TextXAlignment.Left
     
     local accent = Instance.new("Frame")
     accent.Name = "Accent"
     accent.Parent = header
-    accent.BackgroundColor3 = CONFIG.THEMES[currentTheme].ACCENT
+    accent.BackgroundColor3 = CONFIG.THEME.ACCENT
     accent.Position = UDim2.new(0, 0, 0, 0)
     accent.Size = UDim2.new(0, 2, 1, 0)
     
@@ -373,7 +358,7 @@ local function CreateInfoLabel(text, valueColor)
     label.Size = UDim2.new(0.4, -8, 1, 0)
     label.Font = Enum.Font.GothamMedium
     label.Text = text:match("^(.-):") or text
-    label.TextColor3 = CONFIG.THEMES[currentTheme].TEXT_SECONDARY
+    label.TextColor3 = CONFIG.THEME.TEXT_SECONDARY
     label.TextSize = 11
     label.TextXAlignment = Enum.TextXAlignment.Left
     
@@ -384,7 +369,7 @@ local function CreateInfoLabel(text, valueColor)
     value.Size = UDim2.new(0.6, -16, 1, 0)
     value.Font = Enum.Font.GothamBold
     value.Text = text:match(": (.+)$") or "None"
-    value.TextColor3 = valueColor or CONFIG.THEMES[currentTheme].TEXT_PRIMARY
+    value.TextColor3 = valueColor or CONFIG.THEME.TEXT_PRIMARY
     value.TextSize = 11
     value.TextXAlignment = Enum.TextXAlignment.Right
     
@@ -394,7 +379,7 @@ end
 -- Create Section
 local function CreateSection()
     local section = Instance.new("Frame")
-    section.BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_DARK
+    section.BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
     section.Size = UDim2.new(1, -24, 0, 0)
     section.Position = UDim2.new(0, 12, 0, 0)
     section.AutomaticSize = Enum.AutomaticSize.Y
@@ -426,11 +411,11 @@ end
 local SettingsContainer = Instance.new("ScrollingFrame")
 SettingsContainer.Name = "SettingsContainer"
 SettingsContainer.Parent = ContentFrame
-SettingsContainer.BackgroundColor3 = CONFIG.THEMES.DARK.BACKGROUND_DARK
+SettingsContainer.BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
 SettingsContainer.Position = UDim2.new(0, 0, 0, 0)
 SettingsContainer.Size = UDim2.new(1, 0, 1, 0)
 SettingsContainer.ScrollBarThickness = 3
-SettingsContainer.ScrollBarImageColor3 = CONFIG.THEMES.DARK.TEXT_SECONDARY
+SettingsContainer.ScrollBarImageColor3 = CONFIG.THEME.TEXT_SECONDARY
 SettingsContainer.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
 SettingsContainer.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
 SettingsContainer.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
@@ -454,7 +439,7 @@ SettingsPadding.PaddingBottom = UDim.new(0, 12)
 -- Menu Divider
 local MenuDivider = Instance.new("Frame")
 MenuDivider.Parent = MainFrame
-MenuDivider.BackgroundColor3 = CONFIG.THEMES.DARK.BORDER
+MenuDivider.BackgroundColor3 = CONFIG.THEME.BORDER
 MenuDivider.Position = UDim2.new(0, 75, 0, 24)
 MenuDivider.Size = UDim2.new(0, 1, 1, -24)
 
@@ -754,7 +739,7 @@ end)
 -- Create Settings Content
 local function CreateSettingsSection(title)
     local section = Instance.new("Frame")
-    section.BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_MEDIUM
+    section.BackgroundColor3 = CONFIG.THEME.BACKGROUND_MEDIUM
     section.Size = UDim2.new(1, -16, 0, 80)
     section.Position = UDim2.new(0, 8, 0, 0)
     createCorner(section, CONFIG.CORNER_RADIUS)
@@ -766,47 +751,24 @@ local function CreateSettingsSection(title)
     titleLabel.Size = UDim2.new(1, -16, 0, 24)
     titleLabel.Font = Enum.Font.GothamBold
     titleLabel.Text = title
-    titleLabel.TextColor3 = CONFIG.THEMES[currentTheme].TEXT_PRIMARY
+    titleLabel.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
     titleLabel.TextSize = 12
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     
     return section
 end
 
--- Theme Section
-local themeSection = CreateSettingsSection("Theme")
-themeSection.Parent = SettingsContainer
-themeSection.Position = UDim2.new(0, 8, 0, 8)
-
--- Theme Buttons
-local function CreateThemeButton(themeName, position)
-    local button = Instance.new("TextButton")
-    button.Parent = themeSection
-    button.BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_DARK
-    button.Position = position
-    button.Size = UDim2.new(0.5, -12, 0, 32)
-    button.Font = Enum.Font.GothamBold
-    button.Text = themeName
-    button.TextColor3 = CONFIG.THEMES[currentTheme].TEXT_PRIMARY
-    button.TextSize = 11
-    createCorner(button, CONFIG.CORNER_RADIUS)
-    return button
-end
-
-local darkButton = CreateThemeButton("Dark Theme", UDim2.new(0, 8, 0, 36))
-local lightButton = CreateThemeButton("Light Theme", UDim2.new(0.5, 4, 0, 36))
-
 -- Size Section
 local sizeSection = CreateSettingsSection("UI Size")
 sizeSection.Parent = SettingsContainer
-sizeSection.Position = UDim2.new(0, 8, 0, 96)
+sizeSection.Position = UDim2.new(0, 8, 0, 8)
 
 -- Create Dropdown
 local function CreateDropdown(options, defaultOption, position)
     local dropdownContainer = Instance.new("Frame")
     dropdownContainer.Name = "DropdownContainer"
     dropdownContainer.Parent = sizeSection
-    dropdownContainer.BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_DARK
+    dropdownContainer.BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
     dropdownContainer.Position = position
     dropdownContainer.Size = UDim2.new(1, -16, 0, 32)
     createCorner(dropdownContainer, CONFIG.CORNER_RADIUS)
@@ -818,7 +780,7 @@ local function CreateDropdown(options, defaultOption, position)
     dropdownButton.Size = UDim2.new(1, 0, 1, 0)
     dropdownButton.Font = Enum.Font.GothamBold
     dropdownButton.Text = defaultOption
-    dropdownButton.TextColor3 = CONFIG.THEMES[currentTheme].TEXT_PRIMARY
+    dropdownButton.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
     dropdownButton.TextSize = 11
     
     local dropdownArrow = Instance.new("TextLabel")
@@ -829,13 +791,13 @@ local function CreateDropdown(options, defaultOption, position)
     dropdownArrow.Size = UDim2.new(0, 24, 1, 0)
     dropdownArrow.Font = Enum.Font.GothamBold
     dropdownArrow.Text = "▼"
-    dropdownArrow.TextColor3 = CONFIG.THEMES[currentTheme].TEXT_PRIMARY
+    dropdownArrow.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
     dropdownArrow.TextSize = 11
     
     local optionsFrame = Instance.new("Frame")
     optionsFrame.Name = "OptionsFrame"
     optionsFrame.Parent = dropdownContainer
-    optionsFrame.BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_DARK
+    optionsFrame.BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
     optionsFrame.Position = UDim2.new(0, 0, 1, 4)
     optionsFrame.Size = UDim2.new(1, 0, 0, #options * 32)
     optionsFrame.Visible = false
@@ -854,11 +816,11 @@ local function CreateDropdown(options, defaultOption, position)
         local optionButton = Instance.new("TextButton")
         optionButton.Name = option
         optionButton.Parent = optionsFrame
-        optionButton.BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_DARK
+        optionButton.BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
         optionButton.Size = UDim2.new(1, 0, 0, 32)
         optionButton.Font = Enum.Font.GothamBold
         optionButton.Text = option
-        optionButton.TextColor3 = CONFIG.THEMES[currentTheme].TEXT_PRIMARY
+        optionButton.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
         optionButton.TextSize = 11
         optionButton.ZIndex = 10
         
@@ -871,13 +833,13 @@ local function CreateDropdown(options, defaultOption, position)
         
         optionButton.MouseEnter:Connect(function()
             TweenService:Create(optionButton, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
-                BackgroundColor3 = CONFIG.THEMES[currentTheme].BUTTON_HOVER
+                BackgroundColor3 = CONFIG.THEME.BUTTON_HOVER
             }):Play()
         end)
         
         optionButton.MouseLeave:Connect(function()
             TweenService:Create(optionButton, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
-                BackgroundColor3 = CONFIG.THEMES[currentTheme].BACKGROUND_DARK
+                BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
             }):Play()
         end)
     end
@@ -918,90 +880,6 @@ local sizeDropdown = CreateDropdown(
 -- Current size
 local currentSize = "EXTRA_LARGE"
 
--- Theme switching function
-local function switchTheme(themeName)
-    local theme = CONFIG.THEMES[themeName]
-    currentTheme = themeName
-    
-    -- Apply theme to main components
-    MainFrame.BackgroundColor3 = theme.BACKGROUND_MEDIUM
-    TitleBar.BackgroundColor3 = theme.BACKGROUND_LIGHT
-    MenuFrame.BackgroundColor3 = theme.BACKGROUND_LIGHT
-    menuTopCover.BackgroundColor3 = theme.BACKGROUND_LIGHT
-    MenuDivider.BackgroundColor3 = theme.BORDER
-    ContentContainer.BackgroundColor3 = theme.BACKGROUND_DARK
-    SettingsContainer.BackgroundColor3 = theme.BACKGROUND_DARK
-    
-    -- Update scrollbar colors
-    ContentContainer.ScrollBarImageColor3 = theme.TEXT_SECONDARY
-    SettingsContainer.ScrollBarImageColor3 = theme.TEXT_SECONDARY
-    MenuScroll.ScrollBarImageColor3 = theme.TEXT_SECONDARY
-    
-    -- Update text colors
-    Title.TextColor3 = theme.TEXT_PRIMARY
-    
-    -- Update all buttons
-    for _, button in ipairs(MainFrame:GetDescendants()) do
-        if button:IsA("TextButton") then
-            if button == selectedButton then
-                button.BackgroundColor3 = theme.ACCENT
-            elseif button == MinimizeButton then
-                button.BackgroundColor3 = theme.BUTTON_HOVER
-            elseif button == CloseButton then
-                button.BackgroundColor3 = CONFIG.COLORS.NEGATIVE
-            else
-                button.BackgroundColor3 = theme.BACKGROUND_DARK
-            end
-            button.TextColor3 = theme.TEXT_PRIMARY
-        end
-    end
-    
-    -- Update all text labels
-    for _, label in ipairs(MainFrame:GetDescendants()) do
-        if label:IsA("TextLabel") then
-            if label:GetAttribute("IsSecondary") then
-                label.TextColor3 = theme.TEXT_SECONDARY
-            else
-                label.TextColor3 = theme.TEXT_PRIMARY
-            end
-        end
-    end
-    
-    -- Update all sections
-    for _, frame in ipairs(ContentContainer:GetChildren()) do
-        if frame:IsA("Frame") then
-            frame.BackgroundColor3 = theme.BACKGROUND_DARK
-            
-            local header = frame:FindFirstChild("Content")
-            if header then
-                header.BackgroundColor3 = theme.BACKGROUND_LIGHT
-            end
-            
-            local accent = frame:FindFirstChild("Accent")
-            if accent then
-                accent.BackgroundColor3 = theme.ACCENT
-            end
-        end
-    end
-    
-    -- Save theme preference
-    if pcall(function()
-        local success = writefile("theme_preference.txt", themeName)
-        return success
-    end) then
-        print("Theme preference saved")
-    end
-end
-
--- Theme Button Handler
-darkButton.MouseButton1Click:Connect(function()
-    switchTheme("DARK")
-end)
-
-lightButton.MouseButton1Click:Connect(function()
-    switchTheme("LIGHT")
-end)
-
 -- Size switching function
 local function switchSize(sizeName)
     currentSize = sizeName
@@ -1036,26 +914,6 @@ local function switchSize(sizeName)
     end
 end
 
--- Settings Button Handler
-SettingsButton.MouseButton1Click:Connect(function()
-    selectButton(SettingsButton)
-    ContentContainer.Visible = false
-    SettingsContainer.Visible = true
-end)
-
--- Try to load saved theme preference
-pcall(function()
-    if isfile("theme_preference.txt") then
-        local savedTheme = readfile("theme_preference.txt")
-        if savedTheme == "DARK" or savedTheme == "LIGHT" then
-            switchTheme(savedTheme)
-            return
-        end
-    end
-    -- Default to dark theme if no preference found
-    switchTheme("DARK")
-end)
-
 -- Try to load saved size preference
 pcall(function()
     if isfile("size_preference.txt") then
@@ -1067,4 +925,11 @@ pcall(function()
     end
     -- Default to extra large size if no preference found
     switchSize("EXTRA_LARGE")
+end)
+
+-- Settings Button Handler
+SettingsButton.MouseButton1Click:Connect(function()
+    selectButton(SettingsButton)
+    ContentContainer.Visible = false
+    SettingsContainer.Visible = true
 end)
