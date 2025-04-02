@@ -260,6 +260,22 @@ MenuList.SortOrder = Enum.SortOrder.LayoutOrder
 -- Menu button states
 local selectedButton = nil
 
+-- Button selection function
+local function selectButton(button)
+    if selectedButton then
+        TweenService:Create(selectedButton, CONFIG.ANIMATION.TWEEN_INFO, {
+            BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
+        }):Play()
+        selectedButton:FindFirstChild("SelectedIndicator").Visible = false
+    end
+    
+    selectedButton = button
+    TweenService:Create(button, CONFIG.ANIMATION.TWEEN_INFO, {
+        BackgroundColor3 = CONFIG.THEME.ACCENT
+    }):Play()
+    button:FindFirstChild("SelectedIndicator").Visible = true
+end
+
 -- Create Menu Button
 local function CreateMenuButton(text, order)
     local button = Instance.new("TextButton")
@@ -284,9 +300,8 @@ local function CreateMenuButton(text, order)
     selectedIndicator.Position = UDim2.new(0, 0, 0.5, -1)
     selectedIndicator.Size = UDim2.new(0, 2, 0, 16)
     selectedIndicator.Visible = false
-    createCorner(selectedIndicator, CONFIG.CORNER_RADIUS)
-    
-    -- Hover effect
+
+    -- Hover effects
     button.MouseEnter:Connect(function()
         if button ~= selectedButton then
             TweenService:Create(button, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
@@ -306,53 +321,43 @@ local function CreateMenuButton(text, order)
     return button
 end
 
--- Button selection function
-local function selectButton(button)
-    if selectedButton then
-        TweenService:Create(selectedButton, CONFIG.ANIMATION.TWEEN_INFO, {
-            BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
-        }):Play()
-    end
-    
-    selectedButton = button
-    TweenService:Create(button, CONFIG.ANIMATION.TWEEN_INFO, {
-        BackgroundColor3 = CONFIG.THEME.ACCENT
-    }):Play()
-end
+-- Create menu buttons
+local OverviewButton = CreateMenuButton("Overview", 0)
+local SettingsButton = CreateMenuButton("Settings", 1)
 
--- Create Overview Button
-local OverviewButton = CreateMenuButton("OVERVIEW", 0)
-OverviewButton.Parent = MenuScroll
-
--- Select Overview by default
-selectButton(OverviewButton)
-
--- Overview Button Handler
+-- Button click handlers
 OverviewButton.MouseButton1Click:Connect(function()
     selectButton(OverviewButton)
     ContentContainer.Visible = true
     SettingsContainer.Visible = false
 end)
 
--- Create Settings Button
-local SettingsButton = CreateMenuButton("SETTINGS", 1)
-SettingsButton.Parent = MenuScroll
+SettingsButton.MouseButton1Click:Connect(function()
+    selectButton(SettingsButton)
+    ContentContainer.Visible = false
+    SettingsContainer.Visible = true
+end)
 
--- Update MenuScroll canvas size when buttons are added
+-- Update MenuScroll canvas size
 MenuList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     MenuScroll.CanvasSize = UDim2.new(0, 0, 0, MenuList.AbsoluteContentSize.Y + 8)
 end)
 
--- Content Frame
+-- Select Overview by default after a short delay to ensure everything is loaded
+task.spawn(function()
+    task.wait(0.1)
+    selectButton(OverviewButton)
+end)
+
+-- Create Content Frame
 local ContentFrame = Instance.new("Frame")
 ContentFrame.Name = "ContentFrame"
 ContentFrame.Parent = MainFrame
 ContentFrame.BackgroundTransparency = 1
 ContentFrame.Position = UDim2.new(0, 76, 0, 24)
 ContentFrame.Size = UDim2.new(1, -76, 1, -24)
-ContentFrame.ClipsDescendants = true
 
--- Content Container (make scrollable)
+-- Create Content Container
 local ContentContainer = Instance.new("ScrollingFrame")
 ContentContainer.Name = "ContentContainer"
 ContentContainer.Parent = ContentFrame
@@ -364,7 +369,32 @@ ContentContainer.ScrollBarImageColor3 = CONFIG.THEME.TEXT_SECONDARY
 ContentContainer.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
 ContentContainer.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
 ContentContainer.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
-ContentContainer.Visible = true
+
+-- Create Settings Container
+local SettingsContainer = Instance.new("ScrollingFrame")
+SettingsContainer.Name = "SettingsContainer"
+SettingsContainer.Parent = ContentFrame
+SettingsContainer.BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
+SettingsContainer.Position = UDim2.new(0, 0, 0, 0)
+SettingsContainer.Size = UDim2.new(1, 0, 1, 0)
+SettingsContainer.ScrollBarThickness = 3
+SettingsContainer.ScrollBarImageColor3 = CONFIG.THEME.TEXT_SECONDARY
+SettingsContainer.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+SettingsContainer.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+SettingsContainer.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+SettingsContainer.Visible = false
+
+-- Create UIListLayout for Content Container
+local ContentList = Instance.new("UIListLayout")
+ContentList.Parent = ContentContainer
+ContentList.SortOrder = Enum.SortOrder.LayoutOrder
+ContentList.Padding = UDim.new(0, CONFIG.PADDING.SECTION)
+
+-- Create UIListLayout for Settings Container
+local SettingsList = Instance.new("UIListLayout")
+SettingsList.Parent = SettingsContainer
+SettingsList.SortOrder = Enum.SortOrder.LayoutOrder
+SettingsList.Padding = UDim.new(0, CONFIG.PADDING.SECTION)
 
 -- Create Section Header
 local function CreateSectionHeader(text)
@@ -462,57 +492,6 @@ local function CreateSection()
     
     return section, contentList
 end
-
--- Settings Container (make scrollable)
-local SettingsContainer = Instance.new("ScrollingFrame")
-SettingsContainer.Name = "SettingsContainer"
-SettingsContainer.Parent = ContentFrame
-SettingsContainer.BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
-SettingsContainer.Position = UDim2.new(0, 0, 0, 0)
-SettingsContainer.Size = UDim2.new(1, 0, 1, 0)
-SettingsContainer.ScrollBarThickness = 3
-SettingsContainer.ScrollBarImageColor3 = CONFIG.THEME.TEXT_SECONDARY
-SettingsContainer.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
-SettingsContainer.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
-SettingsContainer.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
-SettingsContainer.Visible = false
-
--- Settings Layout
-local SettingsLayout = Instance.new("UIListLayout")
-SettingsLayout.Parent = SettingsContainer
-SettingsLayout.Padding = UDim.new(0, 8)
-SettingsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-SettingsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
--- Settings Padding
-local SettingsPadding = Instance.new("UIPadding")
-SettingsPadding.Parent = SettingsContainer
-SettingsPadding.PaddingLeft = UDim.new(0, 12)
-SettingsPadding.PaddingRight = UDim.new(0, 12)
-SettingsPadding.PaddingTop = UDim.new(0, 12)
-SettingsPadding.PaddingBottom = UDim.new(0, 12)
-
--- Menu Divider
-local MenuDivider = Instance.new("Frame")
-MenuDivider.Parent = MainFrame
-MenuDivider.BackgroundColor3 = CONFIG.THEME.BORDER
-MenuDivider.Position = UDim2.new(0, 75, 0, 24)
-MenuDivider.Size = UDim2.new(0, 1, 1, -24)
-
--- Update canvas sizes when content changes
-ContentContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-    local totalHeight = 0
-    for _, child in ipairs(ContentContainer:GetChildren()) do
-        if child:IsA("Frame") then
-            totalHeight = totalHeight + child.AbsoluteSize.Y + 8
-        end
-    end
-    ContentContainer.CanvasSize = UDim2.new(0, 0, 0, totalHeight + 24)
-end)
-
-SettingsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    SettingsContainer.CanvasSize = UDim2.new(0, 0, 0, SettingsLayout.AbsoluteContentSize.Y + 24)
-end)
 
 -- Stats Frame Setup
 local StatsFrame = Instance.new("Frame")
@@ -675,8 +654,6 @@ local function CreateDropdown(options, defaultOption, position)
     optionsList.SortOrder = Enum.SortOrder.LayoutOrder
     optionsList.Padding = UDim.new(0, 0)
     
-    local isOpen = false
-    
     -- Create option buttons
     for i, option in ipairs(options) do
         local optionButton = Instance.new("TextButton")
@@ -689,14 +666,9 @@ local function CreateDropdown(options, defaultOption, position)
         optionButton.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
         optionButton.TextSize = 11
         optionButton.ZIndex = 10
+        optionButton.LayoutOrder = i
         
-        optionButton.MouseButton1Click:Connect(function()
-            dropdownButton.Text = option
-            optionsFrame.Visible = false
-            isOpen = false
-            switchSize(string.upper(option):gsub(" ", "_"))
-        end)
-        
+        -- Add hover effect
         optionButton.MouseEnter:Connect(function()
             TweenService:Create(optionButton, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
                 BackgroundColor3 = CONFIG.THEME.BUTTON_HOVER
@@ -710,10 +682,22 @@ local function CreateDropdown(options, defaultOption, position)
         end)
     end
     
+    -- Toggle dropdown
+    local isOpen = false
     dropdownButton.MouseButton1Click:Connect(function()
         isOpen = not isOpen
         optionsFrame.Visible = isOpen
         dropdownArrow.Text = isOpen and "▲" or "▼"
+        
+        if isOpen then
+            optionsFrame:TweenSize(
+                UDim2.new(1, 0, 0, #options * 32),
+                Enum.EasingDirection.Out,
+                Enum.EasingStyle.Quad,
+                0.2,
+                true
+            )
+        end
     end)
     
     -- Close dropdown when clicking outside
@@ -743,12 +727,27 @@ local sizeDropdown = CreateDropdown(
     UDim2.new(0, 8, 0, 36)
 )
 
+-- Connect size dropdown options
+for _, optionButton in ipairs(sizeDropdown.OptionsFrame:GetChildren()) do
+    if optionButton:IsA("TextButton") then
+        optionButton.MouseButton1Click:Connect(function()
+            local sizeName = string.upper(optionButton.Text):gsub(" ", "_")
+            switchSize(sizeName)
+            sizeDropdown.DropdownButton.Text = optionButton.Text
+            sizeDropdown.OptionsFrame.Visible = false
+        end)
+    end
+end
+
 -- Try to load saved size preference
 pcall(function()
     if isfile("size_preference.txt") then
         local savedSize = readfile("size_preference.txt")
         if CONFIG.SIZES[savedSize] then
             switchSize(savedSize)
+            -- Update dropdown text to match
+            local displayText = savedSize:gsub("_", " "):gsub("^%l", string.upper)
+            sizeDropdown.DropdownButton.Text = displayText
             return
         end
     end
@@ -756,11 +755,26 @@ pcall(function()
     switchSize("EXTRA_LARGE")
 end)
 
--- Settings Button Handler
-SettingsButton.MouseButton1Click:Connect(function()
-    selectButton(SettingsButton)
-    ContentContainer.Visible = false
-    SettingsContainer.Visible = true
+-- Menu Divider
+local MenuDivider = Instance.new("Frame")
+MenuDivider.Parent = MainFrame
+MenuDivider.BackgroundColor3 = CONFIG.THEME.BORDER
+MenuDivider.Position = UDim2.new(0, 75, 0, 24)
+MenuDivider.Size = UDim2.new(0, 1, 1, -24)
+
+-- Update canvas sizes when content changes
+ContentContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+    local totalHeight = 0
+    for _, child in ipairs(ContentContainer:GetChildren()) do
+        if child:IsA("Frame") then
+            totalHeight = totalHeight + child.AbsoluteSize.Y + 8
+        end
+    end
+    ContentContainer.CanvasSize = UDim2.new(0, 0, 0, totalHeight + 24)
+end)
+
+SettingsList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    SettingsContainer.CanvasSize = UDim2.new(0, 0, 0, SettingsList.AbsoluteContentSize.Y + 24)
 end)
 
 -- Update Function
