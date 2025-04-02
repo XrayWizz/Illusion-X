@@ -210,31 +210,198 @@ MinimizeButton.MouseButton1Click:Connect(function()
     isMinimized = not isMinimized
     local targetState = isMinimized and MINIMIZE_SETTINGS.MINIMIZED or MINIMIZE_SETTINGS.NORMAL
     
-    TweenService:Create(MainFrame, CONFIG.ANIMATION.TWEEN_INFO, {
-        Size = targetState.Size,
-        Position = targetState.Position
-    }):Play()
-    
-    -- Hide content when minimized
+    -- Hide content immediately when minimizing
     if isMinimized then
-        ContentFrame.Visible = false
+        ContentContainer.Visible = false
         MenuFrame.Visible = false
         MenuDivider.Visible = false
-    else
-        task.wait(CONFIG.ANIMATION.TWEEN_INFO.Time)
-        ContentFrame.Visible = true
-        MenuFrame.Visible = true
-        MenuDivider.Visible = true
     end
+    
+    -- Create single smooth animation
+    local tween = TweenService:Create(
+        MainFrame,
+        TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {
+            Size = targetState.Size,
+            Position = targetState.Position
+        }
+    )
+    
+    -- Show content after animation completes when maximizing
+    if not isMinimized then
+        tween.Completed:Connect(function()
+            ContentContainer.Visible = true
+            MenuFrame.Visible = true
+            MenuDivider.Visible = true
+        end)
+    end
+    
+    tween:Play()
+end)
+
+-- Create containers
+local ContentContainer = Instance.new("Frame")
+ContentContainer.Name = "ContentContainer"
+ContentContainer.Parent = MainFrame
+ContentContainer.BackgroundTransparency = 1
+ContentContainer.Position = UDim2.new(0, 76, 0, 24)
+ContentContainer.Size = UDim2.new(1, -76, 1, -24)
+ContentContainer.Visible = true
+
+local SettingsContainer = Instance.new("Frame")
+SettingsContainer.Name = "SettingsContainer"
+SettingsContainer.Parent = MainFrame
+SettingsContainer.BackgroundTransparency = 1
+SettingsContainer.Position = UDim2.new(0, 76, 0, 24)
+SettingsContainer.Size = UDim2.new(1, -76, 1, -24)
+SettingsContainer.Visible = false
+
+-- Create scrolling frames for content
+local ContentScroll = Instance.new("ScrollingFrame")
+ContentScroll.Name = "ContentScroll"
+ContentScroll.Parent = ContentContainer
+ContentScroll.BackgroundTransparency = 1
+ContentScroll.Position = UDim2.new(0, 8, 0, 8)
+ContentScroll.Size = UDim2.new(1, -16, 1, -16)
+ContentScroll.ScrollBarThickness = 2
+ContentScroll.ScrollBarImageColor3 = CONFIG.THEME.TEXT_SECONDARY
+ContentScroll.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+
+local SettingsScroll = Instance.new("ScrollingFrame")
+SettingsScroll.Name = "SettingsScroll"
+SettingsScroll.Parent = SettingsContainer
+SettingsScroll.BackgroundTransparency = 1
+SettingsScroll.Position = UDim2.new(0, 8, 0, 8)
+SettingsScroll.Size = UDim2.new(1, -16, 1, -16)
+SettingsScroll.ScrollBarThickness = 2
+SettingsScroll.ScrollBarImageColor3 = CONFIG.THEME.TEXT_SECONDARY
+SettingsScroll.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+
+-- Add list layouts
+local ContentList = Instance.new("UIListLayout")
+ContentList.Parent = ContentScroll
+ContentList.SortOrder = Enum.SortOrder.LayoutOrder
+ContentList.Padding = UDim.new(0, CONFIG.PADDING.SECTION)
+
+local SettingsList = Instance.new("UIListLayout")
+SettingsList.Parent = SettingsScroll
+SettingsList.SortOrder = Enum.SortOrder.LayoutOrder
+SettingsList.Padding = UDim.new(0, CONFIG.PADDING.SECTION)
+
+-- Menu button states
+local selectedButton = nil
+
+-- Button selection function
+local function selectButton(button)
+    if selectedButton then
+        TweenService:Create(selectedButton, CONFIG.ANIMATION.TWEEN_INFO, {
+            BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
+        }):Play()
+        selectedButton:FindFirstChild("SelectedIndicator").Visible = false
+    end
+    
+    selectedButton = button
+    TweenService:Create(button, CONFIG.ANIMATION.TWEEN_INFO, {
+        BackgroundColor3 = CONFIG.THEME.ACCENT
+    }):Play()
+    button:FindFirstChild("SelectedIndicator").Visible = true
+end
+
+-- Create Menu Button
+local function CreateMenuButton(text, order)
+    local button = Instance.new("TextButton")
+    button.BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
+    button.Size = UDim2.new(1, -8, 0, 28)
+    button.Position = UDim2.new(0, 4, 0, 4 + (order * 32))
+    button.Font = Enum.Font.GothamBold
+    button.Text = text
+    button.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
+    button.TextSize = 11
+    button.AutoButtonColor = false
+    button.LayoutOrder = order
+    button.Parent = MenuScroll
+    
+    local buttonCorner = createCorner(button, CONFIG.CORNER_RADIUS)
+    
+    -- Selected indicator
+    local selectedIndicator = Instance.new("Frame")
+    selectedIndicator.Name = "SelectedIndicator"
+    selectedIndicator.Parent = button
+    selectedIndicator.BackgroundColor3 = CONFIG.THEME.ACCENT
+    selectedIndicator.Position = UDim2.new(0, 0, 0.5, -1)
+    selectedIndicator.Size = UDim2.new(0, 2, 0, 16)
+    selectedIndicator.Visible = false
+    
+    -- Hover effects
+    button.MouseEnter:Connect(function()
+        if button ~= selectedButton then
+            TweenService:Create(button, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
+                BackgroundColor3 = CONFIG.THEME.BUTTON_HOVER
+            }):Play()
+        end
+    end)
+    
+    button.MouseLeave:Connect(function()
+        if button ~= selectedButton then
+            TweenService:Create(button, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
+                BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
+            }):Play()
+        end
+    end)
+    
+    return button
+end
+
+-- Create menu buttons
+local OverviewButton = CreateMenuButton("Overview", 0)
+local SettingsButton = CreateMenuButton("Settings", 1)
+
+-- Button click handlers
+OverviewButton.MouseButton1Click:Connect(function()
+    selectButton(OverviewButton)
+    ContentContainer.Visible = true
+    SettingsContainer.Visible = false
+end)
+
+SettingsButton.MouseButton1Click:Connect(function()
+    selectButton(SettingsButton)
+    ContentContainer.Visible = false
+    SettingsContainer.Visible = true
+end)
+
+-- Update MenuScroll canvas size
+MenuList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    MenuScroll.CanvasSize = UDim2.new(0, 0, 0, MenuList.AbsoluteContentSize.Y + 8)
+end)
+
+-- Select Overview by default after a short delay to ensure everything is loaded
+task.spawn(function()
+    task.wait(0.1)
+    selectButton(OverviewButton)
+end)
+
+-- Initialize UI
+ContentContainer.Visible = true
+SettingsContainer.Visible = false
+MenuFrame.Visible = true
+MenuDivider.Visible = true
+
+-- Update canvas sizes when content changes
+ContentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ContentScroll.CanvasSize = UDim2.new(0, 0, 0, ContentList.AbsoluteContentSize.Y + 16)
+end)
+
+SettingsList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    SettingsScroll.CanvasSize = UDim2.new(0, 0, 0, SettingsList.AbsoluteContentSize.Y + 16)
 end)
 
 -- Create Content Frame
 local ContentFrame = Instance.new("Frame")
 ContentFrame.Name = "ContentFrame"
-ContentFrame.Parent = MainFrame
+ContentFrame.Parent = ContentScroll
 ContentFrame.BackgroundTransparency = 1
-ContentFrame.Position = UDim2.new(0, 76, 0, 24)
-ContentFrame.Size = UDim2.new(1, -76, 1, -24)
+ContentFrame.Position = UDim2.new(0, 0, 0, 0)
+ContentFrame.Size = UDim2.new(1, 0, 1, 0)
 
 -- Create Content Container
 local ContentContainer = Instance.new("ScrollingFrame")
@@ -798,120 +965,5 @@ end)
 
 -- Initialize dragging
 -- enableDragging()
-
--- Create containers
-local ContentContainer = Instance.new("Frame")
-ContentContainer.Name = "ContentContainer"
-ContentContainer.Parent = MainFrame
-ContentContainer.BackgroundTransparency = 1
-ContentContainer.Position = UDim2.new(0, 76, 0, 24)
-ContentContainer.Size = UDim2.new(1, -76, 1, -24)
-ContentContainer.Visible = true
-
-local SettingsContainer = Instance.new("Frame")
-SettingsContainer.Name = "SettingsContainer"
-SettingsContainer.Parent = MainFrame
-SettingsContainer.BackgroundTransparency = 1
-SettingsContainer.Position = UDim2.new(0, 76, 0, 24)
-SettingsContainer.Size = UDim2.new(1, -76, 1, -24)
-SettingsContainer.Visible = false
-
--- Menu button states
-local selectedButton = nil
-
--- Button selection function
-local function selectButton(button)
-    if selectedButton then
-        TweenService:Create(selectedButton, CONFIG.ANIMATION.TWEEN_INFO, {
-            BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
-        }):Play()
-        selectedButton:FindFirstChild("SelectedIndicator").Visible = false
-    end
-    
-    selectedButton = button
-    TweenService:Create(button, CONFIG.ANIMATION.TWEEN_INFO, {
-        BackgroundColor3 = CONFIG.THEME.ACCENT
-    }):Play()
-    button:FindFirstChild("SelectedIndicator").Visible = true
-end
-
--- Create Menu Button
-local function CreateMenuButton(text, order)
-    local button = Instance.new("TextButton")
-    button.BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
-    button.Size = UDim2.new(1, -8, 0, 28)
-    button.Position = UDim2.new(0, 4, 0, 4 + (order * 32))
-    button.Font = Enum.Font.GothamBold
-    button.Text = text
-    button.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
-    button.TextSize = 11
-    button.AutoButtonColor = false
-    button.LayoutOrder = order
-    button.Parent = MenuScroll
-    
-    local buttonCorner = createCorner(button, CONFIG.CORNER_RADIUS)
-    
-    -- Selected indicator
-    local selectedIndicator = Instance.new("Frame")
-    selectedIndicator.Name = "SelectedIndicator"
-    selectedIndicator.Parent = button
-    selectedIndicator.BackgroundColor3 = CONFIG.THEME.ACCENT
-    selectedIndicator.Position = UDim2.new(0, 0, 0.5, -1)
-    selectedIndicator.Size = UDim2.new(0, 2, 0, 16)
-    selectedIndicator.Visible = false
-    
-    -- Hover effects
-    button.MouseEnter:Connect(function()
-        if button ~= selectedButton then
-            TweenService:Create(button, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
-                BackgroundColor3 = CONFIG.THEME.BUTTON_HOVER
-            }):Play()
-        end
-    end)
-    
-    button.MouseLeave:Connect(function()
-        if button ~= selectedButton then
-            TweenService:Create(button, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
-                BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
-            }):Play()
-        end
-    end)
-    
-    return button
-end
-
--- Create menu buttons
-local OverviewButton = CreateMenuButton("Overview", 0)
-local SettingsButton = CreateMenuButton("Settings", 1)
-
--- Button click handlers
-OverviewButton.MouseButton1Click:Connect(function()
-    selectButton(OverviewButton)
-    ContentContainer.Visible = true
-    SettingsContainer.Visible = false
-end)
-
-SettingsButton.MouseButton1Click:Connect(function()
-    selectButton(SettingsButton)
-    ContentContainer.Visible = false
-    SettingsContainer.Visible = true
-end)
-
--- Update MenuScroll canvas size
-MenuList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    MenuScroll.CanvasSize = UDim2.new(0, 0, 0, MenuList.AbsoluteContentSize.Y + 8)
-end)
-
--- Select Overview by default after a short delay to ensure everything is loaded
-task.spawn(function()
-    task.wait(0.1)
-    selectButton(OverviewButton)
-end)
-
--- Initialize UI
-ContentContainer.Visible = true
-SettingsContainer.Visible = false
-MenuFrame.Visible = true
-MenuDivider.Visible = true
 
 return ScreenGui
