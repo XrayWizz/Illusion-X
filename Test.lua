@@ -518,14 +518,19 @@ local function createTeleportButton(island, posY)
         local player = game.Players.LocalPlayer
         if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             currentDestination = island
-            player.Character.HumanoidRootPart.CFrame = island.cframe
+            local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+            
+            -- Set the CFrame directly
+            humanoidRootPart.CFrame = island.cframe
             
             -- Check if player reached destination
             local function checkDestination()
                 wait(0.5) -- Wait for teleport
-                local distance = (player.Character.HumanoidRootPart.Position - island.cframe.Position).Magnitude
-                if distance < 50 then -- If player is within 50 studs of destination
-                    disableTeleport()
+                if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local distance = (player.Character.HumanoidRootPart.Position - island.cframe.Position).Magnitude
+                    if distance < 50 then -- If player is within 50 studs of destination
+                        disableTeleport()
+                    end
                 end
             end
             coroutine.wrap(checkDestination)()
@@ -537,8 +542,9 @@ end
 
 -- Blox Fruits Island Data
 local ISLANDS = {
+    -- First Sea
     {name = "Starter Island", cframe = CFrame.new(1071.2832, 16.3085976, 1426.86792)},
-    {name = "Marine Fortress", cframe = CFrame.new(-4984.47461, 20.6520348, 4305.39795)},
+    {name = "Marine Start", cframe = CFrame.new(-2573.3374, 6.88881969, 2046.99817)},
     {name = "Middle Town", cframe = CFrame.new(-655.824158, 7.88708115, 1436.67908)},
     {name = "Jungle", cframe = CFrame.new(-1249.77222, 11.8870859, 341.356476)},
     {name = "Pirate Village", cframe = CFrame.new(-1122.34998, 4.78708982, 3855.91992)},
@@ -546,18 +552,37 @@ local ISLANDS = {
     {name = "Frozen Village", cframe = CFrame.new(1198.00928, 27.0074959, -1211.73376)},
     {name = "MarineFord", cframe = CFrame.new(-4882.8623, 22.6520386, 4255.53516)},
     {name = "Colosseum", cframe = CFrame.new(-1836.58191, 44.8870926, 1360.30652)},
-    {name = "Sky Island 1", cframe = CFrame.new(-4970.21875, 717.707275, -2622.35449)},
+    {name = "Sky 1st Floor", cframe = CFrame.new(-4970.21875, 717.707275, -2622.35449)},
     {name = "Prison", cframe = CFrame.new(4875.330078125, 5.6519818305969, 734.85021972656)},
     {name = "Magma Village", cframe = CFrame.new(-5231.75879, 8.61593437, 8467.87695)},
-    {name = "Sky Island 2", cframe = CFrame.new(-7894.6176757813, 5545.6416015625, -380.29119873047)},
-    {name = "Sky Island 3", cframe = CFrame.new(-7994.48389, 5756.22461, -1088.39246)},
+    {name = "Sky 2nd Floor", cframe = CFrame.new(-7894.6176757813, 5545.6416015625, -380.29119873047)},
+    {name = "Sky 3rd Floor", cframe = CFrame.new(-7994.48389, 5756.22461, -1088.39246)},
     {name = "Snow Island", cframe = CFrame.new(-4706.36768, 20.8098927, -2635.82104)},
-    {name = "Sea Restaurant", cframe = CFrame.new(-1839.63574, 40.6520386, -2971.47314)},
-    {name = "Fishman Island", cframe = CFrame.new(3893.953125, 5.3989524841309, -1893.4851074219)},
-    {name = "Fountain City", cframe = CFrame.new(5244.7124, 38.526943, 4073.3413)},
+    
+    -- Second Sea
+    {name = "First Spot", cframe = CFrame.new(82.9490662, 18.0710983, 2834.98779)},
+    {name = "Kingdom of Rose", cframe = CFrame.new(-394.983521, 118.503128, 1245.8446)},
+    {name = "Dark Arena", cframe = CFrame.new(3464.7163085938, 13.375151634216, -3368.90234375)},
+    {name = "Flamingo Mansion", cframe = CFrame.new(-483.73370361328, 332.0383605957, 595.32708740234)},
+    {name = "Flamingo Room", cframe = CFrame.new(2284.4140625, 15.152037620544, 875.72534179688)},
     {name = "Green Zone", cframe = CFrame.new(-2448.5300292969, 73.016105651855, -3210.6306152344)},
+    {name = "Factory", cframe = CFrame.new(430.42569, 210.019623, -432.504791)},
     {name = "Cafe", cframe = CFrame.new(-385.250916, 73.0458984, 297.388397)},
-    {name = "Mansion", cframe = CFrame.new(-390.096313, 331.886475, 673.464966)}
+    {name = "Mansion", cframe = CFrame.new(-390.096313, 331.886475, 673.464966)},
+    {name = "Swan Room", cframe = CFrame.new(2302.19019, 15.1778421, 663.811035)},
+    {name = "Beautiful Pirate Domain", cframe = CFrame.new(5310.8095703125, 21.594484329224, 129.39053344727)},
+    
+    -- Third Sea
+    {name = "Port Town", cframe = CFrame.new(-275.21615600586, 43.755737304688, 5451.0659179688)},
+    {name = "Hydra Island", cframe = CFrame.new(5753.5478515625, 610.44677734375, -282.33172607422)},
+    {name = "Great Tree", cframe = CFrame.new(2681.2736816406, 1682.8092041016, -7190.9853515625)},
+    {name = "Castle on the Sea", cframe = CFrame.new(-5074.45556640625, 314.5155334472656, -2991.054443359375)},
+    {name = "Floating Turtle", cframe = CFrame.new(-10919.401367188, 331.78845214844, -8637.57421875)},
+    {name = "Mansion", cframe = CFrame.new(-12548.998046875, 332.41268920898, -7603.1865234375)},
+    {name = "Secret Temple", cframe = CFrame.new(5217.35107, 6.56511116, 1100.88159)},
+    {name = "Friendly Arena", cframe = CFrame.new(5220.28955078125, 72.82353973388672, -1450.72998046875)},
+    {name = "Beautiful Pirate Domain", cframe = CFrame.new(-11990.9189453125, 331.8649597167969, -8845.3125)},
+    {name = "Tiki Outpost", cframe = CFrame.new(-11993.580078125, 331.8649597167969, -8844.1826171875)}
 }
 
 -- Create menu buttons
