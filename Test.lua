@@ -1,3 +1,12 @@
+-- Services
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
 -- Constants for configuration
 local CONFIG = {
     UPDATE_INTERVAL = 0.1,
@@ -47,6 +56,10 @@ local CONFIG = {
     CORNER_RADIUS = 6,
 }
 
+-- Current states
+local isMinimized = false
+local currentSize = "EXTRA_LARGE"
+
 -- Animation settings
 local MINIMIZE_SETTINGS = {
     NORMAL = {
@@ -59,9 +72,109 @@ local MINIMIZE_SETTINGS = {
     }
 }
 
--- Current states
-local isMinimized = false
-local currentSize = "EXTRA_LARGE"
+-- Utility Functions
+local function createCorner(parent, radius)
+    local corner = Instance.new("UICorner")
+    corner.Parent = parent
+    corner.CornerRadius = UDim.new(0, radius or CONFIG.CORNER_RADIUS)
+    return corner
+end
+
+-- Create main components
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "BloxFruitsInfo"
+ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn = false
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = CONFIG.THEME.BACKGROUND_MEDIUM
+MainFrame.Size = MINIMIZE_SETTINGS.NORMAL.Size
+MainFrame.Position = MINIMIZE_SETTINGS.NORMAL.Position
+MainFrame.ClipsDescendants = true
+createCorner(MainFrame, CONFIG.CORNER_RADIUS)
+
+-- Title Bar Setup
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Parent = MainFrame
+TitleBar.BackgroundColor3 = CONFIG.THEME.BACKGROUND_LIGHT
+TitleBar.Size = UDim2.new(1, 0, 0, 24)
+createCorner(TitleBar, CONFIG.CORNER_RADIUS)
+
+local Title = Instance.new("TextLabel")
+Title.Parent = TitleBar
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0, 8, 0, 0)
+Title.Size = UDim2.new(1, -60, 1, 0)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "Blox Fruits Info"
+Title.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
+Title.TextSize = 12
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Menu Frame
+local MenuFrame = Instance.new("Frame")
+MenuFrame.Name = "MenuFrame"
+MenuFrame.Parent = MainFrame
+MenuFrame.BackgroundColor3 = CONFIG.THEME.BACKGROUND_LIGHT
+MenuFrame.Position = UDim2.new(0, 0, 0, 24)
+MenuFrame.Size = UDim2.new(0, 75, 1, -24)
+createCorner(MenuFrame, CONFIG.CORNER_RADIUS)
+
+-- Menu Scroll
+local MenuScroll = Instance.new("ScrollingFrame")
+MenuScroll.Name = "MenuScroll"
+MenuScroll.Parent = MenuFrame
+MenuScroll.BackgroundTransparency = 1
+MenuScroll.Position = UDim2.new(0, 0, 0, 0)
+MenuScroll.Size = UDim2.new(1, 0, 1, 0)
+MenuScroll.ScrollBarThickness = 2
+MenuScroll.ScrollBarImageColor3 = CONFIG.THEME.TEXT_SECONDARY
+MenuScroll.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+
+-- Menu List Layout
+local MenuList = Instance.new("UIListLayout")
+MenuList.Parent = MenuScroll
+MenuList.Padding = UDim.new(0, 4)
+MenuList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+MenuList.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Menu Divider
+local MenuDivider = Instance.new("Frame")
+MenuDivider.Parent = MainFrame
+MenuDivider.BackgroundColor3 = CONFIG.THEME.BORDER
+MenuDivider.Position = UDim2.new(0, 75, 0, 24)
+MenuDivider.Size = UDim2.new(0, 1, 1, -24)
+
+-- Buttons
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Parent = TitleBar
+MinimizeButton.BackgroundColor3 = CONFIG.THEME.BUTTON_HOVER
+MinimizeButton.Position = UDim2.new(1, -44, 0.5, -7)
+MinimizeButton.Size = UDim2.new(0, 14, 0, 14)
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.Text = "-"
+MinimizeButton.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
+MinimizeButton.TextSize = 14
+MinimizeButton.AutoButtonColor = false
+createCorner(MinimizeButton, CONFIG.CORNER_RADIUS)
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = TitleBar
+CloseButton.BackgroundColor3 = CONFIG.COLORS.NEGATIVE
+CloseButton.Position = UDim2.new(1, -24, 0.5, -7)
+CloseButton.Size = UDim2.new(0, 14, 0, 14)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Text = "×"
+CloseButton.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
+CloseButton.TextSize = 14
+CloseButton.AutoButtonColor = false
+createCorner(CloseButton, CONFIG.CORNER_RADIUS)
 
 -- Size switching function
 local function switchSize(sizeName)
@@ -113,240 +226,6 @@ MinimizeButton.MouseButton1Click:Connect(function()
         MenuFrame.Visible = true
         MenuDivider.Visible = true
     end
-end)
-
--- Services
-local CoreGui = game:GetService("CoreGui")
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local StarterGui = game:GetService("StarterGui")
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
-
--- Utility Functions
-local function safeGet(instance, ...)
-    local current = instance
-    for _, propertyName in ipairs({...}) do
-        if not current then return nil end
-        current = current:FindFirstChild(propertyName)
-    end
-    return current
-end
-
-local function getItemsWithProperty(container, propertyName)
-    local items = {}
-    if not container then return items end
-    
-    for _, item in ipairs(container:GetChildren()) do
-        if item:FindFirstChild(propertyName) then
-            table.insert(items, item.Name)
-        end
-    end
-    return items
-end
-
--- UI Creation Helpers
-local function createCorner(parent, radius)
-    local corner = Instance.new("UICorner")
-    corner.Parent = parent
-    corner.CornerRadius = UDim.new(0, radius or 4)
-    return corner
-end
-
--- Create main components
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = CoreGui
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = CONFIG.THEME.BACKGROUND_MEDIUM
-MainFrame.Size = MINIMIZE_SETTINGS.NORMAL.Size
-MainFrame.Position = MINIMIZE_SETTINGS.NORMAL.Position
-MainFrame.ClipsDescendants = true
-
-local mainCorner = createCorner(MainFrame, CONFIG.CORNER_RADIUS)
-
--- Title Bar Setup
-local TitleBar = Instance.new("Frame")
-TitleBar.Name = "TitleBar"
-TitleBar.Parent = MainFrame
-TitleBar.BackgroundColor3 = CONFIG.THEME.BACKGROUND_LIGHT
-TitleBar.Size = UDim2.new(1, 0, 0, 24)
-
-local titleBarCorner = createCorner(TitleBar, CONFIG.CORNER_RADIUS)
-
--- Title Text
-local Title = Instance.new("TextLabel")
-Title.Parent = TitleBar
-Title.BackgroundTransparency = 1
-Title.Position = UDim2.new(0, 8, 0, 0)
-Title.Size = UDim2.new(1, -60, 1, 0)
-Title.Font = Enum.Font.GothamBold
-Title.Text = "Blox Fruits Info"
-Title.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
-Title.TextSize = 12
-Title.TextXAlignment = Enum.TextXAlignment.Left
-
--- Minimize Button
-local MinimizeButton = Instance.new("TextButton")
-MinimizeButton.Name = "MinimizeButton"
-MinimizeButton.Parent = TitleBar
-MinimizeButton.BackgroundColor3 = CONFIG.THEME.BUTTON_HOVER
-MinimizeButton.Position = UDim2.new(1, -44, 0.5, -7)
-MinimizeButton.Size = UDim2.new(0, 14, 0, 14)
-MinimizeButton.Font = Enum.Font.GothamBold
-MinimizeButton.Text = "-"
-MinimizeButton.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
-MinimizeButton.TextSize = 14
-MinimizeButton.AutoButtonColor = false
-
-local minimizeCorner = createCorner(MinimizeButton, CONFIG.CORNER_RADIUS)
-
--- Close Button
-local CloseButton = Instance.new("TextButton")
-CloseButton.Name = "CloseButton"
-CloseButton.Parent = TitleBar
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
-CloseButton.Position = UDim2.new(1, -24, 0.5, -7)
-CloseButton.Size = UDim2.new(0, 14, 0, 14)
-CloseButton.Font = Enum.Font.GothamBold
-CloseButton.Text = "×"
-CloseButton.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
-CloseButton.TextSize = 14
-CloseButton.AutoButtonColor = false
-
-local closeCorner = createCorner(CloseButton, CONFIG.CORNER_RADIUS)
-
--- Menu Frame
-local MenuFrame = Instance.new("Frame")
-MenuFrame.Name = "MenuFrame"
-MenuFrame.Parent = MainFrame
-MenuFrame.BackgroundColor3 = CONFIG.THEME.BACKGROUND_LIGHT
-MenuFrame.Position = UDim2.new(0, 0, 0, 24)
-MenuFrame.Size = UDim2.new(0, 75, 1, -24)
-
-local menuCorner = createCorner(MenuFrame, CONFIG.CORNER_RADIUS)
-
--- Add a frame to cover the top corners of MenuFrame
-local menuTopCover = Instance.new("Frame")
-menuTopCover.Name = "MenuTopCover"
-menuTopCover.Parent = MenuFrame
-menuTopCover.BackgroundColor3 = CONFIG.THEME.BACKGROUND_LIGHT
-menuTopCover.BorderSizePixel = 0
-menuTopCover.Position = UDim2.new(0, 0, 0, 0)
-menuTopCover.Size = UDim2.new(1, 0, 0, 10)
-
--- Create scrolling frame for menu items
-local MenuScroll = Instance.new("ScrollingFrame")
-MenuScroll.Name = "MenuScroll"
-MenuScroll.Parent = MenuFrame
-MenuScroll.BackgroundTransparency = 1
-MenuScroll.Position = UDim2.new(0, 0, 0, 0)
-MenuScroll.Size = UDim2.new(1, 0, 1, 0)
-MenuScroll.ScrollBarThickness = 2
-MenuScroll.ScrollBarImageColor3 = CONFIG.THEME.TEXT_SECONDARY
-MenuScroll.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
-
--- Add UIListLayout for automatic button positioning
-local MenuList = Instance.new("UIListLayout")
-MenuList.Parent = MenuScroll
-MenuList.Padding = UDim.new(0, 4)
-MenuList.HorizontalAlignment = Enum.HorizontalAlignment.Center
-MenuList.SortOrder = Enum.SortOrder.LayoutOrder
-
--- Menu button states
-local selectedButton = nil
-
--- Button selection function
-local function selectButton(button)
-    if selectedButton then
-        TweenService:Create(selectedButton, CONFIG.ANIMATION.TWEEN_INFO, {
-            BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
-        }):Play()
-        selectedButton:FindFirstChild("SelectedIndicator").Visible = false
-    end
-    
-    selectedButton = button
-    TweenService:Create(button, CONFIG.ANIMATION.TWEEN_INFO, {
-        BackgroundColor3 = CONFIG.THEME.ACCENT
-    }):Play()
-    button:FindFirstChild("SelectedIndicator").Visible = true
-end
-
--- Create Menu Button
-local function CreateMenuButton(text, order)
-    local button = Instance.new("TextButton")
-    button.BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
-    button.Size = UDim2.new(1, -8, 0, 28)
-    button.Position = UDim2.new(0, 4, 0, 4 + (order * 32))
-    button.Font = Enum.Font.GothamBold
-    button.Text = text
-    button.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
-    button.TextSize = 11
-    button.AutoButtonColor = false
-    button.LayoutOrder = order
-    button.Parent = MenuScroll
-    
-    local buttonCorner = createCorner(button, CONFIG.CORNER_RADIUS)
-    
-    -- Selected indicator
-    local selectedIndicator = Instance.new("Frame")
-    selectedIndicator.Name = "SelectedIndicator"
-    selectedIndicator.Parent = button
-    selectedIndicator.BackgroundColor3 = CONFIG.THEME.ACCENT
-    selectedIndicator.Position = UDim2.new(0, 0, 0.5, -1)
-    selectedIndicator.Size = UDim2.new(0, 2, 0, 16)
-    selectedIndicator.Visible = false
-
-    -- Hover effects
-    button.MouseEnter:Connect(function()
-        if button ~= selectedButton then
-            TweenService:Create(button, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
-                BackgroundColor3 = CONFIG.THEME.BUTTON_HOVER
-            }):Play()
-        end
-    end)
-    
-    button.MouseLeave:Connect(function()
-        if button ~= selectedButton then
-            TweenService:Create(button, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
-                BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
-            }):Play()
-        end
-    end)
-    
-    return button
-end
-
--- Create menu buttons
-local OverviewButton = CreateMenuButton("Overview", 0)
-local SettingsButton = CreateMenuButton("Settings", 1)
-
--- Button click handlers
-OverviewButton.MouseButton1Click:Connect(function()
-    selectButton(OverviewButton)
-    ContentContainer.Visible = true
-    SettingsContainer.Visible = false
-end)
-
-SettingsButton.MouseButton1Click:Connect(function()
-    selectButton(SettingsButton)
-    ContentContainer.Visible = false
-    SettingsContainer.Visible = true
-end)
-
--- Update MenuScroll canvas size
-MenuList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    MenuScroll.CanvasSize = UDim2.new(0, 0, 0, MenuList.AbsoluteContentSize.Y + 8)
-end)
-
--- Select Overview by default after a short delay to ensure everything is loaded
-task.spawn(function()
-    task.wait(0.1)
-    selectButton(OverviewButton)
 end)
 
 -- Create Content Frame
@@ -755,13 +634,6 @@ pcall(function()
     switchSize("EXTRA_LARGE")
 end)
 
--- Menu Divider
-local MenuDivider = Instance.new("Frame")
-MenuDivider.Parent = MainFrame
-MenuDivider.BackgroundColor3 = CONFIG.THEME.BORDER
-MenuDivider.Position = UDim2.new(0, 75, 0, 24)
-MenuDivider.Size = UDim2.new(0, 1, 1, -24)
-
 -- Update canvas sizes when content changes
 ContentContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
     local totalHeight = 0
@@ -885,44 +757,161 @@ CloseButton.MouseButton1Click:Connect(function()
 end)
 
 -- Make title bar draggable
-local function enableDragging()
-    local dragging = false
-    local dragStart = nil
-    local startPos = nil
-    
-    TitleBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = MainFrame.Position
-        end
-    end)
-    
-    TitleBar.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - dragStart
-            -- Create smooth drag animation
-            TweenService:Create(
-                MainFrame,
-                TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {
-                    Position = UDim2.new(
-                        startPos.X.Scale,
-                        startPos.X.Offset + delta.X,
-                        startPos.Y.Scale,
-                        startPos.Y.Offset + delta.Y
-                    )
-                }
-            ):Play()
-        end
-    end)
-end
+local dragging = false
+local dragStart = nil
+local startPos = nil
+
+TitleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+
+TitleBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+        dragStart = nil
+        startPos = nil
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        -- Create smooth drag animation
+        TweenService:Create(
+            MainFrame,
+            TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {
+                Position = UDim2.new(
+                    startPos.X.Scale,
+                    startPos.X.Offset + delta.X,
+                    startPos.Y.Scale,
+                    startPos.Y.Offset + delta.Y
+                )
+            }
+        ):Play()
+    end
+end)
 
 -- Initialize dragging
-enableDragging()
+-- enableDragging()
+
+-- Create containers
+local ContentContainer = Instance.new("Frame")
+ContentContainer.Name = "ContentContainer"
+ContentContainer.Parent = MainFrame
+ContentContainer.BackgroundTransparency = 1
+ContentContainer.Position = UDim2.new(0, 76, 0, 24)
+ContentContainer.Size = UDim2.new(1, -76, 1, -24)
+ContentContainer.Visible = true
+
+local SettingsContainer = Instance.new("Frame")
+SettingsContainer.Name = "SettingsContainer"
+SettingsContainer.Parent = MainFrame
+SettingsContainer.BackgroundTransparency = 1
+SettingsContainer.Position = UDim2.new(0, 76, 0, 24)
+SettingsContainer.Size = UDim2.new(1, -76, 1, -24)
+SettingsContainer.Visible = false
+
+-- Menu button states
+local selectedButton = nil
+
+-- Button selection function
+local function selectButton(button)
+    if selectedButton then
+        TweenService:Create(selectedButton, CONFIG.ANIMATION.TWEEN_INFO, {
+            BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
+        }):Play()
+        selectedButton:FindFirstChild("SelectedIndicator").Visible = false
+    end
+    
+    selectedButton = button
+    TweenService:Create(button, CONFIG.ANIMATION.TWEEN_INFO, {
+        BackgroundColor3 = CONFIG.THEME.ACCENT
+    }):Play()
+    button:FindFirstChild("SelectedIndicator").Visible = true
+end
+
+-- Create Menu Button
+local function CreateMenuButton(text, order)
+    local button = Instance.new("TextButton")
+    button.BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
+    button.Size = UDim2.new(1, -8, 0, 28)
+    button.Position = UDim2.new(0, 4, 0, 4 + (order * 32))
+    button.Font = Enum.Font.GothamBold
+    button.Text = text
+    button.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
+    button.TextSize = 11
+    button.AutoButtonColor = false
+    button.LayoutOrder = order
+    button.Parent = MenuScroll
+    
+    local buttonCorner = createCorner(button, CONFIG.CORNER_RADIUS)
+    
+    -- Selected indicator
+    local selectedIndicator = Instance.new("Frame")
+    selectedIndicator.Name = "SelectedIndicator"
+    selectedIndicator.Parent = button
+    selectedIndicator.BackgroundColor3 = CONFIG.THEME.ACCENT
+    selectedIndicator.Position = UDim2.new(0, 0, 0.5, -1)
+    selectedIndicator.Size = UDim2.new(0, 2, 0, 16)
+    selectedIndicator.Visible = false
+    
+    -- Hover effects
+    button.MouseEnter:Connect(function()
+        if button ~= selectedButton then
+            TweenService:Create(button, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
+                BackgroundColor3 = CONFIG.THEME.BUTTON_HOVER
+            }):Play()
+        end
+    end)
+    
+    button.MouseLeave:Connect(function()
+        if button ~= selectedButton then
+            TweenService:Create(button, CONFIG.ANIMATION.HOVER_TWEEN_INFO, {
+                BackgroundColor3 = CONFIG.THEME.BACKGROUND_DARK
+            }):Play()
+        end
+    end)
+    
+    return button
+end
+
+-- Create menu buttons
+local OverviewButton = CreateMenuButton("Overview", 0)
+local SettingsButton = CreateMenuButton("Settings", 1)
+
+-- Button click handlers
+OverviewButton.MouseButton1Click:Connect(function()
+    selectButton(OverviewButton)
+    ContentContainer.Visible = true
+    SettingsContainer.Visible = false
+end)
+
+SettingsButton.MouseButton1Click:Connect(function()
+    selectButton(SettingsButton)
+    ContentContainer.Visible = false
+    SettingsContainer.Visible = true
+end)
+
+-- Update MenuScroll canvas size
+MenuList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    MenuScroll.CanvasSize = UDim2.new(0, 0, 0, MenuList.AbsoluteContentSize.Y + 8)
+end)
+
+-- Select Overview by default after a short delay to ensure everything is loaded
+task.spawn(function()
+    task.wait(0.1)
+    selectButton(OverviewButton)
+end)
+
+-- Initialize UI
+ContentContainer.Visible = true
+SettingsContainer.Visible = false
+MenuFrame.Visible = true
+MenuDivider.Visible = true
+
+return ScreenGui
