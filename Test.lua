@@ -83,6 +83,21 @@ local CONFIG = {
     SIZES = CUSTOM.SIZES
 }
 
+-- Constants for UI styling
+local CONFIG_UI = {
+    COLORS = {
+        VERSION_BLUE = Color3.fromRGB(0, 162, 255),
+        SECONDARY = Color3.fromRGB(45, 45, 45)
+    },
+    TEXT_SIZES = {
+        HEADER = 18,
+        BODY = 14
+    },
+    SIDE_GAP = 10,
+    MIN_WIDTH = 200,  -- Width when minimized
+    NORMAL_WIDTH = 500 -- Normal width
+}
+
 -- Menu items with icons
 local MENU_ITEMS = {
     {layoutOrder = 1, name = "Overview", icon = "👤"},     -- Profile
@@ -466,46 +481,233 @@ local function createDropdownSection(title, items, startY)
     return container
 end
 
--- Create main frame
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, currentState.width, 0, currentState.height)
-MainFrame.Position = UDim2.new(0.5, -currentState.width/2, 0.5, -currentState.height/2)
-MainFrame.BackgroundColor3 = CONFIG.THEME.BACKGROUND
-MainFrame.BorderSizePixel = 0
-MainFrame.ClipsDescendants = true
-MainFrame.Parent = ScreenGui
+-- Function to create a scrollable frame
+local function createScrollableFrame(parent, size, position)
+    local scrollFrame = Instance.new("ScrollingFrame")
+    scrollFrame.Size = size
+    scrollFrame.Position = position
+    scrollFrame.BackgroundTransparency = 1
+    scrollFrame.ScrollBarThickness = CUSTOM.LAYOUT.SCROLL_BAR_THICKNESS
+    scrollFrame.ScrollBarImageColor3 = CUSTOM.THEME.ACCENT
+    scrollFrame.Parent = parent
+    
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Parent = scrollFrame
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayout.Padding = UDim.new(0, CUSTOM.LAYOUT.PADDING)
+    
+    -- Auto-adjust canvas size
+    listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
+    end)
+    
+    return scrollFrame
+end
 
--- Add corner rounding
-local Corner = Instance.new("UICorner")
-Corner.CornerRadius = UDim.new(0, CONFIG.CORNER_RADIUS)
-Corner.Parent = MainFrame
+-- Function to create a section heading
+local function createSectionHeading(parent, text, posY)
+    local heading = Instance.new("TextLabel")
+    heading.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    heading.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
+    heading.BackgroundColor3 = CUSTOM.THEME.TITLE_BAR
+    heading.BackgroundTransparency = 0.5
+    heading.Text = text
+    heading.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+    heading.TextSize = 14
+    heading.Font = CUSTOM.FONTS.TITLE
+    heading.Parent = parent
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    corner.Parent = heading
+    
+    return heading
+end
+
+-- Function to create speed dropdown
+local function createSpeedDropdown(parent, posY)
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    container.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
+    container.BackgroundTransparency = 1
+    container.Parent = parent
+    
+    local dropdown = Instance.new("TextButton")
+    dropdown.Size = UDim2.new(1, 0, 1, 0)
+    dropdown.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    dropdown.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+    dropdown.Text = "Speed: Normal (350)"
+    dropdown.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+    dropdown.TextSize = 14
+    dropdown.Font = CUSTOM.FONTS.BUTTON
+    dropdown.Parent = container
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    corner.Parent = dropdown
+    
+    local optionsFrame = Instance.new("Frame")
+    optionsFrame.Size = UDim2.new(1, 0, 0, #SPEED_OPTIONS * CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    optionsFrame.Position = UDim2.new(0, 0, 1, 2)
+    optionsFrame.BackgroundColor3 = CUSTOM.THEME.BACKGROUND
+    optionsFrame.BorderSizePixel = 0
+    optionsFrame.Visible = false
+    optionsFrame.ZIndex = 10
+    optionsFrame.Parent = container
+    
+    local optionsCorner = Instance.new("UICorner")
+    optionsCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    optionsCorner.Parent = optionsFrame
+    
+    for i, option in ipairs(SPEED_OPTIONS) do
+        local optionButton = Instance.new("TextButton")
+        optionButton.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+        optionButton.Position = UDim2.new(0, 0, 0, (i-1) * CUSTOM.LAYOUT.BUTTON_HEIGHT)
+        optionButton.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+        optionButton.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+        optionButton.Text = option.name .. " (" .. option.speed .. ")"
+        optionButton.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+        optionButton.TextSize = 14
+        optionButton.Font = CUSTOM.FONTS.BUTTON
+        optionButton.ZIndex = 10
+        optionButton.Parent = optionsFrame
+        
+        optionButton.MouseButton1Click:Connect(function()
+            teleportSpeed = option.speed
+            dropdown.Text = "Speed: " .. option.name .. " (" .. option.speed .. ")"
+            optionsFrame.Visible = false
+        end)
+        
+        optionButton.MouseEnter:Connect(function()
+            TweenService:Create(optionButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundTransparency = CUSTOM.THEME.BUTTON_HOVER_TRANSPARENCY,
+                TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            }):Play()
+        end)
+        
+        optionButton.MouseLeave:Connect(function()
+            TweenService:Create(optionButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY,
+                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            }):Play()
+        end)
+    end
+    
+    dropdown.MouseButton1Click:Connect(function()
+        optionsFrame.Visible = not optionsFrame.Visible
+    end)
+    
+    return container
+end
+
+-- Function to create UI elements with properties
+local function createUIElement(className, properties, parent)
+    local element = Instance.new(className)
+    for property, value in pairs(properties) do
+        element[property] = value
+    end
+    if parent then
+        element.Parent = parent
+    end
+    return element
+end
+
+-- Function to make an element draggable
+local function makeDraggable(dragElement, dragTarget)
+    local dragging = false
+    local dragStart
+    local startPos
+    
+    dragElement.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = dragTarget.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    dragElement.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+            local delta = input.Position - dragStart
+            dragTarget.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+-- Create main frame
+local MainFrame = createUIElement("Frame", {
+    Name = "MainFrame",
+    Size = UDim2.new(0, CONFIG_UI.NORMAL_WIDTH, 0, CONFIG.SIZES.Normal.HEIGHT),
+    Position = UDim2.new(0.5, -CONFIG_UI.NORMAL_WIDTH/2, 0.5, -CONFIG.SIZES.Normal.HEIGHT/2),
+    BackgroundColor3 = CUSTOM.THEME.BACKGROUND,
+    BorderSizePixel = 0
+}, ScreenGui)
 
 -- Create title bar
-local TitleBar = Instance.new("Frame")
-TitleBar.Name = "TitleBar"
-TitleBar.Size = UDim2.new(1, 0, 0, CONFIG.TITLE_HEIGHT)
-TitleBar.BackgroundColor3 = CONFIG.THEME.TITLE_BAR
-TitleBar.BorderSizePixel = 0
-TitleBar.Parent = MainFrame
+local TitleBar = createUIElement("Frame", {
+    Name = "TitleBar",
+    Size = UDim2.new(1, 0, 0, CONFIG_UI.TITLE_HEIGHT),
+    BackgroundColor3 = CUSTOM.THEME.TITLE_BAR,
+    BorderSizePixel = 0
+}, MainFrame)
 
--- Add corner rounding to title bar
-local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0, CONFIG.CORNER_RADIUS)
-TitleCorner.Parent = TitleBar
+-- Create drag handle
+local DragHandle = createUIElement("Frame", {
+    Size = UDim2.new(1, -70, 0, 30),
+    Position = UDim2.new(0, 0, 0, 0),
+    BackgroundTransparency = 1
+}, TitleBar)
 
--- Create title text
-local TitleText = Instance.new("TextLabel")
-TitleText.Name = "TitleText"
-TitleText.Size = UDim2.new(0, 100, 1, 0)
-TitleText.Position = UDim2.new(0, 10, 0, 0)
-TitleText.BackgroundTransparency = 1
-TitleText.Text = "Super"
-TitleText.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
-TitleText.TextSize = 16
-TitleText.Font = CUSTOM.FONTS.TITLE
-TitleText.TextXAlignment = Enum.TextXAlignment.Left
-TitleText.Parent = TitleBar
+-- Make the frame draggable
+makeDraggable(DragHandle, MainFrame)
+
+-- Create title with glow effect
+local TitleLabel = createUIElement("TextLabel", {
+    Size = UDim2.new(1, -80, 0, 30),
+    Position = UDim2.new(0, CONFIG_UI.SIDE_GAP + 5, 0, 5),
+    Text = " Super",
+    TextColor3 = CONFIG_UI.COLORS.VERSION_BLUE,
+    Font = Enum.Font.SourceSansBold,
+    TextSize = CONFIG_UI.TEXT_SIZES.HEADER,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    BackgroundTransparency = 1
+}, TitleBar)
+
+-- Add glow effect to title
+local titleGlow = createUIElement("ImageLabel", {
+    Size = UDim2.new(1, 20, 1, 20),
+    Position = UDim2.new(0, -10, 0, -10),
+    BackgroundTransparency = 1,
+    Image = "rbxassetid://4996891970",
+    ImageColor3 = CONFIG_UI.COLORS.VERSION_BLUE,
+    ImageTransparency = 0.9
+}, TitleLabel)
+
+-- Create version bubble
+local VersionBubble = createUIElement("TextButton", {
+    Size = UDim2.new(0, 40, 0, 20),
+    Position = UDim2.new(0, TitleLabel.Position.X.Offset + 75, 0, 10),
+    Text = "v1.0",
+    TextColor3 = CONFIG_UI.COLORS.VERSION_BLUE,
+    Font = Enum.Font.SourceSans,
+    TextSize = CONFIG_UI.TEXT_SIZES.BODY,
+    BackgroundColor3 = CONFIG_UI.COLORS.SECONDARY,
+    BackgroundTransparency = 0.6,
+    AutoButtonColor = false
+}, MainFrame)
+
+createUIElement("UICorner", { CornerRadius = UDim.new(0, 6) }, VersionBubble)
 
 -- Create minimize button (moved to right)
 local MinimizeButton = Instance.new("TextButton")
@@ -523,15 +725,22 @@ MinimizeButton.MouseButton1Click:Connect(function()
     currentState.isMinimized = not currentState.isMinimized
     
     local targetSize, targetPosition
+    local currentWidth = currentState.isMinimized and CONFIG_UI.MIN_WIDTH or CONFIG_UI.NORMAL_WIDTH
     
     if currentState.isMinimized then
-        targetSize = UDim2.new(0, currentState.width, 0, CONFIG.TITLE_HEIGHT)
+        targetSize = UDim2.new(0, currentWidth, 0, CONFIG_UI.TITLE_HEIGHT)
     else
-        targetSize = UDim2.new(0, currentState.width, 0, currentState.height)
+        targetSize = UDim2.new(0, currentWidth, 0, CONFIG.SIZES.Normal.HEIGHT)
     end
     
-    targetPosition = UDim2.new(0.5, -targetSize.X.Offset/2, 0.5, -targetSize.Y.Offset/2)
+    targetPosition = UDim2.new(
+        0.5,
+        -currentWidth/2,
+        MainFrame.Position.Y.Scale,
+        MainFrame.Position.Y.Offset
+    )
     
+    -- Animate the size and position changes
     TweenService:Create(MainFrame, TweenInfo.new(CUSTOM.ANIMATION.TWEEN_SPEED, CUSTOM.ANIMATION.TWEEN_STYLE), {
         Size = targetSize,
         Position = targetPosition
@@ -557,8 +766,8 @@ end)
 -- Create ScrollingFrame for menu items
 local MenuScroll = Instance.new("ScrollingFrame")
 MenuScroll.Name = "MenuScroll"
-MenuScroll.Size = UDim2.new(0, CONFIG.MENU_WIDTH, 1, -CONFIG.TITLE_HEIGHT - CUSTOM.LAYOUT.PADDING)
-MenuScroll.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CONFIG.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING/2)
+MenuScroll.Size = UDim2.new(0, CONFIG.MENU_WIDTH, 1, -CONFIG_UI.TITLE_HEIGHT - CUSTOM.LAYOUT.PADDING)
+MenuScroll.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CONFIG_UI.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING/2)
 MenuScroll.BackgroundTransparency = 1
 MenuScroll.ScrollBarThickness = CUSTOM.LAYOUT.SCROLL_BAR_THICKNESS
 MenuScroll.ScrollBarImageColor3 = CUSTOM.THEME.ACCENT
@@ -574,8 +783,8 @@ ListLayout.Parent = MenuScroll
 -- Create content area
 local ContentArea = Instance.new("ScrollingFrame")
 ContentArea.Name = "ContentArea"
-ContentArea.Size = UDim2.new(1, -(CONFIG.MENU_WIDTH + CUSTOM.LAYOUT.PADDING * 3), 1, -(CONFIG.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING * 2))
-ContentArea.Position = UDim2.new(0, CONFIG.MENU_WIDTH + CUSTOM.LAYOUT.PADDING * 2, 0, CONFIG.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING)
+ContentArea.Size = UDim2.new(1, -(CONFIG.MENU_WIDTH + CUSTOM.LAYOUT.PADDING * 3), 1, -(CONFIG_UI.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING * 2))
+ContentArea.Position = UDim2.new(0, CONFIG.MENU_WIDTH + CUSTOM.LAYOUT.PADDING * 2, 0, CONFIG_UI.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING)
 ContentArea.BackgroundColor3 = CUSTOM.THEME.BACKGROUND
 ContentArea.BackgroundTransparency = 0.5
 ContentArea.BorderSizePixel = 0
@@ -667,7 +876,7 @@ local function createToggle(text, posY, default)
     
     local toggle = Instance.new("TextButton")
     toggle.Size = UDim2.new(0, 40, 0, 20)
-    toggle.Position = UDim2.new(1, -40, 0.5, -10)
+    toggle.Position = UDim2.new(1, -45, 0.5, -10)
     toggle.BackgroundColor3 = default and CUSTOM.THEME.ACCENT or CUSTOM.THEME.BUTTON_NORMAL
     toggle.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
     toggle.Text = ""
@@ -1502,125 +1711,6 @@ local function createDropdownSection(title, items, startY)
         
         -- Update container size
         container.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT + (isExpanded and (#items * itemHeight) or 0))
-    end)
-    
-    return container
-end
-
--- Function to create a scrollable frame
-local function createScrollableFrame(parent, size, position)
-    local scrollFrame = Instance.new("ScrollingFrame")
-    scrollFrame.Size = size
-    scrollFrame.Position = position
-    scrollFrame.BackgroundTransparency = 1
-    scrollFrame.ScrollBarThickness = CUSTOM.LAYOUT.SCROLL_BAR_THICKNESS
-    scrollFrame.ScrollBarImageColor3 = CUSTOM.THEME.ACCENT
-    scrollFrame.Parent = parent
-    
-    local listLayout = Instance.new("UIListLayout")
-    listLayout.Parent = scrollFrame
-    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    listLayout.Padding = UDim.new(0, CUSTOM.LAYOUT.PADDING)
-    
-    -- Auto-adjust canvas size
-    listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
-    end)
-    
-    return scrollFrame
-end
-
--- Function to create a section heading
-local function createSectionHeading(parent, text, posY)
-    local heading = Instance.new("TextLabel")
-    heading.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-    heading.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
-    heading.BackgroundColor3 = CUSTOM.THEME.TITLE_BAR
-    heading.BackgroundTransparency = 0.5
-    heading.Text = text
-    heading.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
-    heading.TextSize = 14
-    heading.Font = CUSTOM.FONTS.TITLE
-    heading.Parent = parent
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
-    corner.Parent = heading
-    
-    return heading
-end
-
--- Function to create speed dropdown
-local function createSpeedDropdown(parent, posY)
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-    container.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
-    container.BackgroundTransparency = 1
-    container.Parent = parent
-    
-    local dropdown = Instance.new("TextButton")
-    dropdown.Size = UDim2.new(1, 0, 1, 0)
-    dropdown.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
-    dropdown.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
-    dropdown.Text = "Speed: Normal (350)"
-    dropdown.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
-    dropdown.TextSize = 14
-    dropdown.Font = CUSTOM.FONTS.BUTTON
-    dropdown.Parent = container
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
-    corner.Parent = dropdown
-    
-    local optionsFrame = Instance.new("Frame")
-    optionsFrame.Size = UDim2.new(1, 0, 0, #SPEED_OPTIONS * CUSTOM.LAYOUT.BUTTON_HEIGHT)
-    optionsFrame.Position = UDim2.new(0, 0, 1, 2)
-    optionsFrame.BackgroundColor3 = CUSTOM.THEME.BACKGROUND
-    optionsFrame.BorderSizePixel = 0
-    optionsFrame.Visible = false
-    optionsFrame.ZIndex = 10
-    optionsFrame.Parent = container
-    
-    local optionsCorner = Instance.new("UICorner")
-    optionsCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
-    optionsCorner.Parent = optionsFrame
-    
-    for i, option in ipairs(SPEED_OPTIONS) do
-        local optionButton = Instance.new("TextButton")
-        optionButton.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-        optionButton.Position = UDim2.new(0, 0, 0, (i-1) * CUSTOM.LAYOUT.BUTTON_HEIGHT)
-        optionButton.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
-        optionButton.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
-        optionButton.Text = option.name .. " (" .. option.speed .. ")"
-        optionButton.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
-        optionButton.TextSize = 14
-        optionButton.Font = CUSTOM.FONTS.BUTTON
-        optionButton.ZIndex = 10
-        optionButton.Parent = optionsFrame
-        
-        optionButton.MouseButton1Click:Connect(function()
-            teleportSpeed = option.speed
-            dropdown.Text = "Speed: " .. option.name .. " (" .. option.speed .. ")"
-            optionsFrame.Visible = false
-        end)
-        
-        optionButton.MouseEnter:Connect(function()
-            TweenService:Create(optionButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
-                BackgroundTransparency = CUSTOM.THEME.BUTTON_HOVER_TRANSPARENCY,
-                TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
-            }):Play()
-        end)
-        
-        optionButton.MouseLeave:Connect(function()
-            TweenService:Create(optionButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
-                BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY,
-                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
-            }):Play()
-        end)
-    end
-    
-    dropdown.MouseButton1Click:Connect(function()
-        optionsFrame.Visible = not optionsFrame.Visible
     end)
     
     return container
