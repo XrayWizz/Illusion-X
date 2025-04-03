@@ -212,41 +212,118 @@ local ISLANDS = {
     }
 }
 
--- Function to change GUI size
-local function changeGuiSize(sizeName)
-    if currentState.isMinimized then return end
+-- Quest Data
+local QUESTS = {
+    ["First Sea"] = {
+        {name = "SAW Boss", location = "Prison", description = "Defeat the SAW Boss when it spawns", autoFarm = true},
+        {name = "Marine Captain", location = "Marine Base", description = "Defeat Marine Captain for rewards", autoFarm = true},
+        {name = "Pirate Raid", location = "Pirate Village", description = "Defend against pirate raids", autoFarm = true}
+    },
+    ["Second Sea"] = {
+        {name = "Factory Breach", location = "Factory", description = "Clear the factory of enemies", autoFarm = true},
+        {name = "Shiver Quest", location = "Snow Mountain", description = "Complete the Shiver challenge", autoFarm = true},
+        {name = "Ghost Ship", location = "Cursed Ship", description = "Defeat the Ghost Ship raid", autoFarm = true}
+    },
+    ["Third Sea"] = {
+        {name = "Elite Pirate", location = "Castle on the Sea", description = "Hunt Elite Pirates for rewards", autoFarm = true},
+        {name = "Castle Raid", location = "Castle on the Sea", description = "Participate in the Castle raid", autoFarm = true},
+        {name = "Bone Quest", location = "Haunted Castle", description = "Collect bones from defeated enemies", autoFarm = true}
+    }
+}
+
+-- Function to get current sea
+local function getCurrentSea()
+    local player = game.Players.LocalPlayer
+    if not player or not player.Character then return "Unknown" end
     
-    local size = CONFIG.SIZES[sizeName]
-    if not size then return end
+    local position = player.Character:GetPrimaryPartCFrame().Position
     
-    currentState.size = sizeName
-    currentState.width = size.WIDTH
-    currentState.height = size.HEIGHT
-    
-    TweenService:Create(MainFrame, TweenInfo.new(CUSTOM.ANIMATION.TWEEN_SPEED, CUSTOM.ANIMATION.TWEEN_STYLE), {
-        Size = UDim2.new(0, size.WIDTH, 0, size.HEIGHT),
-        Position = UDim2.new(0.5, -size.WIDTH/2, 0.5, -size.HEIGHT/2)
-    }):Play()
+    -- Define sea boundaries (approximate)
+    if position.X >= -12000 and position.X <= 12000 and position.Z >= -12000 and position.Z <= 12000 then
+        return "First Sea"
+    elseif position.X >= -50000 and position.X <= -12001 then
+        return "Second Sea"
+    else
+        return "Third Sea"
+    end
 end
 
--- Function to toggle minimize
-local function toggleMinimize()
-    currentState.isMinimized = not currentState.isMinimized
-    
-    local targetSize, targetPosition
-    
-    if currentState.isMinimized then
-        targetSize = UDim2.new(0, currentState.width, 0, CONFIG.TITLE_HEIGHT)
-    else
-        targetSize = UDim2.new(0, currentState.width, 0, currentState.height)
+-- Function to create quest content
+local function createQuestContent()
+    -- Clear existing content
+    for _, child in ipairs(ContentArea:GetChildren()) do
+        child:Destroy()
     end
     
-    targetPosition = UDim2.new(0.5, -targetSize.X.Offset/2, 0.5, -targetSize.Y.Offset/2)
+    -- Create main scrolling frame
+    local mainScroll = createScrollableFrame(
+        ContentArea,
+        UDim2.new(1, 0, 1, 0),
+        UDim2.new(0, 0, 0, 0)
+    )
     
-    TweenService:Create(MainFrame, TweenInfo.new(CUSTOM.ANIMATION.TWEEN_SPEED, CUSTOM.ANIMATION.TWEEN_STYLE), {
-        Size = targetSize,
-        Position = targetPosition
-    }):Play()
+    -- Create current sea info
+    local currentSea = getCurrentSea()
+    local seaInfo = createSectionHeading(mainScroll, "📍 Current Location: " .. currentSea, 0)
+    seaInfo.TextColor3 = CUSTOM.THEME.ACCENT
+    
+    -- Create quests section
+    local questHeading = createSectionHeading(mainScroll, "📜 Available Quests", CUSTOM.LAYOUT.BUTTON_HEIGHT * 2)
+    
+    -- Create quest buttons for current sea
+    local currentY = CUSTOM.LAYOUT.BUTTON_HEIGHT * 3
+    if QUESTS[currentSea] then
+        for _, quest in ipairs(QUESTS[currentSea]) do
+            local questButton = Instance.new("Frame")
+            questButton.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT * 2)
+            questButton.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, currentY)
+            questButton.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+            questButton.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+            questButton.Parent = mainScroll
+            
+            local questName = Instance.new("TextLabel")
+            questName.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+            questName.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, 0)
+            questName.BackgroundTransparency = 1
+            questName.Text = quest.name .. " (" .. quest.location .. ")"
+            questName.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            questName.TextSize = 14
+            questName.Font = CUSTOM.FONTS.BUTTON
+            questName.TextXAlignment = Enum.TextXAlignment.Left
+            questName.Parent = questButton
+            
+            local questDesc = Instance.new("TextLabel")
+            questDesc.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+            questDesc.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+            questDesc.BackgroundTransparency = 1
+            questDesc.Text = quest.description
+            questDesc.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            questDesc.TextSize = 12
+            questDesc.Font = CUSTOM.FONTS.TEXT
+            questDesc.TextXAlignment = Enum.TextXAlignment.Left
+            questDesc.Parent = questButton
+            
+            local autoFarmButton = Instance.new("TextButton")
+            autoFarmButton.Size = UDim2.new(0, 80, 0, 20)
+            autoFarmButton.Position = UDim2.new(1, -90, 0, 5)
+            autoFarmButton.BackgroundColor3 = CUSTOM.THEME.ACCENT
+            autoFarmButton.Text = "Auto Farm"
+            autoFarmButton.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            autoFarmButton.TextSize = 12
+            autoFarmButton.Font = CUSTOM.FONTS.BUTTON
+            autoFarmButton.Parent = questButton
+            
+            local corner = Instance.new("UICorner")
+            corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+            corner.Parent = questButton
+            
+            local buttonCorner = Instance.new("UICorner")
+            buttonCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+            buttonCorner.Parent = autoFarmButton
+            
+            currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT * 2.5
+        end
+    end
 end
 
 -- Create main frame
@@ -302,7 +379,24 @@ MinimizeButton.TextSize = 16
 MinimizeButton.Font = CUSTOM.FONTS.BUTTON
 MinimizeButton.Parent = TitleBar
 
-MinimizeButton.MouseButton1Click:Connect(toggleMinimize)
+MinimizeButton.MouseButton1Click:Connect(function()
+    currentState.isMinimized = not currentState.isMinimized
+    
+    local targetSize, targetPosition
+    
+    if currentState.isMinimized then
+        targetSize = UDim2.new(0, currentState.width, 0, CONFIG.TITLE_HEIGHT)
+    else
+        targetSize = UDim2.new(0, currentState.width, 0, currentState.height)
+    end
+    
+    targetPosition = UDim2.new(0.5, -targetSize.X.Offset/2, 0.5, -targetSize.Y.Offset/2)
+    
+    TweenService:Create(MainFrame, TweenInfo.new(CUSTOM.ANIMATION.TWEEN_SPEED, CUSTOM.ANIMATION.TWEEN_STYLE), {
+        Size = targetSize,
+        Position = targetPosition
+    }):Play()
+end)
 
 -- Create close button
 local CloseButton = Instance.new("TextButton")
@@ -742,7 +836,7 @@ local function createDropdownSection(title, items, startY)
         }):Play()
     end)
     
-    return container, CUSTOM.LAYOUT.BUTTON_HEIGHT + (isExpanded and #items * (CUSTOM.LAYOUT.BUTTON_HEIGHT + 2) or 0)
+    return container, CUSTOM.LAYOUT.BUTTON_HEIGHT + (isExpanded and #items * (CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING) or 0)
 end
 
 -- Function to create a scrollable frame
@@ -893,8 +987,7 @@ local function createTeleportContent()
     for sea, locations in pairs(ISLANDS) do
         local dropdown = createDropdownSection(sea, locations, currentY)
         dropdown.Parent = mainScroll
-        currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT + 
-            (dropdown.Expanded and #locations * (CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING) or 0)
+        currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT + dropdown.Size.Y.Offset + CUSTOM.LAYOUT.PADDING
     end
     
     -- Create NPC Teleport section
@@ -906,9 +999,11 @@ local function createTeleportContent()
     for sea, npcs in pairs(NPCS) do
         local dropdown = createDropdownSection(sea, npcs, currentY)
         dropdown.Parent = mainScroll
-        currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT +
-            (dropdown.Expanded and #npcs * (CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING) or 0)
+        currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT + dropdown.Size.Y.Offset + CUSTOM.LAYOUT.PADDING
     end
+    
+    -- Update canvas size
+    mainScroll.CanvasSize = UDim2.new(0, 0, 0, currentY + CUSTOM.LAYOUT.PADDING)
 end
 
 -- Function to create teleport button
@@ -1102,6 +1197,153 @@ local function createTeleportButton(location, posY)
     return button
 end
 
+-- Function to handle successful teleport
+local function onTeleportComplete()
+    isTeleportEnabled = false
+    local toggle = ContentArea:FindFirstChild("TeleportToggle")
+    if toggle then
+        updateToggleVisual(toggle, false)
+    end
+end
+
+-- Modified teleport button creation to include auto-disable
+local function createTeleportButton(location, posY)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    button.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
+    button.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    button.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+    button.Text = location.name
+    button.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+    button.TextSize = 14
+    button.Font = CUSTOM.FONTS.BUTTON
+    button.TextXAlignment = Enum.TextXAlignment.Left
+    button.Parent = ContentArea
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    corner.Parent = button
+    
+    -- Add hover effect
+    button.MouseEnter:Connect(function()
+        if not isTeleportEnabled then return end
+        TweenService:Create(button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            BackgroundTransparency = CUSTOM.THEME.BUTTON_HOVER_TRANSPARENCY,
+            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        }):Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        if currentDestination ~= location then
+            TweenService:Create(button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY,
+                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            }):Play()
+        end
+    end)
+    
+    -- Add click effect and teleport functionality
+    button.MouseButton1Click:Connect(function()
+        if not isTeleportEnabled then
+            -- Visual feedback for disabled state
+            for i = 1, 3 do
+                TweenService:Create(button, TweenInfo.new(0.1), {
+                    BackgroundTransparency = 0.3
+                }):Play()
+                wait(0.1)
+                TweenService:Create(button, TweenInfo.new(0.1), {
+                    BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+                }):Play()
+                wait(0.1)
+            end
+            return
+        end
+        
+        -- Visual feedback
+        TweenService:Create(button, TweenInfo.new(0.1), {
+            BackgroundColor3 = CUSTOM.THEME.ACCENT,
+            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY,
+            BackgroundTransparency = 0
+        }):Play()
+        
+        -- Attempt to teleport
+        local player = game.Players.LocalPlayer
+        if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            currentDestination = location
+            
+            -- Disable character movement during teleport
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.PlatformStand = true
+            end
+            
+            -- Smooth teleport implementation
+            local function smoothMoveToDestination(player, targetCFrame, speed)
+                local character = player.Character
+                if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+                
+                local humanoidRootPart = character.HumanoidRootPart
+                local humanoid = character:FindFirstChild("Humanoid")
+                
+                -- Disable character collision temporarily
+                local oldCollisionGroup = humanoidRootPart.CollisionGroupId
+                humanoidRootPart.CollisionGroupId = 0
+                
+                -- Store original values
+                local originalGravity = workspace.Gravity
+                local originalStateType = humanoid.StateChanged:Wait()
+                
+                -- Modify character state for smooth movement
+                workspace.Gravity = 0
+                humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                
+                -- Create movement connection
+                local moveConnection
+                moveConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                    if not character or not character:FindFirstChild("HumanoidRootPart") then
+                        moveConnection:Disconnect()
+                        return
+                    end
+                    
+                    local currentPos = humanoidRootPart.Position
+                    local targetPos = targetCFrame.Position
+                    local direction = (targetPos - currentPos).Unit
+                    local distance = (targetPos - currentPos).Magnitude
+                    
+                    if distance < 5 then
+                        -- Reached destination
+                        humanoidRootPart.CFrame = targetCFrame
+                        moveConnection:Disconnect()
+                        
+                        -- Restore original state
+                        workspace.Gravity = originalGravity
+                        humanoid:ChangeState(originalStateType)
+                        humanoidRootPart.CollisionGroupId = oldCollisionGroup
+                        
+                        -- Re-enable character movement
+                        if humanoid then
+                            humanoid.PlatformStand = false
+                        end
+                        
+                        return
+                    end
+                    
+                    -- Move towards target
+                    local moveStep = math.min(speed * game:GetService("RunService").Heartbeat:Wait(), distance)
+                    humanoidRootPart.CFrame = CFrame.new(currentPos + direction * moveStep) * targetCFrame.Rotation
+                end)
+            end
+            
+            -- Start smooth movement to destination
+            smoothMoveToDestination(player, location.cframe, teleportSpeed)
+            -- Auto-disable teleport when reaching destination
+            onTeleportComplete()
+        end
+    end)
+    
+    return button
+end
+
 -- Create menu buttons
 local selectedButton = nil
 for _, item in ipairs(MENU_ITEMS) do
@@ -1214,6 +1456,9 @@ for _, item in ipairs(MENU_ITEMS) do
             createInfoLabel("Username: " .. player.Name, 50)
             createInfoLabel("Display Name: " .. player.DisplayName, 90)
             createInfoLabel("Account Age: " .. player.AccountAge .. " days", 130)
+            
+        elseif item.name == "Quests/Raids" then
+            createQuestContent()
             
         elseif item.name == "Settings" then
             local header = createSectionHeader("UI Settings")
