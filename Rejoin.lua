@@ -4,7 +4,6 @@ local LocalPlayer = Players.LocalPlayer
 local PlaceId = game.PlaceId
 local JobId = game.JobId
 local PrivateServerId = game.PrivateServerId
-local PrivateServerOwnerId = game.PrivateServerOwnerId
 local UIS = game:GetService("UserInputService")
 
 -- Create UI
@@ -13,53 +12,62 @@ ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local Frame = Instance.new("Frame")
 Frame.Parent = ScreenGui
-Frame.Size = UDim2.new(0, 180, 0, 40) -- Slim design
-Frame.Position = UDim2.new(0.5, -90, 0.05, 0) -- Centered at the top
-Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- Dark Modern Theme
-Frame.BackgroundTransparency = 0.1
+Frame.Size = UDim2.new(0, 220, 0, 60) -- Slightly larger for a modern look
+Frame.Position = UDim2.new(0.5, -110, 0.1, 0) -- Centered at the top
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Dark Gray Background
+Frame.BackgroundTransparency = 0.2 -- Glassmorphism effect
 Frame.BorderSizePixel = 0
 Frame.ClipsDescendants = true
 Frame.Active = true -- Allows dragging
 
 -- Rounded corners
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.CornerRadius = UDim.new(0, 12)
 UICorner.Parent = Frame
 
--- Drag Handle (Thin Top Bar)
+-- Draggable Handle (Top Bar)
 local DragHandle = Instance.new("Frame")
 DragHandle.Parent = Frame
-DragHandle.Size = UDim2.new(1, 0, 0.2, 0) -- Thin bar at the top
+DragHandle.Size = UDim2.new(1, 0, 0.3, 0) -- Thin top section
 DragHandle.Position = UDim2.new(0, 0, 0, 0)
-DragHandle.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+DragHandle.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 DragHandle.BorderSizePixel = 0
 
 local UICornerDrag = Instance.new("UICorner")
-UICornerDrag.CornerRadius = UDim.new(0, 10)
+UICornerDrag.CornerRadius = UDim.new(0, 12)
 UICornerDrag.Parent = DragHandle
 
 -- Rejoin Button
 local RejoinButton = Instance.new("TextButton")
 RejoinButton.Parent = Frame
-RejoinButton.Size = UDim2.new(0.8, 0, 0.7, 0) -- 80% width
-RejoinButton.Position = UDim2.new(0.05, 0, 0.25, 0)
-RejoinButton.Text = "↻ Rejoin"
-RejoinButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+RejoinButton.Size = UDim2.new(0.75, 0, 0.55, 0) -- 75% width, clean design
+RejoinButton.Position = UDim2.new(0.05, 0, 0.4, 0)
+RejoinButton.Text = "↻ Rejoin Server"
+RejoinButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 RejoinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 RejoinButton.Font = Enum.Font.GothamBold
-RejoinButton.TextSize = 14
+RejoinButton.TextSize = 15
 
 local UICornerButton = Instance.new("UICorner")
-UICornerButton.CornerRadius = UDim.new(0, 8)
+UICornerButton.CornerRadius = UDim.new(0, 10)
 UICornerButton.Parent = RejoinButton
 
--- Close Button
+-- Hover effect for button
+RejoinButton.MouseEnter:Connect(function()
+    RejoinButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+end)
+
+RejoinButton.MouseLeave:Connect(function()
+    RejoinButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+end)
+
+-- Close Button (Small Red Icon)
 local CloseButton = Instance.new("TextButton")
 CloseButton.Parent = Frame
-CloseButton.Size = UDim2.new(0.15, 0, 0.7, 0) -- Small size
-CloseButton.Position = UDim2.new(0.85, 0, 0.25, 0)
+CloseButton.Size = UDim2.new(0.18, 0, 0.55, 0) -- Small size
+CloseButton.Position = UDim2.new(0.8, 0, 0.4, 0)
 CloseButton.Text = "✕"
-CloseButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0) -- Red close button
+CloseButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.TextSize = 14
@@ -68,23 +76,23 @@ local UICornerClose = Instance.new("UICorner")
 UICornerClose.CornerRadius = UDim.new(0, 8)
 UICornerClose.Parent = CloseButton
 
--- Rejoin Function (FIXED for Private Servers)
+-- Hover effect for close button
+CloseButton.MouseEnter:Connect(function()
+    CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+end)
+
+CloseButton.MouseLeave:Connect(function()
+    CloseButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+end)
+
+-- 🚀 **Final Fixed Rejoin Function**
 RejoinButton.MouseButton1Click:Connect(function()
     if PrivateServerId ~= "" then
-        -- 🔥 Fix for Private Servers (Force new instance)
-        if PrivateServerOwnerId == 0 then
-            -- VIP Servers: Create a new one
-            TeleportService:Teleport(PlaceId, LocalPlayer)
-        else
-            -- Roblox Reserved Server: Rejoin via PrivateServerId
-            TeleportService:Teleport(PlaceId, LocalPlayer, {PrivateServerId})
-        end
-    elseif JobId ~= "" then
-        -- Public Servers: Rejoin exact same server
-        TeleportService:TeleportToPlaceInstance(PlaceId, JobId, LocalPlayer)
-    else
-        -- Fallback: Just teleport to the game
+        -- 🚀 **Private Server Fix: Roblox blocks rejoining private servers, so force a new instance!**
         TeleportService:Teleport(PlaceId, LocalPlayer)
+    else
+        -- ✅ **Public Servers: Rejoin exact server**
+        TeleportService:TeleportToPlaceInstance(PlaceId, JobId, LocalPlayer)
     end
 end)
 
