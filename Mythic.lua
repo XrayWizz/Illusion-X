@@ -1,6 +1,40 @@
 -- Services
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Get the remote event for fruit rolling
+local fruitRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_")
+
+-- List of mythical fruits (add all mythical fruits here)
+local mythicalFruits = {
+    "Dragon",
+    "Dough",
+    "Venom",
+    "Shadow",
+    "Control",
+    "Spirit",
+    "Phoenix",
+    "Magma"
+}
+
+-- Hook the remote event
+local oldNamecall
+oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+    local method = getnamecallmethod()
+    local args = {...}
+    
+    if self == fruitRemote and method == "InvokeServer" and isMythicalEnabled then
+        -- If it's a fruit roll and mythical is enabled, modify the roll
+        if args[1] == "LoadFruit" then
+            local randomMythical = mythicalFruits[math.random(1, #mythicalFruits)]
+            args[2] = randomMythical
+            return oldNamecall(self, unpack(args))
+        end
+    end
+    
+    return oldNamecall(self, ...)
+end)
 
 -- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
