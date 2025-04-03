@@ -132,7 +132,8 @@ local State = {
     Teleport = {
         isEnabled = false,
         currentDestination = nil,
-        cooldown = false
+        cooldown = false,
+        speed = 350  -- Default speed
     }
 }
 
@@ -610,7 +611,7 @@ local function createTeleportButton(island, posY)
             end
             
             -- Start smooth movement to destination
-            smoothMoveToDestination(player, island.cframe, 350)
+            smoothMoveToDestination(player, island.cframe, State.Teleport.speed)
         end
     end)
     
@@ -674,8 +675,16 @@ local ISLANDS = {
     }
 }
 
--- Function to create a dropdown section
-local function createDropdownSection(title, items, startY)
+-- Teleport speeds
+local TELEPORT_SPEEDS = {
+    { name = "Slow", speed = 150 },
+    { name = "Normal", speed = 350 },
+    { name = "Fast", speed = 550 },
+    { name = "Very Fast", speed = 750 }
+}
+
+-- Function to create a dropdown section with improved visuals
+local function createDropdownSection(title, items, startY, customHeight)
     local container = Instance.new("Frame")
     container.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
     container.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, startY)
@@ -687,6 +696,19 @@ local function createDropdownSection(title, items, startY)
     corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
     corner.Parent = container
     
+    -- Add a subtle gradient
+    local gradient = Instance.new("UIGradient")
+    gradient.Rotation = 90
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 200))
+    })
+    gradient.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.1),
+        NumberSequenceKeypoint.new(1, 0.3)
+    })
+    gradient.Parent = container
+    
     local titleButton = Instance.new("TextButton")
     titleButton.Size = UDim2.new(1, 0, 1, 0)
     titleButton.BackgroundTransparency = 1
@@ -697,6 +719,19 @@ local function createDropdownSection(title, items, startY)
     titleButton.TextXAlignment = Enum.TextXAlignment.Left
     titleButton.Parent = container
     
+    -- Add hover effect to title
+    titleButton.MouseEnter:Connect(function()
+        TweenService:Create(titleButton, TweenInfo.new(0.2), {
+            TextColor3 = CUSTOM.THEME.ACCENT
+        }):Play()
+    end)
+    
+    titleButton.MouseLeave:Connect(function()
+        TweenService:Create(titleButton, TweenInfo.new(0.2), {
+            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        }):Play()
+    end)
+    
     local itemsContainer = Instance.new("Frame")
     itemsContainer.Size = UDim2.new(1, 0, 0, 0)
     itemsContainer.Position = UDim2.new(0, 0, 1, 0)
@@ -704,37 +739,98 @@ local function createDropdownSection(title, items, startY)
     itemsContainer.ClipsDescendants = true
     itemsContainer.Parent = container
     
-    local listLayout = Instance.new("UIListLayout")
-    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    listLayout.Parent = itemsContainer
+    local itemsList = Instance.new("UIListLayout")
+    itemsList.SortOrder = Enum.SortOrder.LayoutOrder
+    itemsList.Padding = UDim.new(0, 2)
+    itemsList.Parent = itemsContainer
     
     local isExpanded = false
-    local buttons = {}
+    local maxHeight = (customHeight or (#items * (CUSTOM.LAYOUT.BUTTON_HEIGHT + 2))) + CUSTOM.LAYOUT.PADDING
     
-    -- Create teleport buttons
-    for i, island in ipairs(items) do
-        local button = createTeleportButton(island, (i-1) * (CUSTOM.LAYOUT.BUTTON_HEIGHT + 2))
-        button.Parent = itemsContainer
-        button.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-        button.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, (i-1) * (CUSTOM.LAYOUT.BUTTON_HEIGHT + 2))
-        table.insert(buttons, button)
+    -- Create items
+    for i, item in ipairs(items) do
+        local itemButton = Instance.new("TextButton")
+        itemButton.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+        itemButton.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+        itemButton.BackgroundTransparency = 0.7
+        itemButton.Text = "  " .. (item.name or item)  -- Add indent
+        itemButton.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+        itemButton.TextSize = 14
+        itemButton.Font = CUSTOM.FONTS.TEXT
+        itemButton.TextXAlignment = Enum.TextXAlignment.Left
+        itemButton.AutoButtonColor = false
+        itemButton.Parent = itemsContainer
+        
+        -- Add corner radius to items
+        local itemCorner = Instance.new("UICorner")
+        itemCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+        itemCorner.Parent = itemButton
+        
+        -- Add hover effect
+        itemButton.MouseEnter:Connect(function()
+            TweenService:Create(itemButton, TweenInfo.new(0.2), {
+                BackgroundTransparency = 0.5,
+                TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            }):Play()
+        end)
+        
+        itemButton.MouseLeave:Connect(function()
+            TweenService:Create(itemButton, TweenInfo.new(0.2), {
+                BackgroundTransparency = 0.7,
+                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            }):Play()
+        end)
+        
+        -- Add click effect
+        itemButton.MouseButton1Down:Connect(function()
+            TweenService:Create(itemButton, TweenInfo.new(0.1), {
+                BackgroundTransparency = 0.3
+            }):Play()
+        end)
+        
+        itemButton.MouseButton1Up:Connect(function()
+            TweenService:Create(itemButton, TweenInfo.new(0.1), {
+                BackgroundTransparency = 0.5
+            }):Play()
+        end)
+        
+        -- Handle item selection
+        if item.callback then
+            itemButton.MouseButton1Click:Connect(function()
+                item.callback(item)
+            end)
+        end
     end
     
     -- Toggle dropdown
     titleButton.MouseButton1Click:Connect(function()
         isExpanded = not isExpanded
-        titleButton.Text = (isExpanded and "▼ " or "▶ ") .. title
         
-        local targetSize = isExpanded and 
-            UDim2.new(1, 0, 0, #items * (CUSTOM.LAYOUT.BUTTON_HEIGHT + 2)) or 
-            UDim2.new(1, 0, 0, 0)
+        -- Rotate arrow
+        TweenService:Create(titleButton, TweenInfo.new(0.3), {
+            TextTransparency = 0.2
+        }):Play()
         
-        TweenService:Create(itemsContainer, TweenInfo.new(0.3), {
-            Size = targetSize
+        -- Update arrow and animate container
+        if isExpanded then
+            titleButton.Text = "▼ " .. title
+            TweenService:Create(itemsContainer, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.new(1, 0, 0, maxHeight)
+            }):Play()
+        else
+            titleButton.Text = "▶ " .. title
+            TweenService:Create(itemsContainer, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+                Size = UDim2.new(1, 0, 0, 0)
+            }):Play()
+        end
+        
+        task.wait(0.1)
+        TweenService:Create(titleButton, TweenInfo.new(0.2), {
+            TextTransparency = 0
         }):Play()
     end)
     
-    return container, CUSTOM.LAYOUT.BUTTON_HEIGHT + (isExpanded and #items * (CUSTOM.LAYOUT.BUTTON_HEIGHT + 2) or 0)
+    return container, itemsContainer
 end
 
 -- Create menu buttons
@@ -846,7 +942,28 @@ for _, item in ipairs(MENU_ITEMS) do
             local toggleContainer, disableTeleportFunc = createTeleportToggle()
             toggleContainer.Parent = ContentArea
             
-            local yOffset = CUSTOM.LAYOUT.BUTTON_HEIGHT * 2 + CUSTOM.LAYOUT.PADDING * 3
+            local speedItems = {}
+            for _, speed in ipairs(TELEPORT_SPEEDS) do
+                table.insert(speedItems, {
+                    name = speed.name .. " (" .. speed.speed .. ")",
+                    callback = function()
+                        State.Teleport.speed = speed.speed
+                        -- Visual feedback
+                        for _, item in ipairs(speedItems) do
+                            if item.button then
+                                local isSelected = item.speed == State.Teleport.speed
+                                item.button.TextColor3 = isSelected and CUSTOM.THEME.ACCENT or CUSTOM.THEME.TEXT_SECONDARY
+                            end
+                        end
+                    end,
+                    speed = speed.speed
+                })
+            end
+            
+            local speedContainer = createDropdownSection("Teleport Speed", speedItems, CUSTOM.LAYOUT.BUTTON_HEIGHT * 2)
+            speedContainer.Parent = ContentArea
+            
+            local yOffset = CUSTOM.LAYOUT.BUTTON_HEIGHT * 4 + CUSTOM.LAYOUT.PADDING * 3
             
             -- Create dropdowns for each sea
             local firstSeaSection, firstHeight = createDropdownSection("First Sea", ISLANDS["First Sea"], yOffset)
