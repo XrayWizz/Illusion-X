@@ -83,21 +83,6 @@ local CONFIG = {
     SIZES = CUSTOM.SIZES
 }
 
--- Constants for UI styling
-local CONFIG_UI = {
-    COLORS = {
-        VERSION_BLUE = Color3.fromRGB(0, 162, 255),
-        SECONDARY = Color3.fromRGB(45, 45, 45)
-    },
-    TEXT_SIZES = {
-        HEADER = 18,
-        BODY = 14
-    },
-    SIDE_GAP = 10,
-    MIN_WIDTH = 200,  -- Width when minimized
-    NORMAL_WIDTH = 500 -- Normal width
-}
-
 -- Menu items with icons
 local MENU_ITEMS = {
     {layoutOrder = 1, name = "Overview", icon = "👤"},     -- Profile
@@ -117,197 +102,20 @@ local MENU_ITEMS = {
 
 -- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "SuperGUI"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Name = "SuperGui"
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
 
--- Constants for UI styling
-local CONFIG = {
-    TITLE_HEIGHT = 30,
-    MENU_WIDTH = 150,
-    CORNER_RADIUS = 6,
-    COLORS = {
-        VERSION_BLUE = Color3.fromRGB(0, 162, 255),
-        SECONDARY = Color3.fromRGB(45, 45, 45),
-        BACKGROUND = Color3.fromRGB(25, 25, 25),
-        TITLE_BAR = Color3.fromRGB(35, 35, 35)
-    },
-    SIZES = {
-        Normal = {
-            WIDTH = 500,
-            HEIGHT = 400
-        },
-        Minimized = {
-            WIDTH = 200,
-            HEIGHT = 30
-        }
-    }
+-- State management
+local currentState = {
+    size = "Normal",
+    isMinimized = false,
+    width = CONFIG.SIZES.Normal.WIDTH,
+    height = CONFIG.SIZES.Normal.HEIGHT,
+    isDragging = false,
+    dragStart = nil,
+    startPos = nil
 }
-
--- Create main frame
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, CONFIG.SIZES.Normal.WIDTH, 0, CONFIG.SIZES.Normal.HEIGHT)
-MainFrame.Position = UDim2.new(0.5, -CONFIG.SIZES.Normal.WIDTH/2, 0.5, -CONFIG.SIZES.Normal.HEIGHT/2)
-MainFrame.BackgroundColor3 = CONFIG.COLORS.BACKGROUND
-MainFrame.BorderSizePixel = 0
-MainFrame.ClipsDescendants = true
-MainFrame.Parent = ScreenGui
-
--- Add corner rounding
-local Corner = Instance.new("UICorner")
-Corner.CornerRadius = UDim.new(0, CONFIG.CORNER_RADIUS)
-Corner.Parent = MainFrame
-
--- Create title bar
-local TitleBar = Instance.new("Frame")
-TitleBar.Name = "TitleBar"
-TitleBar.Size = UDim2.new(1, 0, 0, CONFIG.TITLE_HEIGHT)
-TitleBar.BackgroundColor3 = CONFIG.COLORS.TITLE_BAR
-TitleBar.BorderSizePixel = 0
-TitleBar.Parent = MainFrame
-
--- Add drag handle
-local DragHandle = Instance.new("Frame")
-DragHandle.Size = UDim2.new(1, -70, 1, 0)
-DragHandle.Position = UDim2.new(0, 0, 0, 0)
-DragHandle.BackgroundTransparency = 1
-DragHandle.Parent = TitleBar
-
--- Make draggable
-local dragging = false
-local dragStart
-local startPos
-
-DragHandle.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-DragHandle.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
-    end
-end)
-
--- Create title text
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(1, -80, 1, 0)
-TitleLabel.Position = UDim2.new(0, 10, 0, 0)
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "Super"
-TitleLabel.TextColor3 = CONFIG.COLORS.VERSION_BLUE
-TitleLabel.TextSize = 18
-TitleLabel.Font = Enum.Font.SourceSansBold
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-TitleLabel.Parent = TitleBar
-
--- Add glow effect
-local TitleGlow = Instance.new("ImageLabel")
-TitleGlow.Size = UDim2.new(1, 20, 1, 20)
-TitleGlow.Position = UDim2.new(0, -10, 0, -10)
-TitleGlow.BackgroundTransparency = 1
-TitleGlow.Image = "rbxassetid://4996891970"
-TitleGlow.ImageColor3 = CONFIG.COLORS.VERSION_BLUE
-TitleGlow.ImageTransparency = 0.9
-TitleGlow.Parent = TitleLabel
-
--- Create version label
-local VersionLabel = Instance.new("TextLabel")
-VersionLabel.Size = UDim2.new(0, 40, 0, 20)
-VersionLabel.Position = UDim2.new(0, 85, 0.5, -10)
-VersionLabel.BackgroundColor3 = CONFIG.COLORS.SECONDARY
-VersionLabel.BackgroundTransparency = 0.6
-VersionLabel.Text = "v1.0"
-VersionLabel.TextColor3 = CONFIG.COLORS.VERSION_BLUE
-VersionLabel.TextSize = 14
-VersionLabel.Font = Enum.Font.SourceSans
-VersionLabel.Parent = TitleBar
-
-local VersionCorner = Instance.new("UICorner")
-VersionCorner.CornerRadius = UDim.new(0, 6)
-VersionCorner.Parent = VersionLabel
-
--- Create minimize and close buttons
-local MinimizeButton = Instance.new("TextButton")
-MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
-MinimizeButton.Position = UDim2.new(1, -60, 0, 0)
-MinimizeButton.BackgroundTransparency = 1
-MinimizeButton.Text = "−"
-MinimizeButton.TextColor3 = CONFIG.COLORS.VERSION_BLUE
-MinimizeButton.TextSize = 20
-MinimizeButton.Font = Enum.Font.SourceSansBold
-MinimizeButton.Parent = TitleBar
-
-local CloseButton = Instance.new("TextButton")
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -30, 0, 0)
-CloseButton.BackgroundTransparency = 1
-CloseButton.Text = "×"
-CloseButton.TextColor3 = CONFIG.COLORS.VERSION_BLUE
-CloseButton.TextSize = 20
-CloseButton.Font = Enum.Font.SourceSansBold
-CloseButton.Parent = TitleBar
-
--- Handle minimize button
-MinimizeButton.MouseButton1Click:Connect(function()
-    local isMinimized = MainFrame.Size.Y.Offset <= CONFIG.TITLE_HEIGHT
-    local targetSize, targetWidth
-    
-    if isMinimized then
-        targetSize = UDim2.new(0, CONFIG.SIZES.Normal.WIDTH, 0, CONFIG.SIZES.Normal.HEIGHT)
-    else
-        targetSize = UDim2.new(0, CONFIG.SIZES.Minimized.WIDTH, 0, CONFIG.TITLE_HEIGHT)
-    end
-    
-    -- Animate the size change
-    game:GetService("TweenService"):Create(MainFrame, TweenInfo.new(0.3), {
-        Size = targetSize
-    }):Play()
-end)
-
--- Handle close button
-CloseButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
-
--- Create content area
-local ContentArea = Instance.new("ScrollingFrame")
-ContentArea.Name = "ContentArea"
-ContentArea.Size = UDim2.new(1, -(CONFIG.MENU_WIDTH + 20), 1, -(CONFIG.TITLE_HEIGHT + 20))
-ContentArea.Position = UDim2.new(0, CONFIG.MENU_WIDTH + 10, 0, CONFIG.TITLE_HEIGHT + 10)
-ContentArea.BackgroundColor3 = CONFIG.COLORS.BACKGROUND
-ContentArea.BackgroundTransparency = 0.5
-ContentArea.BorderSizePixel = 0
-ContentArea.ScrollBarThickness = 4
-ContentArea.ScrollBarImageColor3 = CONFIG.COLORS.VERSION_BLUE
-ContentArea.Parent = MainFrame
-
--- Create menu area
-local MenuArea = Instance.new("ScrollingFrame")
-MenuArea.Name = "MenuArea"
-MenuArea.Size = UDim2.new(0, CONFIG.MENU_WIDTH, 1, -(CONFIG.TITLE_HEIGHT + 10))
-MenuArea.Position = UDim2.new(0, 10, 0, CONFIG.TITLE_HEIGHT + 10)
-MenuArea.BackgroundTransparency = 1
-MenuArea.ScrollBarThickness = 4
-MenuArea.ScrollBarImageColor3 = CONFIG.COLORS.VERSION_BLUE
-MenuArea.Parent = MainFrame
 
 -- Teleport state and settings
 local isTeleportEnabled = false
@@ -447,23 +255,22 @@ local function createQuestContent()
         child:Destroy()
     end
     
-    -- Create main scrolling frame with proper padding
+    -- Create main scrolling frame
     local mainScroll = createScrollableFrame(
         ContentArea,
         UDim2.new(1, 0, 1, 0),
         UDim2.new(0, 0, 0, 0)
     )
-    mainScroll.ScrollBarThickness = 6
     
-    -- Create current sea info with proper spacing
+    -- Create current sea info
     local currentSea = getCurrentSea()
-    local seaInfo = createSectionHeading(mainScroll, "📍 Current Location: " .. currentSea, CUSTOM.LAYOUT.PADDING)
+    local seaInfo = createSectionHeading(mainScroll, "📍 Current Location: " .. currentSea, 0)
     seaInfo.TextColor3 = CUSTOM.THEME.ACCENT
     
-    -- Create quests section with increased spacing
+    -- Create quests section
     local questHeading = createSectionHeading(mainScroll, "📜 Available Quests", CUSTOM.LAYOUT.BUTTON_HEIGHT * 2)
     
-    -- Create quest buttons for current sea with proper spacing
+    -- Create quest buttons for current sea
     local currentY = CUSTOM.LAYOUT.BUTTON_HEIGHT * 3
     if QUESTS[currentSea] then
         for _, quest in ipairs(QUESTS[currentSea]) do
@@ -474,9 +281,8 @@ local function createQuestContent()
             questButton.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
             questButton.Parent = mainScroll
             
-            -- Add proper text wrapping and sizing
             local questName = Instance.new("TextLabel")
-            questName.Size = UDim2.new(1, -100, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+            questName.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
             questName.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, 0)
             questName.BackgroundTransparency = 1
             questName.Text = quest.name .. " (" .. quest.location .. ")"
@@ -484,11 +290,10 @@ local function createQuestContent()
             questName.TextSize = 14
             questName.Font = CUSTOM.FONTS.BUTTON
             questName.TextXAlignment = Enum.TextXAlignment.Left
-            questName.TextWrapped = true
             questName.Parent = questButton
             
             local questDesc = Instance.new("TextLabel")
-            questDesc.Size = UDim2.new(1, -100, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+            questDesc.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
             questDesc.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
             questDesc.BackgroundTransparency = 1
             questDesc.Text = quest.description
@@ -496,337 +301,313 @@ local function createQuestContent()
             questDesc.TextSize = 12
             questDesc.Font = CUSTOM.FONTS.TEXT
             questDesc.TextXAlignment = Enum.TextXAlignment.Left
-            questDesc.TextWrapped = true
             questDesc.Parent = questButton
+            
+            local autoFarmButton = Instance.new("TextButton")
+            autoFarmButton.Size = UDim2.new(0, 80, 0, 20)
+            autoFarmButton.Position = UDim2.new(1, -90, 0, 5)
+            autoFarmButton.BackgroundColor3 = CUSTOM.THEME.ACCENT
+            autoFarmButton.Text = "Auto Farm"
+            autoFarmButton.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            autoFarmButton.TextSize = 12
+            autoFarmButton.Font = CUSTOM.FONTS.BUTTON
+            autoFarmButton.Parent = questButton
+            
+            local corner = Instance.new("UICorner")
+            corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+            corner.Parent = questButton
+            
+            local buttonCorner = Instance.new("UICorner")
+            buttonCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+            buttonCorner.Parent = autoFarmButton
             
             currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT * 2.5
         end
     end
-    
-    -- Update scroll frame canvas size
-    mainScroll.CanvasSize = UDim2.new(0, 0, 0, currentY + CUSTOM.LAYOUT.PADDING)
 end
 
--- Function to create fruit automation content
-local function createFruitContent()
+-- Function to create a dropdown section
+local function createDropdownSection(title, items, startY)
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    container.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, startY)
+    container.BackgroundTransparency = 1
+    container.Parent = ContentArea
+    container.ZIndex = 10
+
+    local dropdownButton = Instance.new("TextButton")
+    dropdownButton.Size = UDim2.new(1, 0, 1, 0)
+    dropdownButton.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    dropdownButton.Text = title
+    dropdownButton.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+    dropdownButton.Font = CUSTOM.FONTS.BUTTON
+    dropdownButton.TextSize = 14
+    dropdownButton.Parent = container
+    dropdownButton.ZIndex = 10
+
+    local dropdownList = Instance.new("Frame")
+    dropdownList.Size = UDim2.new(1, 0, 0, #items * CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    dropdownList.Position = UDim2.new(0, 0, 1, 0)
+    dropdownList.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    dropdownList.Visible = false
+    dropdownList.Parent = container
+    dropdownList.ZIndex = 11
+
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayout.Parent = dropdownList
+
+    local isOpen = false
+    
+    -- Create items
+    for i, item in ipairs(items) do
+        local itemButton = Instance.new("TextButton")
+        itemButton.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+        itemButton.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+        itemButton.Text = item.name
+        itemButton.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        itemButton.Font = CUSTOM.FONTS.BUTTON
+        itemButton.TextSize = 14
+        itemButton.Parent = dropdownList
+        itemButton.ZIndex = 12
+        
+        -- Hover effects
+        itemButton.MouseEnter:Connect(function()
+            TweenService:Create(itemButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundColor3 = CUSTOM.THEME.BUTTON_HOVER
+            }):Play()
+        end)
+        
+        itemButton.MouseLeave:Connect(function()
+            TweenService:Create(itemButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+            }):Play()
+        end)
+        
+        itemButton.MouseButton1Click:Connect(function()
+            if item.callback then
+                item.callback()
+            end
+            dropdownButton.Text = title .. ": " .. item.name
+            dropdownList.Visible = false
+            isOpen = false
+        end)
+    end
+    
+    dropdownButton.MouseButton1Click:Connect(function()
+        isOpen = not isOpen
+        dropdownList.Visible = isOpen
+    end)
+    
+    return container, CUSTOM.LAYOUT.BUTTON_HEIGHT
+end
+
+-- Function to create overview content with detailed player information
+local function createOverviewContent()
     -- Clear existing content
     for _, child in ipairs(ContentArea:GetChildren()) do
         child:Destroy()
     end
     
-    -- Create main scrolling frame
-    local mainScroll = createScrollableFrame(
-        ContentArea,
-        UDim2.new(1, 0, 1, 0),
-        UDim2.new(0, 0, 0, 0)
-    )
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
     
-    local currentY = CUSTOM.LAYOUT.PADDING
+    local yOffset = CUSTOM.LAYOUT.PADDING
     
-    -- Create Auto Pull section
-    local autoPullHeading = createSectionHeading(mainScroll, "🎲 Auto Fruit Pull", currentY)
-    currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING
+    -- Player Basic Info Section
+    local basicInfoHeader = createSectionHeader("Player Information")
+    basicInfoHeader.Parent = ContentArea
+    yOffset = yOffset + CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING
     
-    local autoPullToggle = createToggleButton(
-        mainScroll,
-        "Auto Random Fruit Pull",
-        "Automatically pulls random fruits when available",
-        currentY,
-        function(enabled)
-            _G.AutoFruitPull = enabled
-            -- Implementation for auto fruit pull
-            if enabled then
-                spawn(function()
-                    while _G.AutoFruitPull do
-                        -- Auto pull logic here
-                        wait(1)
-                    end
-                end)
-            end
-        end
-    )
-    currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT * 2
-    
-    -- Create Auto Store section
-    local autoStoreHeading = createSectionHeading(mainScroll, "📦 Auto Store Fruit", currentY)
-    currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING
-    
-    local autoStoreToggle = createToggleButton(
-        mainScroll,
-        "Auto Store Fruits",
-        "Automatically stores fruits in inventory when possible",
-        currentY,
-        function(enabled)
-            _G.AutoStoreFruit = enabled
-            -- Implementation for auto store
-            if enabled then
-                spawn(function()
-                    while _G.AutoStoreFruit do
-                        -- Auto store logic here
-                        wait(1)
-                    end
-                end)
-            end
-        end
-    )
-    currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT * 2
-    
-    -- Create Auto Collect section
-    local autoCollectHeading = createSectionHeading(mainScroll, "🌳 Auto Collect Fruit", currentY)
-    currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING
-    
-    local autoCollectToggle = createToggleButton(
-        mainScroll,
-        "Auto Collect Spawned Fruits",
-        "Automatically collects fruits that spawn under trees",
-        currentY,
-        function(enabled)
-            _G.AutoCollectFruit = enabled
-            -- Implementation for auto collect
-            if enabled then
-                spawn(function()
-                    while _G.AutoCollectFruit do
-                        -- Auto collect logic here
-                        wait(1)
-                    end
-                end)
-            end
-        end
-    )
-    currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT * 2
-    
-    -- Update scroll frame canvas size
-    mainScroll.CanvasSize = UDim2.new(0, 0, 0, currentY + CUSTOM.LAYOUT.PADDING)
-end
-
--- Function to create dropdown section with proper spacing
-local function createDropdownSection(title, items, startY)
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-    container.Position = UDim2.new(0, 0, 0, startY)
-    container.BackgroundTransparency = 1
-    
-    local header = Instance.new("TextButton")
-    header.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-    header.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, 0)
-    header.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
-    header.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
-    header.Text = "▸ " .. title
-    header.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
-    header.TextSize = 14
-    header.Font = CUSTOM.FONTS.BUTTON
-    header.TextXAlignment = Enum.TextXAlignment.Left
-    header.Parent = container
-    
-    local itemsContainer = Instance.new("Frame")
-    itemsContainer.Size = UDim2.new(1, 0, 0, 0)
-    itemsContainer.Position = UDim2.new(0, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-    itemsContainer.BackgroundTransparency = 1
-    itemsContainer.ClipsDescendants = true
-    itemsContainer.Parent = container
-    
-    local isExpanded = false
-    local itemHeight = CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING
-    
-    header.MouseButton1Click:Connect(function()
-        isExpanded = not isExpanded
-        header.Text = (isExpanded and "▾ " or "▸ ") .. title
+    -- Create info display function
+    local function createInfoDisplay(title, getValue, posY)
+        local container = Instance.new("Frame")
+        container.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+        container.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
+        container.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+        container.BackgroundTransparency = 0.5
+        container.Parent = ContentArea
         
-        -- Create items if expanding
-        if isExpanded then
-            for i, item in ipairs(items) do
-                local button = createTeleportButton(item, (i-1) * itemHeight)
-                button.Parent = itemsContainer
-            end
-        else
-            -- Clear items if collapsing
-            for _, child in ipairs(itemsContainer:GetChildren()) do
-                child:Destroy()
-            end
-        end
+        local titleLabel = Instance.new("TextLabel")
+        titleLabel.Size = UDim2.new(0.4, 0, 1, 0)
+        titleLabel.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, 0)
+        titleLabel.BackgroundTransparency = 1
+        titleLabel.Text = title
+        titleLabel.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        titleLabel.Font = CUSTOM.FONTS.TEXT
+        titleLabel.TextSize = 14
+        titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+        titleLabel.Parent = container
         
-        -- Animate container
-        local targetSize = UDim2.new(1, 0, 0, isExpanded and (#items * itemHeight) or 0)
-        TweenService:Create(itemsContainer, TweenInfo.new(CUSTOM.ANIMATION.TWEEN_SPEED), {
-            Size = targetSize
-        }):Play()
+        local valueLabel = Instance.new("TextLabel")
+        valueLabel.Size = UDim2.new(0.6, -CUSTOM.LAYOUT.PADDING, 1, 0)
+        valueLabel.Position = UDim2.new(0.4, 0, 0, 0)
+        valueLabel.BackgroundTransparency = 1
+        valueLabel.TextColor3 = CUSTOM.THEME.TEXT_ACCENT
+        valueLabel.Font = CUSTOM.FONTS.TEXT
+        valueLabel.TextSize = 14
+        valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+        valueLabel.Parent = container
         
-        -- Update container size
-        container.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT + (isExpanded and (#items * itemHeight) or 0))
-    end)
-    
-    return container
-end
-
--- Function to create a scrollable frame
-local function createScrollableFrame(parent, size, position)
-    local scrollFrame = Instance.new("ScrollingFrame")
-    scrollFrame.Size = size
-    scrollFrame.Position = position
-    scrollFrame.BackgroundTransparency = 1
-    scrollFrame.ScrollBarThickness = CUSTOM.LAYOUT.SCROLL_BAR_THICKNESS
-    scrollFrame.ScrollBarImageColor3 = CUSTOM.THEME.ACCENT
-    scrollFrame.Parent = parent
-    
-    local listLayout = Instance.new("UIListLayout")
-    listLayout.Parent = scrollFrame
-    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    listLayout.Padding = UDim.new(0, CUSTOM.LAYOUT.PADDING)
-    
-    -- Auto-adjust canvas size
-    listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
-    end)
-    
-    return scrollFrame
-end
-
--- Function to create a section heading
-local function createSectionHeading(parent, text, posY)
-    local heading = Instance.new("TextLabel")
-    heading.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-    heading.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
-    heading.BackgroundColor3 = CUSTOM.THEME.TITLE_BAR
-    heading.BackgroundTransparency = 0.5
-    heading.Text = text
-    heading.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
-    heading.TextSize = 14
-    heading.Font = CUSTOM.FONTS.TITLE
-    heading.Parent = parent
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
-    corner.Parent = heading
-    
-    return heading
-end
-
--- Function to create speed dropdown
-local function createSpeedDropdown(parent, posY)
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-    container.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
-    container.BackgroundTransparency = 1
-    container.Parent = parent
-    
-    local dropdown = Instance.new("TextButton")
-    dropdown.Size = UDim2.new(1, 0, 1, 0)
-    dropdown.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
-    dropdown.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
-    dropdown.Text = "Speed: Normal (350)"
-    dropdown.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
-    dropdown.TextSize = 14
-    dropdown.Font = CUSTOM.FONTS.BUTTON
-    dropdown.Parent = container
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
-    corner.Parent = dropdown
-    
-    local optionsFrame = Instance.new("Frame")
-    optionsFrame.Size = UDim2.new(1, 0, 0, #SPEED_OPTIONS * CUSTOM.LAYOUT.BUTTON_HEIGHT)
-    optionsFrame.Position = UDim2.new(0, 0, 1, 2)
-    optionsFrame.BackgroundColor3 = CUSTOM.THEME.BACKGROUND
-    optionsFrame.BorderSizePixel = 0
-    optionsFrame.Visible = false
-    optionsFrame.ZIndex = 10
-    optionsFrame.Parent = container
-    
-    local optionsCorner = Instance.new("UICorner")
-    optionsCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
-    optionsCorner.Parent = optionsFrame
-    
-    for i, option in ipairs(SPEED_OPTIONS) do
-        local optionButton = Instance.new("TextButton")
-        optionButton.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-        optionButton.Position = UDim2.new(0, 0, 0, (i-1) * CUSTOM.LAYOUT.BUTTON_HEIGHT)
-        optionButton.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
-        optionButton.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
-        optionButton.Text = option.name .. " (" .. option.speed .. ")"
-        optionButton.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
-        optionButton.TextSize = 14
-        optionButton.Font = CUSTOM.FONTS.BUTTON
-        optionButton.ZIndex = 10
-        optionButton.Parent = optionsFrame
-        
-        optionButton.MouseButton1Click:Connect(function()
-            teleportSpeed = option.speed
-            dropdown.Text = "Speed: " .. option.name .. " (" .. option.speed .. ")"
-            optionsFrame.Visible = false
-        end)
-        
-        optionButton.MouseEnter:Connect(function()
-            TweenService:Create(optionButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
-                BackgroundTransparency = CUSTOM.THEME.BUTTON_HOVER_TRANSPARENCY,
-                TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
-            }):Play()
-        end)
-        
-        optionButton.MouseLeave:Connect(function()
-            TweenService:Create(optionButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
-                BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY,
-                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
-            }):Play()
-        end)
-    end
-    
-    dropdown.MouseButton1Click:Connect(function()
-        optionsFrame.Visible = not optionsFrame.Visible
-    end)
-    
-    return container
-end
-
--- Function to create UI elements with properties
-local function createUIElement(className, properties, parent)
-    local element = Instance.new(className)
-    for property, value in pairs(properties) do
-        element[property] = value
-    end
-    if parent then
-        element.Parent = parent
-    end
-    return element
-end
-
--- Function to make an element draggable
-local function makeDraggable(dragElement, dragTarget)
-    local dragging = false
-    local dragStart
-    local startPos
-    
-    dragElement.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = dragTarget.Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
+        -- Update value every second
+        spawn(function()
+            while wait(1) do
+                if container.Parent then
+                    valueLabel.Text = getValue()
+                else
+                    break
                 end
-            end)
-        end
-    end)
+            end
+        end)
+        
+        return CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING
+    end
     
-    dragElement.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-            local delta = input.Position - dragStart
-            dragTarget.Position = UDim2.new(
-                startPos.X.Scale,
-                startPos.X.Offset + delta.X,
-                startPos.Y.Scale,
-                startPos.Y.Offset + delta.Y
-            )
-        end
-    end)
+    -- Add various player stats
+    yOffset = yOffset + createInfoDisplay("Level", function()
+        return tostring(player.Level.Value or "N/A")
+    end, yOffset)
+    
+    yOffset = yOffset + createInfoDisplay("Health", function()
+        return string.format("%d / %d", humanoid.Health, humanoid.MaxHealth)
+    end, yOffset)
+    
+    yOffset = yOffset + createInfoDisplay("Energy", function()
+        return string.format("%d / %d", player.Energy.Value or 0, player.MaxEnergy.Value or 100)
+    end, yOffset)
+    
+    -- Currencies Section
+    local currencyHeader = createSectionHeader("Currencies")
+    currencyHeader.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, yOffset)
+    currencyHeader.Parent = ContentArea
+    yOffset = yOffset + CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING
+    
+    yOffset = yOffset + createInfoDisplay("Beli", function()
+        return tostring(player.Data.Beli.Value or 0)
+    end, yOffset)
+    
+    yOffset = yOffset + createInfoDisplay("Fragments", function()
+        return tostring(player.Data.Fragments.Value or 0)
+    end, yOffset)
+    
+    -- Character Stats Section
+    local statsHeader = createSectionHeader("Character Stats")
+    statsHeader.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, yOffset)
+    statsHeader.Parent = ContentArea
+    yOffset = yOffset + CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING
+    
+    local stats = {"Melee", "Defense", "Sword", "Gun", "Devil Fruit"}
+    for _, stat in ipairs(stats) do
+        yOffset = yOffset + createInfoDisplay(stat, function()
+            return tostring(player.Data[stat].Value or 0)
+        end, yOffset)
+    end
+    
+    -- Current Fruit Section
+    local fruitHeader = createSectionHeader("Current Fruit")
+    fruitHeader.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, yOffset)
+    fruitHeader.Parent = ContentArea
+    yOffset = yOffset + CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING
+    
+    yOffset = yOffset + createInfoDisplay("Fruit", function()
+        return player.Data.DevilFruit.Value or "None"
+    end, yOffset)
 end
+
+-- Create main frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, currentState.width, 0, currentState.height)
+MainFrame.Position = UDim2.new(0.5, -currentState.width/2, 0.5, -currentState.height/2)
+MainFrame.BackgroundColor3 = CONFIG.THEME.BACKGROUND
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ScreenGui
+
+-- Add corner rounding
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, CONFIG.CORNER_RADIUS)
+Corner.Parent = MainFrame
+
+-- Create title bar
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Size = UDim2.new(1, 0, 0, CONFIG.TITLE_HEIGHT)
+TitleBar.BackgroundColor3 = CONFIG.THEME.TITLE_BAR
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+
+-- Add corner rounding to title bar
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, CONFIG.CORNER_RADIUS)
+TitleCorner.Parent = TitleBar
+
+-- Create title text
+local TitleText = Instance.new("TextLabel")
+TitleText.Name = "TitleText"
+TitleText.Size = UDim2.new(0, 100, 1, 0)
+TitleText.Position = UDim2.new(0, 10, 0, 0)
+TitleText.BackgroundTransparency = 1
+TitleText.Text = "Super"
+TitleText.TextColor3 = CONFIG.THEME.TEXT_PRIMARY
+TitleText.TextSize = 16
+TitleText.Font = CUSTOM.FONTS.TITLE
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+TitleText.Parent = TitleBar
+
+-- Create minimize button (moved to right)
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Size = UDim2.new(0, CUSTOM.LAYOUT.BUTTON_HEIGHT, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+MinimizeButton.Position = UDim2.new(1, -CUSTOM.LAYOUT.BUTTON_HEIGHT*2, 0, 0)
+MinimizeButton.BackgroundTransparency = 1
+MinimizeButton.Text = "─"
+MinimizeButton.TextColor3 = CONFIG.THEME.TEXT_SECONDARY
+MinimizeButton.TextSize = 16
+MinimizeButton.Font = CUSTOM.FONTS.BUTTON
+MinimizeButton.Parent = TitleBar
+
+MinimizeButton.MouseButton1Click:Connect(function()
+    currentState.isMinimized = not currentState.isMinimized
+    
+    local targetSize, targetPosition
+    
+    if currentState.isMinimized then
+        targetSize = UDim2.new(0, currentState.width, 0, CONFIG.TITLE_HEIGHT)
+    else
+        targetSize = UDim2.new(0, currentState.width, 0, currentState.height)
+    end
+    
+    targetPosition = UDim2.new(0.5, -targetSize.X.Offset/2, 0.5, -targetSize.Y.Offset/2)
+    
+    TweenService:Create(MainFrame, TweenInfo.new(CUSTOM.ANIMATION.TWEEN_SPEED, CUSTOM.ANIMATION.TWEEN_STYLE), {
+        Size = targetSize,
+        Position = targetPosition
+    }):Play()
+end)
+
+-- Create close button
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Size = UDim2.new(0, CUSTOM.LAYOUT.BUTTON_HEIGHT, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+CloseButton.Position = UDim2.new(1, -CUSTOM.LAYOUT.BUTTON_HEIGHT, 0, 0)
+CloseButton.BackgroundTransparency = 1
+CloseButton.Text = "×"
+CloseButton.TextColor3 = CONFIG.THEME.CLOSE_BUTTON
+CloseButton.TextSize = 20
+CloseButton.Font = CUSTOM.FONTS.BUTTON
+CloseButton.Parent = TitleBar
+
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
 
 -- Create ScrollingFrame for menu items
 local MenuScroll = Instance.new("ScrollingFrame")
 MenuScroll.Name = "MenuScroll"
-MenuScroll.Size = UDim2.new(0, CONFIG.MENU_WIDTH, 1, -CONFIG_UI.TITLE_HEIGHT - CUSTOM.LAYOUT.PADDING)
-MenuScroll.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CONFIG_UI.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING/2)
+MenuScroll.Size = UDim2.new(0, CONFIG.MENU_WIDTH, 1, -CONFIG.TITLE_HEIGHT - CUSTOM.LAYOUT.PADDING)
+MenuScroll.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CONFIG.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING/2)
 MenuScroll.BackgroundTransparency = 1
 MenuScroll.ScrollBarThickness = CUSTOM.LAYOUT.SCROLL_BAR_THICKNESS
 MenuScroll.ScrollBarImageColor3 = CUSTOM.THEME.ACCENT
@@ -842,8 +623,8 @@ ListLayout.Parent = MenuScroll
 -- Create content area
 local ContentArea = Instance.new("ScrollingFrame")
 ContentArea.Name = "ContentArea"
-ContentArea.Size = UDim2.new(1, -(CONFIG.MENU_WIDTH + CUSTOM.LAYOUT.PADDING * 3), 1, -(CONFIG_UI.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING * 2))
-ContentArea.Position = UDim2.new(0, CONFIG.MENU_WIDTH + CUSTOM.LAYOUT.PADDING * 2, 0, CONFIG_UI.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING)
+ContentArea.Size = UDim2.new(1, -(CONFIG.MENU_WIDTH + CUSTOM.LAYOUT.PADDING * 3), 1, -(CONFIG.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING * 2))
+ContentArea.Position = UDim2.new(0, CONFIG.MENU_WIDTH + CUSTOM.LAYOUT.PADDING * 2, 0, CONFIG.TITLE_HEIGHT + CUSTOM.LAYOUT.PADDING)
 ContentArea.BackgroundColor3 = CUSTOM.THEME.BACKGROUND
 ContentArea.BackgroundTransparency = 0.5
 ContentArea.BorderSizePixel = 0
@@ -935,7 +716,7 @@ local function createToggle(text, posY, default)
     
     local toggle = Instance.new("TextButton")
     toggle.Size = UDim2.new(0, 40, 0, 20)
-    toggle.Position = UDim2.new(1, -45, 0.5, -10)
+    toggle.Position = UDim2.new(1, -40, 0.5, -10)
     toggle.BackgroundColor3 = default and CUSTOM.THEME.ACCENT or CUSTOM.THEME.BUTTON_NORMAL
     toggle.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
     toggle.Text = ""
@@ -1048,13 +829,13 @@ local function createTeleportToggle()
 end
 
 -- Function to create teleport button
-local function createTeleportButton(location, posY)
+local function createTeleportButton(island, posY)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
     button.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
     button.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
     button.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
-    button.Text = location.name
+    button.Text = island.name
     button.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
     button.TextSize = 14
     button.Font = CUSTOM.FONTS.BUTTON
@@ -1075,7 +856,7 @@ local function createTeleportButton(location, posY)
     end)
     
     button.MouseLeave:Connect(function()
-        if currentDestination ~= location then
+        if currentDestination ~= island then
             TweenService:Create(button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
                 BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY,
                 TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
@@ -1110,7 +891,8 @@ local function createTeleportButton(location, posY)
         -- Attempt to teleport
         local player = game.Players.LocalPlayer
         if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            currentDestination = location
+            currentDestination = island
+            local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
             
             -- Disable character movement during teleport
             local humanoid = player.Character:FindFirstChild("Humanoid")
@@ -1176,158 +958,205 @@ local function createTeleportButton(location, posY)
             end
             
             -- Start smooth movement to destination
-            smoothMoveToDestination(player, location.cframe, teleportSpeed)
+            smoothMoveToDestination(player, island.cframe, teleportSpeed)
         end
     end)
     
     return button
 end
 
--- Function to handle successful teleport
-local function onTeleportComplete()
-    isTeleportEnabled = false
-    local toggle = ContentArea:FindFirstChild("TeleportToggle")
-    if toggle then
-        updateToggleVisual(toggle, false)
+-- Function to create a dropdown section
+local function createDropdownSection(title, items, startY)
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    container.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, startY)
+    container.BackgroundTransparency = 1
+    container.Parent = ContentArea
+    container.ZIndex = 10
+
+    local dropdownButton = Instance.new("TextButton")
+    dropdownButton.Size = UDim2.new(1, 0, 1, 0)
+    dropdownButton.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    dropdownButton.Text = title
+    dropdownButton.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+    dropdownButton.Font = CUSTOM.FONTS.BUTTON
+    dropdownButton.TextSize = 14
+    dropdownButton.Parent = container
+    dropdownButton.ZIndex = 10
+
+    local dropdownList = Instance.new("Frame")
+    dropdownList.Size = UDim2.new(1, 0, 0, #items * CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    dropdownList.Position = UDim2.new(0, 0, 1, 0)
+    dropdownList.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    dropdownList.Visible = false
+    dropdownList.Parent = container
+    dropdownList.ZIndex = 11
+
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayout.Parent = dropdownList
+
+    local isOpen = false
+    
+    -- Create items
+    for i, item in ipairs(items) do
+        local itemButton = Instance.new("TextButton")
+        itemButton.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+        itemButton.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+        itemButton.Text = item.name
+        itemButton.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        itemButton.Font = CUSTOM.FONTS.BUTTON
+        itemButton.TextSize = 14
+        itemButton.Parent = dropdownList
+        itemButton.ZIndex = 12
+        
+        -- Hover effects
+        itemButton.MouseEnter:Connect(function()
+            TweenService:Create(itemButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundColor3 = CUSTOM.THEME.BUTTON_HOVER
+            }):Play()
+        end)
+        
+        itemButton.MouseLeave:Connect(function()
+            TweenService:Create(itemButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+            }):Play()
+        end)
+        
+        itemButton.MouseButton1Click:Connect(function()
+            if item.callback then
+                item.callback()
+            end
+            dropdownButton.Text = title .. ": " .. item.name
+            dropdownList.Visible = false
+            isOpen = false
+        end)
     end
+    
+    dropdownButton.MouseButton1Click:Connect(function()
+        isOpen = not isOpen
+        dropdownList.Visible = isOpen
+    end)
+    
+    return container, CUSTOM.LAYOUT.BUTTON_HEIGHT
 end
 
--- Modified teleport button creation to include auto-disable
-local function createTeleportButton(location, posY)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-    button.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
-    button.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
-    button.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
-    button.Text = location.name
-    button.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
-    button.TextSize = 14
-    button.Font = CUSTOM.FONTS.BUTTON
-    button.TextXAlignment = Enum.TextXAlignment.Left
-    button.Parent = ContentArea
+-- Function to create a scrollable frame
+local function createScrollableFrame(parent, size, position)
+    local scrollFrame = Instance.new("ScrollingFrame")
+    scrollFrame.Size = size
+    scrollFrame.Position = position
+    scrollFrame.BackgroundTransparency = 1
+    scrollFrame.ScrollBarThickness = CUSTOM.LAYOUT.SCROLL_BAR_THICKNESS
+    scrollFrame.ScrollBarImageColor3 = CUSTOM.THEME.ACCENT
+    scrollFrame.Parent = parent
+    
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Parent = scrollFrame
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayout.Padding = UDim.new(0, CUSTOM.LAYOUT.PADDING)
+    
+    -- Auto-adjust canvas size
+    listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
+    end)
+    
+    return scrollFrame
+end
+
+-- Function to create a section heading
+local function createSectionHeading(parent, text, posY)
+    local heading = Instance.new("TextLabel")
+    heading.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    heading.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
+    heading.BackgroundColor3 = CUSTOM.THEME.TITLE_BAR
+    heading.BackgroundTransparency = 0.5
+    heading.Text = text
+    heading.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+    heading.TextSize = 14
+    heading.Font = CUSTOM.FONTS.TITLE
+    heading.Parent = parent
     
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
-    corner.Parent = button
+    corner.Parent = heading
     
-    -- Add hover effect
-    button.MouseEnter:Connect(function()
-        if not isTeleportEnabled then return end
-        TweenService:Create(button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
-            BackgroundTransparency = CUSTOM.THEME.BUTTON_HOVER_TRANSPARENCY,
-            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
-        }):Play()
-    end)
+    return heading
+end
+
+-- Function to create speed dropdown
+local function createSpeedDropdown(parent, posY)
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    container.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
+    container.BackgroundTransparency = 1
+    container.Parent = parent
     
-    button.MouseLeave:Connect(function()
-        if currentDestination ~= location then
-            TweenService:Create(button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+    local dropdown = Instance.new("TextButton")
+    dropdown.Size = UDim2.new(1, 0, 1, 0)
+    dropdown.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    dropdown.Text = "Speed: Normal (350)"
+    dropdown.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+    dropdown.TextSize = 14
+    dropdown.Font = CUSTOM.FONTS.BUTTON
+    dropdown.Parent = container
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    corner.Parent = dropdown
+    
+    local optionsFrame = Instance.new("Frame")
+    optionsFrame.Size = UDim2.new(1, 0, 0, #SPEED_OPTIONS * CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    optionsFrame.Position = UDim2.new(0, 0, 1, 2)
+    optionsFrame.BackgroundColor3 = CUSTOM.THEME.BACKGROUND
+    optionsFrame.BorderSizePixel = 0
+    optionsFrame.Visible = false
+    optionsFrame.ZIndex = 10
+    optionsFrame.Parent = container
+    
+    local optionsCorner = Instance.new("UICorner")
+    optionsCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    optionsCorner.Parent = optionsFrame
+    
+    for i, option in ipairs(SPEED_OPTIONS) do
+        local optionButton = Instance.new("TextButton")
+        optionButton.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+        optionButton.Position = UDim2.new(0, 0, 0, (i-1) * CUSTOM.LAYOUT.BUTTON_HEIGHT)
+        optionButton.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+        optionButton.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+        optionButton.Text = option.name .. " (" .. option.speed .. ")"
+        optionButton.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+        optionButton.TextSize = 14
+        optionButton.Font = CUSTOM.FONTS.BUTTON
+        optionButton.ZIndex = 10
+        optionButton.Parent = optionsFrame
+        
+        optionButton.MouseButton1Click:Connect(function()
+            teleportSpeed = option.speed
+            dropdown.Text = "Speed: " .. option.name .. " (" .. option.speed .. ")"
+            optionsFrame.Visible = false
+        end)
+        
+        optionButton.MouseEnter:Connect(function()
+            TweenService:Create(optionButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundTransparency = CUSTOM.THEME.BUTTON_HOVER_TRANSPARENCY,
+                TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            }):Play()
+        end)
+        
+        optionButton.MouseLeave:Connect(function()
+            TweenService:Create(optionButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
                 BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY,
                 TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
             }):Play()
-        end
+        end)
+    end
+    
+    dropdown.MouseButton1Click:Connect(function()
+        optionsFrame.Visible = not optionsFrame.Visible
     end)
     
-    -- Add click effect and teleport functionality
-    button.MouseButton1Click:Connect(function()
-        if not isTeleportEnabled then
-            -- Visual feedback for disabled state
-            for i = 1, 3 do
-                TweenService:Create(button, TweenInfo.new(0.1), {
-                    BackgroundTransparency = 0.3
-                }):Play()
-                wait(0.1)
-                TweenService:Create(button, TweenInfo.new(0.1), {
-                    BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
-                }):Play()
-                wait(0.1)
-            end
-            return
-        end
-        
-        -- Visual feedback
-        TweenService:Create(button, TweenInfo.new(0.1), {
-            BackgroundColor3 = CUSTOM.THEME.ACCENT,
-            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY,
-            BackgroundTransparency = 0
-        }):Play()
-        
-        -- Attempt to teleport
-        local player = game.Players.LocalPlayer
-        if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            currentDestination = location
-            
-            -- Disable character movement during teleport
-            local humanoid = player.Character:FindFirstChild("Humanoid")
-            if humanoid then
-                humanoid.PlatformStand = true
-            end
-            
-            -- Smooth teleport implementation
-            local function smoothMoveToDestination(player, targetCFrame, speed)
-                local character = player.Character
-                if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-                
-                local humanoidRootPart = character.HumanoidRootPart
-                local humanoid = character:FindFirstChild("Humanoid")
-                
-                -- Disable character collision temporarily
-                local oldCollisionGroup = humanoidRootPart.CollisionGroupId
-                humanoidRootPart.CollisionGroupId = 0
-                
-                -- Store original values
-                local originalGravity = workspace.Gravity
-                local originalStateType = humanoid.StateChanged:Wait()
-                
-                -- Modify character state for smooth movement
-                workspace.Gravity = 0
-                humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-                
-                -- Create movement connection
-                local moveConnection
-                moveConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                    if not character or not character:FindFirstChild("HumanoidRootPart") then
-                        moveConnection:Disconnect()
-                        return
-                    end
-                    
-                    local currentPos = humanoidRootPart.Position
-                    local targetPos = targetCFrame.Position
-                    local direction = (targetPos - currentPos).Unit
-                    local distance = (targetPos - currentPos).Magnitude
-                    
-                    if distance < 5 then
-                        -- Reached destination
-                        humanoidRootPart.CFrame = targetCFrame
-                        moveConnection:Disconnect()
-                        
-                        -- Restore original state
-                        workspace.Gravity = originalGravity
-                        humanoid:ChangeState(originalStateType)
-                        humanoidRootPart.CollisionGroupId = oldCollisionGroup
-                        
-                        -- Re-enable character movement
-                        if humanoid then
-                            humanoid.PlatformStand = false
-                        end
-                        
-                        return
-                    end
-                    
-                    -- Move towards target
-                    local moveStep = math.min(speed * game:GetService("RunService").Heartbeat:Wait(), distance)
-                    humanoidRootPart.CFrame = CFrame.new(currentPos + direction * moveStep) * targetCFrame.Rotation
-                end)
-            end
-            
-            -- Start smooth movement to destination
-            smoothMoveToDestination(player, location.cframe, teleportSpeed)
-            -- Auto-disable teleport when reaching destination
-            onTeleportComplete()
-        end
-    end)
-    
-    return button
+    return container
 end
 
 -- Function to create teleport content
@@ -1431,139 +1260,84 @@ local function createTeleportButton(location, posY)
             return
         end
         
-        -- Create confirmation dialog
-        local confirmDialog = Instance.new("Frame")
-        confirmDialog.Size = UDim2.new(0, 200, 0, 100)
-        confirmDialog.Position = UDim2.new(0.5, -100, 0.5, -50)
-        confirmDialog.BackgroundColor3 = CUSTOM.THEME.BACKGROUND
-        confirmDialog.BorderSizePixel = 0
-        confirmDialog.ZIndex = 100
-        confirmDialog.Parent = ScreenGui
+        -- Visual feedback
+        TweenService:Create(button, TweenInfo.new(0.1), {
+            BackgroundColor3 = CUSTOM.THEME.ACCENT,
+            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY,
+            BackgroundTransparency = 0
+        }):Play()
         
-        local dialogCorner = Instance.new("UICorner")
-        dialogCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
-        dialogCorner.Parent = confirmDialog
-        
-        local message = Instance.new("TextLabel")
-        message.Size = UDim2.new(1, 0, 0.5, 0)
-        message.BackgroundTransparency = 1
-        message.Text = "Teleport to " .. location.name .. "?"
-        message.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
-        message.TextSize = 14
-        message.Font = CUSTOM.FONTS.TEXT
-        message.ZIndex = 100
-        message.Parent = confirmDialog
-        
-        local confirmButton = Instance.new("TextButton")
-        confirmButton.Size = UDim2.new(0.4, 0, 0.3, 0)
-        confirmButton.Position = UDim2.new(0.1, 0, 0.6, 0)
-        confirmButton.BackgroundColor3 = CUSTOM.THEME.ACCENT
-        confirmButton.Text = "Confirm"
-        confirmButton.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
-        confirmButton.TextSize = 14
-        confirmButton.Font = CUSTOM.FONTS.BUTTON
-        confirmButton.ZIndex = 100
-        confirmButton.Parent = confirmDialog
-        
-        local cancelButton = Instance.new("TextButton")
-        cancelButton.Size = UDim2.new(0.4, 0, 0.3, 0)
-        cancelButton.Position = UDim2.new(0.5, 0, 0.6, 0)
-        cancelButton.BackgroundColor3 = CUSTOM.THEME.CLOSE_BUTTON
-        cancelButton.Text = "Cancel"
-        cancelButton.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
-        cancelButton.TextSize = 14
-        cancelButton.Font = CUSTOM.FONTS.BUTTON
-        cancelButton.ZIndex = 100
-        cancelButton.Parent = confirmDialog
-        
-        local function closeDialog()
-            confirmDialog:Destroy()
-        end
-        
-        confirmButton.MouseButton1Click:Connect(function()
-            closeDialog()
+        -- Attempt to teleport
+        local player = game.Players.LocalPlayer
+        if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            currentDestination = location
             
-            -- Visual feedback
-            TweenService:Create(button, TweenInfo.new(0.1), {
-                BackgroundColor3 = CUSTOM.THEME.ACCENT,
-                TextColor3 = CUSTOM.THEME.TEXT_PRIMARY,
-                BackgroundTransparency = 0
-            }):Play()
-            
-            -- Attempt to teleport
-            local player = game.Players.LocalPlayer
-            if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                currentDestination = location
-                
-                -- Disable character movement during teleport
-                local humanoid = player.Character:FindFirstChild("Humanoid")
-                if humanoid then
-                    humanoid.PlatformStand = true
-                end
-                
-                -- Smooth teleport implementation
-                local function smoothMoveToDestination(player, targetCFrame, speed)
-                    local character = player.Character
-                    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-                    
-                    local humanoidRootPart = character.HumanoidRootPart
-                    local humanoid = character:FindFirstChild("Humanoid")
-                    
-                    -- Disable character collision temporarily
-                    local oldCollisionGroup = humanoidRootPart.CollisionGroupId
-                    humanoidRootPart.CollisionGroupId = 0
-                    
-                    -- Store original values
-                    local originalGravity = workspace.Gravity
-                    local originalStateType = humanoid.StateChanged:Wait()
-                    
-                    -- Modify character state for smooth movement
-                    workspace.Gravity = 0
-                    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-                    
-                    -- Create movement connection
-                    local moveConnection
-                    moveConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                        if not character or not character:FindFirstChild("HumanoidRootPart") then
-                            moveConnection:Disconnect()
-                            return
-                        end
-                        
-                        local currentPos = humanoidRootPart.Position
-                        local targetPos = targetCFrame.Position
-                        local direction = (targetPos - currentPos).Unit
-                        local distance = (targetPos - currentPos).Magnitude
-                        
-                        if distance < 5 then
-                            -- Reached destination
-                            humanoidRootPart.CFrame = targetCFrame
-                            moveConnection:Disconnect()
-                            
-                            -- Restore original state
-                            workspace.Gravity = originalGravity
-                            humanoid:ChangeState(originalStateType)
-                            humanoidRootPart.CollisionGroupId = oldCollisionGroup
-                            
-                            -- Re-enable character movement
-                            if humanoid then
-                                humanoid.PlatformStand = false
-                            end
-                            
-                            return
-                        end
-                        
-                        -- Move towards target
-                        local moveStep = math.min(speed * game:GetService("RunService").Heartbeat:Wait(), distance)
-                        humanoidRootPart.CFrame = CFrame.new(currentPos + direction * moveStep) * targetCFrame.Rotation
-                    end)
-                end
-                
-                -- Start smooth movement to destination
-                smoothMoveToDestination(player, location.cframe, teleportSpeed)
+            -- Disable character movement during teleport
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.PlatformStand = true
             end
-        end)
-        
-        cancelButton.MouseButton1Click:Connect(closeDialog)
+            
+            -- Smooth teleport implementation
+            local function smoothMoveToDestination(player, targetCFrame, speed)
+                local character = player.Character
+                if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+                
+                local humanoidRootPart = character.HumanoidRootPart
+                local humanoid = character:FindFirstChild("Humanoid")
+                
+                -- Disable character collision temporarily
+                local oldCollisionGroup = humanoidRootPart.CollisionGroupId
+                humanoidRootPart.CollisionGroupId = 0
+                
+                -- Store original values
+                local originalGravity = workspace.Gravity
+                local originalStateType = humanoid.StateChanged:Wait()
+                
+                -- Modify character state for smooth movement
+                workspace.Gravity = 0
+                humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                
+                -- Create movement connection
+                local moveConnection
+                moveConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                    if not character or not character:FindFirstChild("HumanoidRootPart") then
+                        moveConnection:Disconnect()
+                        return
+                    end
+                    
+                    local currentPos = humanoidRootPart.Position
+                    local targetPos = targetCFrame.Position
+                    local direction = (targetPos - currentPos).Unit
+                    local distance = (targetPos - currentPos).Magnitude
+                    
+                    if distance < 5 then
+                        -- Reached destination
+                        humanoidRootPart.CFrame = targetCFrame
+                        moveConnection:Disconnect()
+                        
+                        -- Restore original state
+                        workspace.Gravity = originalGravity
+                        humanoid:ChangeState(originalStateType)
+                        humanoidRootPart.CollisionGroupId = oldCollisionGroup
+                        
+                        -- Re-enable character movement
+                        if humanoid then
+                            humanoid.PlatformStand = false
+                        end
+                        
+                        return
+                    end
+                    
+                    -- Move towards target
+                    local moveStep = math.min(speed * game:GetService("RunService").Heartbeat:Wait(), distance)
+                    humanoidRootPart.CFrame = CFrame.new(currentPos + direction * moveStep) * targetCFrame.Rotation
+                end)
+            end
+            
+            -- Start smooth movement to destination
+            smoothMoveToDestination(player, location.cframe, teleportSpeed)
+        end
     end)
     
     return button
@@ -1716,99 +1490,149 @@ local function createTeleportButton(location, posY)
     return button
 end
 
--- Function to create a dropdown section
-local function createDropdownSection(title, items, startY)
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-    container.Position = UDim2.new(0, 0, 0, startY)
-    container.BackgroundTransparency = 1
-    
-    local header = Instance.new("TextButton")
-    header.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-    header.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, 0)
-    header.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
-    header.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
-    header.Text = "▸ " .. title
-    header.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
-    header.TextSize = 14
-    header.Font = CUSTOM.FONTS.BUTTON
-    header.TextXAlignment = Enum.TextXAlignment.Left
-    header.Parent = container
-    
-    local itemsContainer = Instance.new("Frame")
-    itemsContainer.Size = UDim2.new(1, 0, 0, 0)
-    itemsContainer.Position = UDim2.new(0, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-    itemsContainer.BackgroundTransparency = 1
-    itemsContainer.ClipsDescendants = true
-    itemsContainer.Parent = container
-    
-    local isExpanded = false
-    local itemHeight = CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING
-    
-    header.MouseButton1Click:Connect(function()
-        isExpanded = not isExpanded
-        header.Text = (isExpanded and "▾ " or "▸ ") .. title
-        
-        -- Create items if expanding
-        if isExpanded then
-            for i, item in ipairs(items) do
-                local button = createTeleportButton(item, (i-1) * itemHeight)
-                button.Parent = itemsContainer
-            end
-        else
-            -- Clear items if collapsing
-            for _, child in ipairs(itemsContainer:GetChildren()) do
-                child:Destroy()
-            end
-        end
-        
-        -- Animate container
-        local targetSize = UDim2.new(1, 0, 0, isExpanded and (#items * itemHeight) or 0)
-        TweenService:Create(itemsContainer, TweenInfo.new(CUSTOM.ANIMATION.TWEEN_SPEED), {
-            Size = targetSize
-        }):Play()
-        
-        -- Update container size
-        container.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT + (isExpanded and (#items * itemHeight) or 0))
-    end)
-    
-    return container
-end
-
 -- Create menu buttons
 local selectedButton = nil
 for _, item in ipairs(MENU_ITEMS) do
-    local button = createMenuButton(item)
-    button.MouseButton1Click:Connect(function()
+    local Button = Instance.new("TextButton")
+    Button.Name = item.name .. "Button"
+    Button.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    Button.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    Button.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+    Button.Text = ""
+    Button.LayoutOrder = item.layoutOrder
+    Button.Parent = MenuScroll
+    
+    -- Add corner rounding to button
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    ButtonCorner.Parent = Button
+    
+    -- Create icon
+    local Icon = Instance.new("TextLabel")
+    Icon.Name = "Icon"
+    Icon.Size = UDim2.new(0, CUSTOM.LAYOUT.BUTTON_HEIGHT, 1, 0)
+    Icon.Position = UDim2.new(0, 0, 0, 0)
+    Icon.BackgroundTransparency = 1
+    Icon.Text = item.icon
+    Icon.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+    Icon.TextSize = 16
+    Icon.Font = CUSTOM.FONTS.TEXT
+    Icon.Parent = Button
+    
+    -- Create text label
+    local TextLabel = Instance.new("TextLabel")
+    TextLabel.Name = "Text"
+    TextLabel.Size = UDim2.new(1, -CUSTOM.LAYOUT.BUTTON_HEIGHT - CUSTOM.LAYOUT.PADDING, 1, 0)
+    TextLabel.Position = UDim2.new(0, CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING/2, 0, 0)
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Text = item.name
+    TextLabel.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+    TextLabel.TextSize = 14
+    TextLabel.Font = CUSTOM.FONTS.TEXT
+    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TextLabel.Parent = Button
+    
+    -- Button hover effect
+    Button.MouseEnter:Connect(function()
+        if Button ~= selectedButton then
+            TweenService:Create(Button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundTransparency = CUSTOM.THEME.BUTTON_HOVER_TRANSPARENCY,
+                BackgroundColor3 = CUSTOM.THEME.BUTTON_HOVER
+            }):Play()
+            TweenService:Create(Icon, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            }):Play()
+            TweenService:Create(TextLabel, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            }):Play()
+        end
+    end)
+    
+    Button.MouseLeave:Connect(function()
+        if Button ~= selectedButton then
+            TweenService:Create(Button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY,
+                BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+            }):Play()
+            TweenService:Create(Icon, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            }):Play()
+            TweenService:Create(TextLabel, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            }):Play()
+        end
+    end)
+    
+    Button.MouseButton1Click:Connect(function()
         if selectedButton then
-            updateButtonState(selectedButton, false)
+            TweenService:Create(selectedButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY,
+                BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+            }):Play()
+            TweenService:Create(selectedButton:FindFirstChild("Icon"), TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            }):Play()
+            TweenService:Create(selectedButton:FindFirstChild("Text"), TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            }):Play()
         end
-        selectedButton = button
-        updateButtonState(button, true)
         
-        -- Clear content area
-        for _, child in ipairs(ContentArea:GetChildren()) do
-            child:Destroy()
-        end
+        selectedButton = Button
+        TweenService:Create(Button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            BackgroundTransparency = 0,
+            BackgroundColor3 = CUSTOM.THEME.ACCENT
+        }):Play()
+        TweenService:Create(Icon, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        }):Play()
+        TweenService:Create(TextLabel, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        }):Play()
         
-        -- Create content based on selected item
-        if item.name == "Overview" then
-            local header = createSectionHeader("Player Info")
-            header.Parent = ContentArea
-            
-            local player = game.Players.LocalPlayer
-            createInfoLabel("Username: " .. player.Name, 50)
-            createInfoLabel("Display Name: " .. player.DisplayName, 90)
-            createInfoLabel("Account Age: " .. player.AccountAge .. " days", 130)
-            
+        clearContentArea()
+        
+        -- Handle content for each section
+        if item.name == "Teleport" then
+            createTeleportContent()
+        elseif item.name == "Overview" then
+            createOverviewContent()
         elseif item.name == "Quests/Raids" then
             createQuestContent()
             
-        elseif item.name == "Fruit" then
-            createFruitContent()
+        elseif item.name == "Settings" then
+            local header = createSectionHeader("UI Settings")
+            header.Parent = ContentArea
             
-        elseif item.name == "Teleport" then
-            createTeleportContent()
+            createInfoLabel("GUI Size", 50)
+            local sizeY = 90
+            for _, size in ipairs({"Small", "Normal", "Large"}) do
+                local btn = Instance.new("TextButton")
+                btn.Size = UDim2.new(0, 80, 0, 30)
+                btn.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING + (sizeY - 90), 0, sizeY)
+                btn.BackgroundColor3 = currentState.size == size and CUSTOM.THEME.ACCENT or CUSTOM.THEME.BUTTON_NORMAL
+                btn.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+                btn.Text = size
+                btn.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+                btn.Font = CUSTOM.FONTS.BUTTON
+                btn.Parent = ContentArea
+                
+                local corner = Instance.new("UICorner")
+                corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+                corner.Parent = btn
+                
+                btn.MouseButton1Click:Connect(function()
+                    changeGuiSize(size)
+                end)
+                
+                sizeY = sizeY + 40
+            end
+            
+            local visualHeader = createSectionHeader("Visual Settings")
+            visualHeader.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, sizeY + 20)
+            visualHeader.Parent = ContentArea
+            
+            createToggle("Enable Animations", sizeY + 70, true)
+            createToggle("Show Tooltips", sizeY + 110, true)
             
         else
             local header = createSectionHeader(item.name)
@@ -1846,12 +1670,6 @@ TitleBar.InputBegan:Connect(function(input)
         currentState.isDragging = true
         currentState.dragStart = input.Position
         currentState.startPos = MainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                currentState.isDragging = false
-            end
-        end)
     end
 end)
 
