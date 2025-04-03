@@ -527,41 +527,64 @@ local function createTeleportButton(island, posY)
             end
             
             -- Smooth teleport implementation
-            local startPos = humanoidRootPart.Position
-            local endPos = island.cframe.Position
-            local startTime = tick()
-            local duration = 0.5 -- Teleport duration in seconds
-            
-            -- Create a connection to update position
-            local teleportConnection
-            teleportConnection = game:GetService("RunService").RenderStepped:Connect(function()
-                local elapsed = tick() - startTime
-                local alpha = math.min(elapsed / duration, 1)
+            local function smoothMoveToDestination(player, targetCFrame, speed)
+                local character = player.Character
+                if not character or not character:FindFirstChild("HumanoidRootPart") then return end
                 
-                -- Smooth lerp
-                if humanoidRootPart and humanoidRootPart.Parent then
-                    local newPos = startPos:Lerp(endPos, alpha)
-                    humanoidRootPart.CFrame = CFrame.new(newPos) * island.cframe.Rotation
+                local humanoidRootPart = character.HumanoidRootPart
+                local humanoid = character:FindFirstChild("Humanoid")
+                
+                -- Disable character collision temporarily
+                local oldCollisionGroup = humanoidRootPart.CollisionGroupId
+                humanoidRootPart.CollisionGroupId = 0
+                
+                -- Store original values
+                local originalGravity = workspace.Gravity
+                local originalStateType = humanoid.StateChanged:Wait()
+                
+                -- Modify character state for smooth movement
+                workspace.Gravity = 0
+                humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                
+                -- Create movement connection
+                local moveConnection
+                moveConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                    if not character or not character:FindFirstChild("HumanoidRootPart") then
+                        moveConnection:Disconnect()
+                        return
+                    end
                     
-                    -- If teleport is complete
-                    if alpha >= 1 then
-                        teleportConnection:Disconnect()
+                    local currentPos = humanoidRootPart.Position
+                    local targetPos = targetCFrame.Position
+                    local direction = (targetPos - currentPos).Unit
+                    local distance = (targetPos - currentPos).Magnitude
+                    
+                    if distance < 5 then
+                        -- Reached destination
+                        humanoidRootPart.CFrame = targetCFrame
+                        moveConnection:Disconnect()
+                        
+                        -- Restore original state
+                        workspace.Gravity = originalGravity
+                        humanoid:ChangeState(originalStateType)
+                        humanoidRootPart.CollisionGroupId = oldCollisionGroup
                         
                         -- Re-enable character movement
                         if humanoid then
                             humanoid.PlatformStand = false
                         end
                         
-                        -- Check if teleport was successful
-                        local finalDistance = (humanoidRootPart.Position - endPos).Magnitude
-                        if finalDistance < 50 then
-                            disableTeleport()
-                        end
+                        return
                     end
-                else
-                    teleportConnection:Disconnect()
-                end
-            end)
+                    
+                    -- Move towards target
+                    local moveStep = math.min(speed * game:GetService("RunService").Heartbeat:Wait(), distance)
+                    humanoidRootPart.CFrame = CFrame.new(currentPos + direction * moveStep) * targetCFrame.Rotation
+                end)
+            end
+            
+            -- Start smooth movement to destination
+            smoothMoveToDestination(player, island.cframe, 350)
         end
     end)
     
