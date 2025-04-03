@@ -58,10 +58,13 @@ UICornerClose.Parent = CloseButton
 -- Rejoin Function
 RejoinButton.MouseButton1Click:Connect(function()
     if PrivateServerId ~= "" then
+        -- Private Server Fix: Use Teleport instead of TeleportToPlaceInstance
         TeleportService:Teleport(PlaceId, LocalPlayer)
     elseif JobId ~= "" then
+        -- Public Server: Rejoin the exact same server
         TeleportService:TeleportToPlaceInstance(PlaceId, JobId, LocalPlayer)
     else
+        -- Fallback: Just teleport to the same game
         TeleportService:Teleport(PlaceId, LocalPlayer)
     end
 end)
