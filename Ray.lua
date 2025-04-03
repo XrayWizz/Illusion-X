@@ -2,6 +2,8 @@
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- User Customization
 local CUSTOM = {
@@ -85,19 +87,20 @@ local CONFIG = {
 
 -- Menu items with icons
 local MENU_ITEMS = {
-    {layoutOrder = 1, name = "Overview", icon = "👤"},     -- Profile
-    {layoutOrder = 2, name = "Farming", icon = "🏰"},      -- Castle
-    {layoutOrder = 3, name = "Sea Events", icon = "🌊"},   -- Wave
-    {layoutOrder = 4, name = "Islands", icon = "🏝️"},     -- Island
-    {layoutOrder = 5, name = "Quests/Raids", icon = "⚔️"}, -- Crossed swords
-    {layoutOrder = 6, name = "Fruit", icon = "🍒"},        -- Cherry
-    {layoutOrder = 7, name = "Teleport", icon = "⚡"},     -- Lightning
-    {layoutOrder = 8, name = "Status", icon = "📜"},       -- Scroll
-    {layoutOrder = 9, name = "Visual", icon = "👁️"},       -- Eye
-    {layoutOrder = 10, name = "Shop", icon = "🛒"},        -- Shopping cart
-    {layoutOrder = 11, name = "Misc.", icon = "🔩"},       -- Nut and bolt
-    {layoutOrder = 12, name = "Settings", icon = "⚙️"},    -- Gear
-    {layoutOrder = 13, name = "Feedback", icon = "💬"}     -- Speech bubble
+    {layoutOrder = 1, name = "Player Info", icon = "📊"},    -- Stats icon
+    {layoutOrder = 2, name = "Overview", icon = "👤"},     -- Profile
+    {layoutOrder = 3, name = "Farming", icon = "🏰"},      -- Castle
+    {layoutOrder = 4, name = "Sea Events", icon = "🌊"},   -- Wave
+    {layoutOrder = 5, name = "Islands", icon = "🏝️"},     -- Island
+    {layoutOrder = 6, name = "Quests/Raids", icon = "⚔️"}, -- Crossed swords
+    {layoutOrder = 7, name = "Fruit", icon = "🍒"},        -- Cherry
+    {layoutOrder = 8, name = "Teleport", icon = "⚡"},     -- Lightning
+    {layoutOrder = 9, name = "Status", icon = "📜"},       -- Scroll
+    {layoutOrder = 10, name = "Visual", icon = "👁️"},       -- Eye
+    {layoutOrder = 11, name = "Shop", icon = "🛒"},        -- Shopping cart
+    {layoutOrder = 12, name = "Misc.", icon = "🔩"},       -- Nut and bolt
+    {layoutOrder = 13, name = "Settings", icon = "⚙️"},    -- Gear
+    {layoutOrder = 14, name = "Feedback", icon = "💬"}     -- Speech bubble
 }
 
 -- Create ScreenGui
@@ -713,6 +716,104 @@ local function createDropdownSection(title, items, startY)
     return container, CUSTOM.LAYOUT.BUTTON_HEIGHT + (isExpanded and #items * (CUSTOM.LAYOUT.BUTTON_HEIGHT + 2) or 0)
 end
 
+-- Function to create player info section
+local function createPlayerInfoSection()
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 1, -CUSTOM.LAYOUT.PADDING*2)
+    container.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.PADDING)
+    container.BackgroundTransparency = 1
+    container.Parent = ContentArea
+    
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, CUSTOM.LAYOUT.PADDING)
+    layout.Parent = container
+    
+    local function createInfoLabel(text, value)
+        local label = Instance.new("TextLabel")
+        label.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+        label.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+        label.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+        label.Text = text .. ": " .. tostring(value)
+        label.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        label.TextSize = 14
+        label.Font = CUSTOM.FONTS.TEXT
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        label.TextWrapped = true
+        
+        local padding = Instance.new("UIPadding")
+        padding.PaddingLeft = UDim.new(0, CUSTOM.LAYOUT.PADDING)
+        padding.Parent = label
+        
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+        corner.Parent = label
+        
+        label.Parent = container
+        return label
+    end
+    
+    local player = Players.LocalPlayer
+    local labels = {}
+    
+    -- Basic Info
+    labels.level = createInfoLabel("Level", "Loading...")
+    labels.beli = createInfoLabel("Beli", "Loading...")
+    labels.fragments = createInfoLabel("Fragments", "Loading...")
+    labels.health = createInfoLabel("Health", "Loading...")
+    labels.energy = createInfoLabel("Energy", "Loading...")
+    labels.defense = createInfoLabel("Defense", "Loading...")
+    labels.melee = createInfoLabel("Melee", "Loading...")
+    labels.sword = createInfoLabel("Sword", "Loading...")
+    labels.gun = createInfoLabel("Gun", "Loading...")
+    labels.devilFruit = createInfoLabel("Devil Fruit", "Loading...")
+    labels.fightingStyle = createInfoLabel("Fighting Style", "Loading...")
+    labels.race = createInfoLabel("Race", "Loading...")
+    
+    -- Update function
+    local function updateStats()
+        if not player or not player.Character then return end
+        
+        -- Get stats from player
+        local stats = {
+            Level = player:WaitForChild("Data"):WaitForChild("Level").Value,
+            Beli = player.Data:WaitForChild("Beli").Value,
+            Fragments = player.Data:WaitForChild("Fragments").Value,
+            Health = player.Data:WaitForChild("Stats"):WaitForChild("Health").Value,
+            Energy = player.Data:WaitForChild("Stats"):WaitForChild("Energy").Value,
+            Defense = player.Data:WaitForChild("Stats"):WaitForChild("Defense").Value,
+            Melee = player.Data:WaitForChild("Stats"):WaitForChild("Melee").Value,
+            Sword = player.Data:WaitForChild("Stats"):WaitForChild("Sword").Value,
+            Gun = player.Data:WaitForChild("Stats"):WaitForChild("Gun").Value,
+            ["Devil Fruit"] = player.Data:WaitForChild("DevilFruit").Value,
+            ["Fighting Style"] = player.Data:WaitForChild("FightingStyle").Value,
+            Race = player.Data:WaitForChild("Race").Value
+        }
+        
+        -- Update labels
+        labels.level.Text = "Level: " .. tostring(stats.Level)
+        labels.beli.Text = "Beli: " .. tostring(stats.Beli)
+        labels.fragments.Text = "Fragments: " .. tostring(stats.Fragments)
+        labels.health.Text = "Health: " .. tostring(stats.Health)
+        labels.energy.Text = "Energy: " .. tostring(stats.Energy)
+        labels.defense.Text = "Defense: " .. tostring(stats.Defense)
+        labels.melee.Text = "Melee: " .. tostring(stats.Melee)
+        labels.sword.Text = "Sword: " .. tostring(stats.Sword)
+        labels.gun.Text = "Gun: " .. tostring(stats.Gun)
+        labels.devilFruit.Text = "Devil Fruit: " .. tostring(stats["Devil Fruit"])
+        labels.fightingStyle.Text = "Fighting Style: " .. tostring(stats["Fighting Style"])
+        labels.race.Text = "Race: " .. tostring(stats.Race)
+    end
+    
+    -- Update stats every second
+    spawn(function()
+        while wait(1) do
+            pcall(updateStats)
+        end
+    end)
+    
+    return container
+end
+
 -- Create menu buttons
 local selectedButton = nil
 for _, item in ipairs(MENU_ITEMS) do
@@ -792,12 +893,6 @@ for _, item in ipairs(MENU_ITEMS) do
                 BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY,
                 BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
             }):Play()
-            TweenService:Create(selectedButton:FindFirstChild("Icon"), TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
-                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
-            }):Play()
-            TweenService:Create(selectedButton:FindFirstChild("Text"), TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
-                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
-            }):Play()
         end
         
         selectedButton = Button
@@ -805,17 +900,18 @@ for _, item in ipairs(MENU_ITEMS) do
             BackgroundTransparency = 0,
             BackgroundColor3 = CUSTOM.THEME.ACCENT
         }):Play()
-        TweenService:Create(Icon, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
-            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
-        }):Play()
-        TweenService:Create(TextLabel, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
-            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
-        }):Play()
         
-        clearContentArea()
+        -- Clear previous content
+        for _, child in ipairs(ContentArea:GetChildren()) do
+            if child:IsA("Frame") or child:IsA("ScrollingFrame") then
+                child:Destroy()
+            end
+        end
         
-        -- Handle content for each section
-        if item.name == "Teleport" then
+        -- Create content based on selected item
+        if item.name == "Player Info" then
+            createPlayerInfoSection()
+        elseif item.name == "Teleport" then
             local header = createSectionHeader("🗺️ Teleport Menu")
             header.Parent = ContentArea
             
@@ -837,7 +933,7 @@ for _, item in ipairs(MENU_ITEMS) do
             local header = createSectionHeader("Player Info")
             header.Parent = ContentArea
             
-            local player = game.Players.LocalPlayer
+            local player = Players.LocalPlayer
             createInfoLabel("Username: " .. player.Name, 50)
             createInfoLabel("Display Name: " .. player.DisplayName, 90)
             createInfoLabel("Account Age: " .. player.AccountAge .. " days", 130)
