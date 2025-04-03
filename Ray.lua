@@ -899,75 +899,291 @@ for _, item in ipairs(MENU_ITEMS) do
             TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
         }):Play()
         
-        clearContentArea()
+        -- Clear previous content
+        for _, child in ipairs(ContentArea:GetChildren()) do
+            child:Destroy()
+        end
         
-        -- Handle content for each section
+        -- Create content based on selected menu
         if item.name == "Teleport" then
-            local header = createSectionHeader("🗺️ Teleport Menu")
-            header.Parent = ContentArea
+            -- Create teleport toggle
+            local toggle = createTeleportToggle()
+            toggle.Parent = ContentArea
             
-            local toggleContainer, disableTeleportFunc = createTeleportToggle()
-            toggleContainer.Parent = ContentArea
-            
-            local yOffset = CUSTOM.LAYOUT.BUTTON_HEIGHT * 2 + CUSTOM.LAYOUT.PADDING * 3
-            
-            -- Create dropdowns for each sea
-            local firstSeaSection, firstHeight = createDropdownSection("First Sea", ISLANDS["First Sea"], yOffset)
-            local secondSeaSection, secondHeight = createDropdownSection("Second Sea", ISLANDS["Second Sea"], yOffset + firstHeight + CUSTOM.LAYOUT.PADDING)
-            local thirdSeaSection, thirdHeight = createDropdownSection("Third Sea", ISLANDS["Third Sea"], yOffset + firstHeight + secondHeight + CUSTOM.LAYOUT.PADDING * 2)
-            
-            firstSeaSection.Parent = ContentArea
-            secondSeaSection.Parent = ContentArea
-            thirdSeaSection.Parent = ContentArea
-            
-        elseif item.name == "Overview" then
-            local header = createSectionHeader("Player Info")
-            header.Parent = ContentArea
-            
-            local player = game.Players.LocalPlayer
-            createInfoLabel("Username: " .. player.Name, 50)
-            createInfoLabel("Display Name: " .. player.DisplayName, 90)
-            createInfoLabel("Account Age: " .. player.AccountAge .. " days", 130)
-            
-        elseif item.name == "Settings" then
-            local header = createSectionHeader("UI Settings")
-            header.Parent = ContentArea
-            
-            createInfoLabel("GUI Size", 50)
-            local sizeY = 90
-            for _, size in ipairs({"Small", "Normal", "Large"}) do
-                local btn = Instance.new("TextButton")
-                btn.Size = UDim2.new(0, 80, 0, 30)
-                btn.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING + (sizeY - 90), 0, sizeY)
-                btn.BackgroundColor3 = currentState.size == size and CUSTOM.THEME.ACCENT or CUSTOM.THEME.BUTTON_NORMAL
-                btn.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
-                btn.Text = size
-                btn.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
-                btn.Font = CUSTOM.FONTS.BUTTON
-                btn.Parent = ContentArea
-                
-                local corner = Instance.new("UICorner")
-                corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
-                corner.Parent = btn
-                
-                btn.MouseButton1Click:Connect(function()
-                    changeGuiSize(size)
-                end)
-                
-                sizeY = sizeY + 40
+            -- Helper function to get island names from data
+            local function getIslandNames(seaData)
+                local names = {}
+                for _, island in ipairs(seaData) do
+                    table.insert(names, island.name)
+                end
+                return names
             end
             
-            local visualHeader = createSectionHeader("Visual Settings")
-            visualHeader.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, sizeY + 20)
-            visualHeader.Parent = ContentArea
+            -- Create First Sea dropdown
+            local firstSeaDropdown = createDropdownSection(
+                "First Sea",
+                getIslandNames(ISLANDS["First Sea"]),
+                CUSTOM.LAYOUT.BUTTON_HEIGHT * 2
+            )
+            firstSeaDropdown.Parent = ContentArea
             
-            createToggle("Enable Animations", sizeY + 70, true)
-            createToggle("Show Tooltips", sizeY + 110, true)
+            -- Create Second Sea dropdown
+            local secondSeaDropdown = createDropdownSection(
+                "Second Sea",
+                getIslandNames(ISLANDS["Second Sea"]),
+                CUSTOM.LAYOUT.BUTTON_HEIGHT * 2 + firstSeaDropdown.Size.Y.Offset + CUSTOM.LAYOUT.PADDING
+            )
+            secondSeaDropdown.Parent = ContentArea
             
-        else
-            local header = createSectionHeader(item.name)
-            header.Parent = ContentArea
-            createInfoLabel("Coming soon...", 50)
+            -- Create Third Sea dropdown
+            local thirdSeaDropdown = createDropdownSection(
+                "Third Sea",
+                getIslandNames(ISLANDS["Third Sea"]),
+                CUSTOM.LAYOUT.BUTTON_HEIGHT * 2 + firstSeaDropdown.Size.Y.Offset + secondSeaDropdown.Size.Y.Offset + CUSTOM.LAYOUT.PADDING * 2
+            )
+            thirdSeaDropdown.Parent = ContentArea
+            
+            -- Connect dropdown item clicks to teleport function
+            local function onIslandSelected(seaName, islandName)
+                for _, island in ipairs(ISLANDS[seaName]) do
+                    if island.name == islandName then
+                        currentDestination = island
+                        if isTeleportEnabled then
+                            local player = game.Players.LocalPlayer
+                            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                                smoothMoveToDestination(player, island.cframe, 350)
+                            end
+                        end
+                        break
+                    end
+                end
+            end
+            
+            -- Connect item selection handlers
+            for _, child in ipairs(firstSeaDropdown:GetChildren()) do
+                if child:IsA("TextButton") and child.Name ~= "Header" then
+                    child.MouseButton1Click:Connect(function()
+                        onIslandSelected("First Sea", child.Text)
+                    end)
+                end
+            end
+            
+            for _, child in ipairs(secondSeaDropdown:GetChildren()) do
+                if child:IsA("TextButton") and child.Name ~= "Header" then
+                    child.MouseButton1Click:Connect(function()
+                        onIslandSelected("Second Sea", child.Text)
+                    end)
+                end
+            end
+            
+            for _, child in ipairs(thirdSeaDropdown:GetChildren()) do
+                if child:IsA("TextButton") and child.Name ~= "Header" then
+                    child.MouseButton1Click:Connect(function()
+                        onIslandSelected("Third Sea", child.Text)
+                    end)
+                end
+            end
+        elseif item.name == "Status" then
+            -- Create Fruit Stock Status Container
+            local stockContainer = Instance.new("Frame")
+            stockContainer.Name = "StockContainer"
+            stockContainer.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 1, -CUSTOM.LAYOUT.PADDING*2)
+            stockContainer.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.PADDING)
+            stockContainer.BackgroundColor3 = CUSTOM.THEME.BACKGROUND
+            stockContainer.BackgroundTransparency = 0.5
+            stockContainer.Parent = ContentArea
+
+            -- Add corner rounding
+            local cornerRadius = Instance.new("UICorner")
+            cornerRadius.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+            cornerRadius.Parent = stockContainer
+
+            -- Create title
+            local title = Instance.new("TextLabel")
+            title.Name = "Title"
+            title.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+            title.Position = UDim2.new(0, 0, 0, 0)
+            title.BackgroundTransparency = 1
+            title.Text = "🍎 Fruit Stock Status"
+            title.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            title.TextSize = 18
+            title.Font = CUSTOM.FONTS.TITLE
+            title.Parent = stockContainer
+
+            -- Create Normal Stock Section
+            local normalStockTitle = Instance.new("TextLabel")
+            normalStockTitle.Name = "NormalStockTitle"
+            normalStockTitle.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+            normalStockTitle.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING)
+            normalStockTitle.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+            normalStockTitle.BackgroundTransparency = 0.5
+            normalStockTitle.Text = "Normal Fruit Stock (Gacha)"
+            normalStockTitle.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            normalStockTitle.TextSize = 14
+            normalStockTitle.Font = CUSTOM.FONTS.BUTTON
+            normalStockTitle.Parent = stockContainer
+
+            -- Add corner rounding to normal stock title
+            local normalTitleCorner = Instance.new("UICorner")
+            normalTitleCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+            normalTitleCorner.Parent = normalStockTitle
+
+            -- Create Normal Stock ScrollingFrame
+            local normalStockFrame = Instance.new("ScrollingFrame")
+            normalStockFrame.Name = "NormalStockFrame"
+            normalStockFrame.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, 150)
+            normalStockFrame.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT*2 + CUSTOM.LAYOUT.PADDING*2)
+            normalStockFrame.BackgroundTransparency = 1
+            normalStockFrame.ScrollBarThickness = CUSTOM.LAYOUT.SCROLL_BAR_THICKNESS
+            normalStockFrame.ScrollBarImageColor3 = CUSTOM.THEME.ACCENT
+            normalStockFrame.Parent = stockContainer
+
+            -- Create Normal Stock List Layout
+            local normalListLayout = Instance.new("UIListLayout")
+            normalListLayout.Padding = UDim.new(0, CUSTOM.LAYOUT.PADDING)
+            normalListLayout.Parent = normalStockFrame
+
+            -- Create Mirage Stock Section
+            local mirageStockTitle = Instance.new("TextLabel")
+            mirageStockTitle.Name = "MirageStockTitle"
+            mirageStockTitle.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+            mirageStockTitle.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT*2 + 150 + CUSTOM.LAYOUT.PADDING*3)
+            mirageStockTitle.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+            mirageStockTitle.BackgroundTransparency = 0.5
+            mirageStockTitle.Text = "Mirage Fruit Stock"
+            mirageStockTitle.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            mirageStockTitle.TextSize = 14
+            mirageStockTitle.Font = CUSTOM.FONTS.BUTTON
+            mirageStockTitle.Parent = stockContainer
+
+            -- Add corner rounding to mirage stock title
+            local mirageTitleCorner = Instance.new("UICorner")
+            mirageTitleCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+            mirageTitleCorner.Parent = mirageStockTitle
+
+            -- Create Mirage Stock ScrollingFrame
+            local mirageStockFrame = Instance.new("ScrollingFrame")
+            mirageStockFrame.Name = "MirageStockFrame"
+            mirageStockFrame.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, 150)
+            mirageStockFrame.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT*3 + 150 + CUSTOM.LAYOUT.PADDING*4)
+            mirageStockFrame.BackgroundTransparency = 1
+            mirageStockFrame.ScrollBarThickness = CUSTOM.LAYOUT.SCROLL_BAR_THICKNESS
+            mirageStockFrame.ScrollBarImageColor3 = CUSTOM.THEME.ACCENT
+            mirageStockFrame.Parent = stockContainer
+
+            -- Create Mirage Stock List Layout
+            local mirageListLayout = Instance.new("UIListLayout")
+            mirageListLayout.Padding = UDim.new(0, CUSTOM.LAYOUT.PADDING)
+            mirageListLayout.Parent = mirageStockFrame
+
+            -- Function to create fruit stock item
+            local function createFruitStockItem(fruitName, price, parent)
+                local item = Instance.new("Frame")
+                item.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+                item.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+                item.BackgroundTransparency = 0.8
+                
+                local itemCorner = Instance.new("UICorner")
+                itemCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+                itemCorner.Parent = item
+                
+                local nameLabel = Instance.new("TextLabel")
+                nameLabel.Size = UDim2.new(0.7, 0, 1, 0)
+                nameLabel.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, 0)
+                nameLabel.BackgroundTransparency = 1
+                nameLabel.Text = fruitName
+                nameLabel.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+                nameLabel.TextSize = 14
+                nameLabel.Font = CUSTOM.FONTS.TEXT
+                nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+                nameLabel.Parent = item
+                
+                local priceLabel = Instance.new("TextLabel")
+                priceLabel.Size = UDim2.new(0.3, -CUSTOM.LAYOUT.PADDING, 1, 0)
+                priceLabel.Position = UDim2.new(0.7, 0, 0, 0)
+                priceLabel.BackgroundTransparency = 1
+                priceLabel.Text = tostring(price) .. " 💰"
+                priceLabel.TextColor3 = CUSTOM.THEME.TEXT_ACCENT
+                priceLabel.TextSize = 14
+                priceLabel.Font = CUSTOM.FONTS.TEXT
+                priceLabel.TextXAlignment = Enum.TextXAlignment.Right
+                priceLabel.Parent = item
+                
+                item.Parent = parent
+                return item
+            end
+
+            -- Function to update fruit stock (call this every few seconds)
+            local function updateFruitStock()
+                -- Clear existing items
+                for _, child in ipairs(normalStockFrame:GetChildren()) do
+                    if child:IsA("Frame") then
+                        child:Destroy()
+                    end
+                end
+                for _, child in ipairs(mirageStockFrame:GetChildren()) do
+                    if child:IsA("Frame") then
+                        child:Destroy()
+                    end
+                end
+
+                -- Get current fruit stock from game
+                local function getFruitStock()
+                    local normalStock = {}
+                    local mirageStock = {}
+                    
+                    -- This is where you would implement the actual game logic to get fruit stock
+                    -- For now, we'll use placeholder data
+                    -- Replace this with actual game checks
+                    
+                    -- Example data structure:
+                    normalStock = {
+                        {name = "Bomb Fruit", price = 100000},
+                        {name = "Spike Fruit", price = 180000},
+                        {name = "Chop Fruit", price = 150000},
+                        -- Add more fruits as needed
+                    }
+                    
+                    mirageStock = {
+                        {name = "Dragon Fruit", price = 5000000},
+                        {name = "Venom Fruit", price = 4500000},
+                        {name = "Shadow Fruit", price = 3800000},
+                        -- Add more fruits as needed
+                    }
+                    
+                    return normalStock, mirageStock
+                end
+
+                local normalStock, mirageStock = getFruitStock()
+                
+                -- Update Normal Stock
+                for _, fruit in ipairs(normalStock) do
+                    createFruitStockItem(fruit.name, fruit.price, normalStockFrame)
+                end
+                
+                -- Update Mirage Stock
+                for _, fruit in ipairs(mirageStock) do
+                    createFruitStockItem(fruit.name, fruit.price, mirageStockFrame)
+                end
+                
+                -- Update scroll frame canvas sizes
+                normalStockFrame.CanvasSize = UDim2.new(0, 0, 0, normalListLayout.AbsoluteContentSize.Y)
+                mirageStockFrame.CanvasSize = UDim2.new(0, 0, 0, mirageListLayout.AbsoluteContentSize.Y)
+            end
+
+            -- Initial update
+            updateFruitStock()
+
+            -- Set up periodic updates
+            local updateConnection
+            updateConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                if not stockContainer.Parent then
+                    updateConnection:Disconnect()
+                    return
+                end
+                updateFruitStock()
+                wait(5) -- Update every 5 seconds
+            end)
         end
     end)
 end
