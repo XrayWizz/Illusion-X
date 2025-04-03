@@ -1124,6 +1124,12 @@ ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     MenuScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y)
 end)
 
+-- Initialize the interface by selecting the first menu item
+local firstButton = MainFrame:FindFirstChild(MENU_ITEMS[1].name .. "Button")
+if firstButton then
+    firstButton.MouseButton1Click:Fire()
+end
+
 -- Update canvas size for content area
 ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     ContentArea.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + CUSTOM.LAYOUT.PADDING)
