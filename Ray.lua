@@ -1,7 +1,24 @@
 -- Services
-local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+
+-- Wait for game to load
+if not game:IsLoaded() then 
+    game.Loaded:Wait()
+end
+
+-- Wait for player
+local player = Players.LocalPlayer
+if not player.Character then 
+    player.CharacterAdded:Wait() 
+end
+
+-- Remove existing GUI if present
+pcall(function()
+    local existing = player.PlayerGui:FindFirstChild("SuperGui")
+    if existing then existing:Destroy() end
+end)
 
 -- User Customization
 local CUSTOM = {
@@ -116,7 +133,7 @@ local MENU_ITEMS = {
 -- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "SuperGui"
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 -- State management
@@ -1125,10 +1142,12 @@ ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 end)
 
 -- Initialize the interface by selecting the first menu item
-local firstButton = MainFrame:FindFirstChild(MENU_ITEMS[1].name .. "Button")
-if firstButton then
-    firstButton.MouseButton1Click:Fire()
-end
+pcall(function()
+    local firstButton = MainFrame:FindFirstChild(MENU_ITEMS[1].name .. "Button")
+    if firstButton then
+        firstButton.MouseButton1Click:Fire()
+    end
+end)
 
 -- Update canvas size for content area
 ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
