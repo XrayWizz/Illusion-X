@@ -117,9 +117,137 @@ local currentState = {
     startPos = nil
 }
 
--- Teleport state
+-- Teleport state and settings
 local isTeleportEnabled = false
 local currentDestination = nil
+local teleportSpeed = 350 -- Default speed
+
+-- Speed options for dropdown
+local SPEED_OPTIONS = {
+    {name = "Very Slow", speed = 100},
+    {name = "Slow", speed = 200},
+    {name = "Normal", speed = 350},
+    {name = "Fast", speed = 500},
+    {name = "Very Fast", speed = 750},
+    {name = "Ultra Fast", speed = 1000}
+}
+
+-- NPC Data
+local NPCS = {
+    ["First Sea"] = {
+        {name = "Marine Recruiter", cframe = CFrame.new(-2573.3374, 6.88881969, 2046.99817)},
+        {name = "Sword Dealer", cframe = CFrame.new(-1405.45728, 29.8778248, 4.69083405)},
+        {name = "Doctor", cframe = CFrame.new(-909.119751, 21.7444172, 4484.35791)},
+        {name = "Mysterious Man", cframe = CFrame.new(-2299.39551, 7.39675856, 2000.79639)},
+        {name = "Reset Stats", cframe = CFrame.new(-1889.21765, 7.39424276, 2069.42847)}
+    },
+    ["Second Sea"] = {
+        {name = "Bartender", cframe = CFrame.new(-385.250916, 73.0458984, 297.388397)},
+        {name = "Mysterious Scientist", cframe = CFrame.new(-6437.87793, 250.645355, -4498.92773)},
+        {name = "Race Reroller", cframe = CFrame.new(-1054.02344, 73.8750763, 1220.76477)},
+        {name = "Manager", cframe = CFrame.new(-386.874695, 73.0458984, 280.255371)}
+    },
+    ["Third Sea"] = {
+        {name = "Elite Hunter", cframe = CFrame.new(-5418.892578125, 313.74130249023, -2824.9157714844)},
+        {name = "Player Hunter", cframe = CFrame.new(-5558.1123046875, 313.74130249023, -2838.4624023438)},
+        {name = "Bone Trader", cframe = CFrame.new(-8725.3125, 142.130615, 6066.50684)},
+        {name = "Random Fruit", cframe = CFrame.new(-12491.169921875, 374.94024658203, -7551.677734375)}
+    }
+}
+
+-- Blox Fruits Island Data
+local ISLANDS = {
+    ["First Sea"] = {
+        {name = "Starter Island", cframe = CFrame.new(1071.2832, 16.3085976, 1426.86792)},
+        {name = "Marine Start", cframe = CFrame.new(-2573.3374, 6.88881969, 2046.99817)},
+        {name = "Middle Town", cframe = CFrame.new(-655.824158, 7.88708115, 1436.67908)},
+        {name = "Jungle", cframe = CFrame.new(-1249.77222, 11.8870859, 341.356476)},
+        {name = "Pirate Village", cframe = CFrame.new(-1122.34998, 4.78708982, 3855.91992)},
+        {name = "Desert", cframe = CFrame.new(1094.14587, 6.47350502, 4192.88721)},
+        {name = "Frozen Village", cframe = CFrame.new(1198.00928, 27.0074959, -1211.73376)},
+        {name = "MarineFord", cframe = CFrame.new(-4505.375, 20.687294, 4260.55908)},
+        {name = "Colosseum", cframe = CFrame.new(-1428.35474, 7.38933945, -3014.37305)},
+        {name = "Sky 1st Floor", cframe = CFrame.new(-4970.21875, 717.707275, -2622.35449)},
+        {name = "Sky 2nd Floor", cframe = CFrame.new(-4813.0249, 903.708557, -1912.69055)},
+        {name = "Sky 3rd Floor", cframe = CFrame.new(-7952.31006, 5545.52832, -320.704956)},
+        {name = "Prison", cframe = CFrame.new(4854.16455, 5.68742752, 740.194641)},
+        {name = "Magma Village", cframe = CFrame.new(-5231.75879, 8.61593437, 8467.87695)},
+        {name = "Underwater City", cframe = CFrame.new(61163.8516, 11.7796879, 1819.78418)},
+        {name = "Fountain City", cframe = CFrame.new(5132.7124, 4.53632832, 4037.8562)}
+    },
+    ["Second Sea"] = {
+        {name = "First Spot", cframe = CFrame.new(-11.845, 29.3297, 2771.026)},
+        {name = "Kingdom of Rose", cframe = CFrame.new(-390.096466, 321.886353, 869.049377)},
+        {name = "Mansion", cframe = CFrame.new(-390.096466, 321.886353, 869.049377)},
+        {name = "Flamingo Room", cframe = CFrame.new(2284.43335, 15.152359, 875.790771)},
+        {name = "Green Zone", cframe = CFrame.new(-2448.5300292969, 73.016105651855, -3210.6306152344)},
+        {name = "Cafe", cframe = CFrame.new(-385.250916, 73.0458984, 297.388397)},
+        {name = "Factory", cframe = CFrame.new(430.42569, 210.019623, -432.504791)},
+        {name = "Colosseum", cframe = CFrame.new(-1836.58191, 44.5890656, 1360.30652)},
+        {name = "Ghost Island", cframe = CFrame.new(-5571.84424, 195.182297, -795.432922)},
+        {name = "Ghost Island 2nd", cframe = CFrame.new(-5931.77979, 5.19706631, -1189.6908)},
+        {name = "Snow Mountain", cframe = CFrame.new(1384.68298, 453.569031, -4990.09766)},
+        {name = "Hot and Cold", cframe = CFrame.new(-6026.96484, 14.7461271, -5071.96338)},
+        {name = "Magma Side", cframe = CFrame.new(-5478.39209, 15.9775667, -5246.9126)},
+        {name = "Cursed Ship", cframe = CFrame.new(923.21252441406, 125.05712890625, 32885.875)},
+        {name = "Ice Castle", cframe = CFrame.new(6148.4116210938, 294.38687133789, -6741.1166992188)},
+        {name = "Forgotten Island", cframe = CFrame.new(-3032.7641601563, 317.89672851563, -10075.373046875)},
+        {name = "Usoapp Island", cframe = CFrame.new(4748.78857, 8.35370827, 2849.57959)},
+        {name = "Minisky Island", cframe = CFrame.new(-260.358917, 49325.7031, -35259.3008)}
+    },
+    ["Third Sea"] = {
+        {name = "Port Town", cframe = CFrame.new(-610.309692, 57.8323097, 6436.33594)},
+        {name = "Hydra Island", cframe = CFrame.new(5229.99561, 603.916565, 345.154022)},
+        {name = "Great Tree", cframe = CFrame.new(2174.94873, 28.7312393, -6728.83154)},
+        {name = "Castle on the Sea", cframe = CFrame.new(-5477.62842, 313.794739, -2808.4585)},
+        {name = "Floating Turtle", cframe = CFrame.new(-10919.2998, 331.788452, -8637.57227)},
+        {name = "Mansion", cframe = CFrame.new(-12553.8125, 332.403961, -7621.91748)},
+        {name = "Secret Temple", cframe = CFrame.new(5217.35693, 6.56511116, 1100.88159)},
+        {name = "Friendly Arena", cframe = CFrame.new(5220.28955, 72.8193436, -1450.86304)},
+        {name = "Beautiful Pirate Domain", cframe = CFrame.new(5310.8095703125, 160.75230407715, 129.29544067383)},
+        {name = "Tiki Outpost", cframe = CFrame.new(-11355.0557, 367.994995, -10225.1641)},
+        {name = "Peanut Island", cframe = CFrame.new(-2062.67773, 38.1294556, -10287.752)},
+        {name = "Ice Cream Island", cframe = CFrame.new(-880.894531, 118.245354, -11030.7607)},
+        {name = "Cake Loaf", cframe = CFrame.new(-2099.33154, 37.8250542, -11892.959)}
+    }
+}
+
+-- Function to change GUI size
+local function changeGuiSize(sizeName)
+    if currentState.isMinimized then return end
+    
+    local size = CONFIG.SIZES[sizeName]
+    if not size then return end
+    
+    currentState.size = sizeName
+    currentState.width = size.WIDTH
+    currentState.height = size.HEIGHT
+    
+    TweenService:Create(MainFrame, TweenInfo.new(CUSTOM.ANIMATION.TWEEN_SPEED, CUSTOM.ANIMATION.TWEEN_STYLE), {
+        Size = UDim2.new(0, size.WIDTH, 0, size.HEIGHT),
+        Position = UDim2.new(0.5, -size.WIDTH/2, 0.5, -size.HEIGHT/2)
+    }):Play()
+end
+
+-- Function to toggle minimize
+local function toggleMinimize()
+    currentState.isMinimized = not currentState.isMinimized
+    
+    local targetSize, targetPosition
+    
+    if currentState.isMinimized then
+        targetSize = UDim2.new(0, currentState.width, 0, CONFIG.TITLE_HEIGHT)
+    else
+        targetSize = UDim2.new(0, currentState.width, 0, currentState.height)
+    end
+    
+    targetPosition = UDim2.new(0.5, -targetSize.X.Offset/2, 0.5, -targetSize.Y.Offset/2)
+    
+    TweenService:Create(MainFrame, TweenInfo.new(CUSTOM.ANIMATION.TWEEN_SPEED, CUSTOM.ANIMATION.TWEEN_STYLE), {
+        Size = targetSize,
+        Position = targetPosition
+    }):Play()
+end
 
 -- Create main frame
 local MainFrame = Instance.new("Frame")
@@ -161,43 +289,6 @@ TitleText.TextSize = 16
 TitleText.Font = CUSTOM.FONTS.TITLE
 TitleText.TextXAlignment = Enum.TextXAlignment.Left
 TitleText.Parent = TitleBar
-
--- Function to change GUI size
-local function changeGuiSize(sizeName)
-    if currentState.isMinimized then return end
-    
-    local size = CONFIG.SIZES[sizeName]
-    if not size then return end
-    
-    currentState.size = sizeName
-    currentState.width = size.WIDTH
-    currentState.height = size.HEIGHT
-    
-    TweenService:Create(MainFrame, TweenInfo.new(CUSTOM.ANIMATION.TWEEN_SPEED, CUSTOM.ANIMATION.TWEEN_STYLE), {
-        Size = UDim2.new(0, size.WIDTH, 0, size.HEIGHT),
-        Position = UDim2.new(0.5, -size.WIDTH/2, 0.5, -size.HEIGHT/2)
-    }):Play()
-end
-
--- Function to toggle minimize
-local function toggleMinimize()
-    currentState.isMinimized = not currentState.isMinimized
-    
-    local targetSize, targetPosition
-    
-    if currentState.isMinimized then
-        targetSize = UDim2.new(0, currentState.width, 0, CONFIG.TITLE_HEIGHT)
-    else
-        targetSize = UDim2.new(0, currentState.width, 0, currentState.height)
-    end
-    
-    targetPosition = UDim2.new(0.5, -targetSize.X.Offset/2, 0.5, -targetSize.Y.Offset/2)
-    
-    TweenService:Create(MainFrame, TweenInfo.new(CUSTOM.ANIMATION.TWEEN_SPEED, CUSTOM.ANIMATION.TWEEN_STYLE), {
-        Size = targetSize,
-        Position = targetPosition
-    }):Play()
-end
 
 -- Create minimize button (moved to right)
 local MinimizeButton = Instance.new("TextButton")
@@ -584,69 +675,12 @@ local function createTeleportButton(island, posY)
             end
             
             -- Start smooth movement to destination
-            smoothMoveToDestination(player, island.cframe, 350)
+            smoothMoveToDestination(player, island.cframe, teleportSpeed)
         end
     end)
     
     return button
 end
-
--- Blox Fruits Island Data
-local ISLANDS = {
-    ["First Sea"] = {
-        {name = "Starter Island", cframe = CFrame.new(1071.2832, 16.3085976, 1426.86792)},
-        {name = "Marine Start", cframe = CFrame.new(-2573.3374, 6.88881969, 2046.99817)},
-        {name = "Middle Town", cframe = CFrame.new(-655.824158, 7.88708115, 1436.67908)},
-        {name = "Jungle", cframe = CFrame.new(-1249.77222, 11.8870859, 341.356476)},
-        {name = "Pirate Village", cframe = CFrame.new(-1122.34998, 4.78708982, 3855.91992)},
-        {name = "Desert", cframe = CFrame.new(1094.14587, 6.47350502, 4192.88721)},
-        {name = "Frozen Village", cframe = CFrame.new(1198.00928, 27.0074959, -1211.73376)},
-        {name = "MarineFord", cframe = CFrame.new(-4505.375, 20.687294, 4260.55908)},
-        {name = "Colosseum", cframe = CFrame.new(-1428.35474, 7.38933945, -3014.37305)},
-        {name = "Sky 1st Floor", cframe = CFrame.new(-4970.21875, 717.707275, -2622.35449)},
-        {name = "Sky 2nd Floor", cframe = CFrame.new(-4813.0249, 903.708557, -1912.69055)},
-        {name = "Sky 3rd Floor", cframe = CFrame.new(-7952.31006, 5545.52832, -320.704956)},
-        {name = "Prison", cframe = CFrame.new(4854.16455, 5.68742752, 740.194641)},
-        {name = "Magma Village", cframe = CFrame.new(-5231.75879, 8.61593437, 8467.87695)},
-        {name = "Underwater City", cframe = CFrame.new(61163.8516, 11.7796879, 1819.78418)},
-        {name = "Fountain City", cframe = CFrame.new(5132.7124, 4.53632832, 4037.8562)}
-    },
-    ["Second Sea"] = {
-        {name = "First Spot", cframe = CFrame.new(-11.845, 29.3297, 2771.026)},
-        {name = "Kingdom of Rose", cframe = CFrame.new(-390.096466, 321.886353, 869.049377)},
-        {name = "Mansion", cframe = CFrame.new(-390.096466, 321.886353, 869.049377)},
-        {name = "Flamingo Room", cframe = CFrame.new(2284.43335, 15.152359, 875.790771)},
-        {name = "Green Zone", cframe = CFrame.new(-2448.5300292969, 73.016105651855, -3210.6306152344)},
-        {name = "Cafe", cframe = CFrame.new(-385.250916, 73.0458984, 297.388397)},
-        {name = "Factory", cframe = CFrame.new(430.42569, 210.019623, -432.504791)},
-        {name = "Colosseum", cframe = CFrame.new(-1836.58191, 44.5890656, 1360.30652)},
-        {name = "Ghost Island", cframe = CFrame.new(-5571.84424, 195.182297, -795.432922)},
-        {name = "Ghost Island 2nd", cframe = CFrame.new(-5931.77979, 5.19706631, -1189.6908)},
-        {name = "Snow Mountain", cframe = CFrame.new(1384.68298, 453.569031, -4990.09766)},
-        {name = "Hot and Cold", cframe = CFrame.new(-6026.96484, 14.7461271, -5071.96338)},
-        {name = "Magma Side", cframe = CFrame.new(-5478.39209, 15.9775667, -5246.9126)},
-        {name = "Cursed Ship", cframe = CFrame.new(923.21252441406, 125.05712890625, 32885.875)},
-        {name = "Ice Castle", cframe = CFrame.new(6148.4116210938, 294.38687133789, -6741.1166992188)},
-        {name = "Forgotten Island", cframe = CFrame.new(-3032.7641601563, 317.89672851563, -10075.373046875)},
-        {name = "Usoapp Island", cframe = CFrame.new(4748.78857, 8.35370827, 2849.57959)},
-        {name = "Minisky Island", cframe = CFrame.new(-260.358917, 49325.7031, -35259.3008)}
-    },
-    ["Third Sea"] = {
-        {name = "Port Town", cframe = CFrame.new(-610.309692, 57.8323097, 6436.33594)},
-        {name = "Hydra Island", cframe = CFrame.new(5229.99561, 603.916565, 345.154022)},
-        {name = "Great Tree", cframe = CFrame.new(2174.94873, 28.7312393, -6728.83154)},
-        {name = "Castle on the Sea", cframe = CFrame.new(-5477.62842, 313.794739, -2808.4585)},
-        {name = "Floating Turtle", cframe = CFrame.new(-10919.2998, 331.788452, -8637.57227)},
-        {name = "Mansion", cframe = CFrame.new(-12553.8125, 332.403961, -7621.91748)},
-        {name = "Secret Temple", cframe = CFrame.new(5217.35693, 6.56511116, 1100.88159)},
-        {name = "Friendly Arena", cframe = CFrame.new(5220.28955, 72.8193436, -1450.86304)},
-        {name = "Beautiful Pirate Domain", cframe = CFrame.new(5310.8095703125, 160.75230407715, 129.29544067383)},
-        {name = "Tiki Outpost", cframe = CFrame.new(-11355.0557, 367.994995, -10225.1641)},
-        {name = "Peanut Island", cframe = CFrame.new(-2062.67773, 38.1294556, -10287.752)},
-        {name = "Ice Cream Island", cframe = CFrame.new(-880.894531, 118.245354, -11030.7607)},
-        {name = "Cake Loaf", cframe = CFrame.new(-2099.33154, 37.8250542, -11892.959)}
-    }
-}
 
 -- Function to create a dropdown section
 local function createDropdownSection(title, items, startY)
@@ -709,6 +743,363 @@ local function createDropdownSection(title, items, startY)
     end)
     
     return container, CUSTOM.LAYOUT.BUTTON_HEIGHT + (isExpanded and #items * (CUSTOM.LAYOUT.BUTTON_HEIGHT + 2) or 0)
+end
+
+-- Function to create a scrollable frame
+local function createScrollableFrame(parent, size, position)
+    local scrollFrame = Instance.new("ScrollingFrame")
+    scrollFrame.Size = size
+    scrollFrame.Position = position
+    scrollFrame.BackgroundTransparency = 1
+    scrollFrame.ScrollBarThickness = CUSTOM.LAYOUT.SCROLL_BAR_THICKNESS
+    scrollFrame.ScrollBarImageColor3 = CUSTOM.THEME.ACCENT
+    scrollFrame.Parent = parent
+    
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Parent = scrollFrame
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayout.Padding = UDim.new(0, CUSTOM.LAYOUT.PADDING)
+    
+    -- Auto-adjust canvas size
+    listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
+    end)
+    
+    return scrollFrame
+end
+
+-- Function to create a section heading
+local function createSectionHeading(parent, text, posY)
+    local heading = Instance.new("TextLabel")
+    heading.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    heading.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
+    heading.BackgroundColor3 = CUSTOM.THEME.TITLE_BAR
+    heading.BackgroundTransparency = 0.5
+    heading.Text = text
+    heading.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+    heading.TextSize = 14
+    heading.Font = CUSTOM.FONTS.TITLE
+    heading.Parent = parent
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    corner.Parent = heading
+    
+    return heading
+end
+
+-- Function to create speed dropdown
+local function createSpeedDropdown(parent, posY)
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    container.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
+    container.BackgroundTransparency = 1
+    container.Parent = parent
+    
+    local dropdown = Instance.new("TextButton")
+    dropdown.Size = UDim2.new(1, 0, 1, 0)
+    dropdown.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    dropdown.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+    dropdown.Text = "Speed: Normal (350)"
+    dropdown.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+    dropdown.TextSize = 14
+    dropdown.Font = CUSTOM.FONTS.BUTTON
+    dropdown.Parent = container
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    corner.Parent = dropdown
+    
+    local optionsFrame = Instance.new("Frame")
+    optionsFrame.Size = UDim2.new(1, 0, 0, #SPEED_OPTIONS * CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    optionsFrame.Position = UDim2.new(0, 0, 1, 2)
+    optionsFrame.BackgroundColor3 = CUSTOM.THEME.BACKGROUND
+    optionsFrame.BorderSizePixel = 0
+    optionsFrame.Visible = false
+    optionsFrame.ZIndex = 10
+    optionsFrame.Parent = container
+    
+    local optionsCorner = Instance.new("UICorner")
+    optionsCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    optionsCorner.Parent = optionsFrame
+    
+    for i, option in ipairs(SPEED_OPTIONS) do
+        local optionButton = Instance.new("TextButton")
+        optionButton.Size = UDim2.new(1, 0, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+        optionButton.Position = UDim2.new(0, 0, 0, (i-1) * CUSTOM.LAYOUT.BUTTON_HEIGHT)
+        optionButton.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+        optionButton.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+        optionButton.Text = option.name .. " (" .. option.speed .. ")"
+        optionButton.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+        optionButton.TextSize = 14
+        optionButton.Font = CUSTOM.FONTS.BUTTON
+        optionButton.ZIndex = 10
+        optionButton.Parent = optionsFrame
+        
+        optionButton.MouseButton1Click:Connect(function()
+            teleportSpeed = option.speed
+            dropdown.Text = "Speed: " .. option.name .. " (" .. option.speed .. ")"
+            optionsFrame.Visible = false
+        end)
+        
+        optionButton.MouseEnter:Connect(function()
+            TweenService:Create(optionButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundTransparency = CUSTOM.THEME.BUTTON_HOVER_TRANSPARENCY,
+                TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+            }):Play()
+        end)
+        
+        optionButton.MouseLeave:Connect(function()
+            TweenService:Create(optionButton, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY,
+                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            }):Play()
+        end)
+    end
+    
+    dropdown.MouseButton1Click:Connect(function()
+        optionsFrame.Visible = not optionsFrame.Visible
+    end)
+    
+    return container
+end
+
+-- Function to create teleport content
+local function createTeleportContent()
+    -- Clear existing content
+    for _, child in ipairs(ContentArea:GetChildren()) do
+        child:Destroy()
+    end
+    
+    -- Create main scrolling frame
+    local mainScroll = createScrollableFrame(
+        ContentArea,
+        UDim2.new(1, 0, 1, 0),
+        UDim2.new(0, 0, 0, 0)
+    )
+    
+    -- Create enable/disable toggle
+    local toggle = createTeleportToggle()
+    toggle.Parent = mainScroll
+    
+    -- Create speed dropdown
+    local speedDropdown = createSpeedDropdown(mainScroll, CUSTOM.LAYOUT.BUTTON_HEIGHT * 2)
+    
+    -- Create Island Teleport section
+    local islandHeading = createSectionHeading(mainScroll, "🏝 Island Teleport", CUSTOM.LAYOUT.BUTTON_HEIGHT * 3)
+    
+    -- Create island teleport sections
+    local currentY = CUSTOM.LAYOUT.BUTTON_HEIGHT * 4
+    for sea, locations in pairs(ISLANDS) do
+        local dropdown = createDropdownSection(sea, locations, currentY)
+        dropdown.Parent = mainScroll
+        currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT + 
+            (dropdown.Expanded and #locations * (CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING) or 0)
+    end
+    
+    -- Create NPC Teleport section
+    local npcHeading = createSectionHeading(mainScroll, "🧟‍♂️ NPC Teleport", currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    npcHeading.Parent = mainScroll
+    currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT * 2
+    
+    -- Create NPC teleport sections
+    for sea, npcs in pairs(NPCS) do
+        local dropdown = createDropdownSection(sea, npcs, currentY)
+        dropdown.Parent = mainScroll
+        currentY = currentY + CUSTOM.LAYOUT.BUTTON_HEIGHT +
+            (dropdown.Expanded and #npcs * (CUSTOM.LAYOUT.BUTTON_HEIGHT + CUSTOM.LAYOUT.PADDING) or 0)
+    end
+end
+
+-- Function to create teleport button
+local function createTeleportButton(location, posY)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -CUSTOM.LAYOUT.PADDING*2, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
+    button.Position = UDim2.new(0, CUSTOM.LAYOUT.PADDING, 0, posY)
+    button.BackgroundColor3 = CUSTOM.THEME.BUTTON_NORMAL
+    button.BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+    button.Text = location.name
+    button.TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+    button.TextSize = 14
+    button.Font = CUSTOM.FONTS.BUTTON
+    button.TextXAlignment = Enum.TextXAlignment.Left
+    button.Parent = ContentArea
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+    corner.Parent = button
+    
+    -- Add hover effect
+    button.MouseEnter:Connect(function()
+        if not isTeleportEnabled then return end
+        TweenService:Create(button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+            BackgroundTransparency = CUSTOM.THEME.BUTTON_HOVER_TRANSPARENCY,
+            TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        }):Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        if currentDestination ~= location then
+            TweenService:Create(button, TweenInfo.new(CUSTOM.ANIMATION.HOVER_SPEED), {
+                BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY,
+                TextColor3 = CUSTOM.THEME.TEXT_SECONDARY
+            }):Play()
+        end
+    end)
+    
+    -- Add click effect and teleport functionality
+    button.MouseButton1Click:Connect(function()
+        if not isTeleportEnabled then
+            -- Visual feedback for disabled state
+            for i = 1, 3 do
+                TweenService:Create(button, TweenInfo.new(0.1), {
+                    BackgroundTransparency = 0.3
+                }):Play()
+                wait(0.1)
+                TweenService:Create(button, TweenInfo.new(0.1), {
+                    BackgroundTransparency = CUSTOM.THEME.BUTTON_TRANSPARENCY
+                }):Play()
+                wait(0.1)
+            end
+            return
+        end
+        
+        -- Create confirmation dialog
+        local confirmDialog = Instance.new("Frame")
+        confirmDialog.Size = UDim2.new(0, 200, 0, 100)
+        confirmDialog.Position = UDim2.new(0.5, -100, 0.5, -50)
+        confirmDialog.BackgroundColor3 = CUSTOM.THEME.BACKGROUND
+        confirmDialog.BorderSizePixel = 0
+        confirmDialog.ZIndex = 100
+        confirmDialog.Parent = ScreenGui
+        
+        local dialogCorner = Instance.new("UICorner")
+        dialogCorner.CornerRadius = UDim.new(0, CUSTOM.LAYOUT.CORNER_RADIUS)
+        dialogCorner.Parent = confirmDialog
+        
+        local message = Instance.new("TextLabel")
+        message.Size = UDim2.new(1, 0, 0.5, 0)
+        message.BackgroundTransparency = 1
+        message.Text = "Teleport to " .. location.name .. "?"
+        message.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        message.TextSize = 14
+        message.Font = CUSTOM.FONTS.TEXT
+        message.ZIndex = 100
+        message.Parent = confirmDialog
+        
+        local confirmButton = Instance.new("TextButton")
+        confirmButton.Size = UDim2.new(0.4, 0, 0.3, 0)
+        confirmButton.Position = UDim2.new(0.1, 0, 0.6, 0)
+        confirmButton.BackgroundColor3 = CUSTOM.THEME.ACCENT
+        confirmButton.Text = "Confirm"
+        confirmButton.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        confirmButton.TextSize = 14
+        confirmButton.Font = CUSTOM.FONTS.BUTTON
+        confirmButton.ZIndex = 100
+        confirmButton.Parent = confirmDialog
+        
+        local cancelButton = Instance.new("TextButton")
+        cancelButton.Size = UDim2.new(0.4, 0, 0.3, 0)
+        cancelButton.Position = UDim2.new(0.5, 0, 0.6, 0)
+        cancelButton.BackgroundColor3 = CUSTOM.THEME.CLOSE_BUTTON
+        cancelButton.Text = "Cancel"
+        cancelButton.TextColor3 = CUSTOM.THEME.TEXT_PRIMARY
+        cancelButton.TextSize = 14
+        cancelButton.Font = CUSTOM.FONTS.BUTTON
+        cancelButton.ZIndex = 100
+        cancelButton.Parent = confirmDialog
+        
+        local function closeDialog()
+            confirmDialog:Destroy()
+        end
+        
+        confirmButton.MouseButton1Click:Connect(function()
+            closeDialog()
+            
+            -- Visual feedback
+            TweenService:Create(button, TweenInfo.new(0.1), {
+                BackgroundColor3 = CUSTOM.THEME.ACCENT,
+                TextColor3 = CUSTOM.THEME.TEXT_PRIMARY,
+                BackgroundTransparency = 0
+            }):Play()
+            
+            -- Attempt to teleport
+            local player = game.Players.LocalPlayer
+            if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                currentDestination = location
+                
+                -- Disable character movement during teleport
+                local humanoid = player.Character:FindFirstChild("Humanoid")
+                if humanoid then
+                    humanoid.PlatformStand = true
+                end
+                
+                -- Smooth teleport implementation
+                local function smoothMoveToDestination(player, targetCFrame, speed)
+                    local character = player.Character
+                    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+                    
+                    local humanoidRootPart = character.HumanoidRootPart
+                    local humanoid = character:FindFirstChild("Humanoid")
+                    
+                    -- Disable character collision temporarily
+                    local oldCollisionGroup = humanoidRootPart.CollisionGroupId
+                    humanoidRootPart.CollisionGroupId = 0
+                    
+                    -- Store original values
+                    local originalGravity = workspace.Gravity
+                    local originalStateType = humanoid.StateChanged:Wait()
+                    
+                    -- Modify character state for smooth movement
+                    workspace.Gravity = 0
+                    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                    
+                    -- Create movement connection
+                    local moveConnection
+                    moveConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                        if not character or not character:FindFirstChild("HumanoidRootPart") then
+                            moveConnection:Disconnect()
+                            return
+                        end
+                        
+                        local currentPos = humanoidRootPart.Position
+                        local targetPos = targetCFrame.Position
+                        local direction = (targetPos - currentPos).Unit
+                        local distance = (targetPos - currentPos).Magnitude
+                        
+                        if distance < 5 then
+                            -- Reached destination
+                            humanoidRootPart.CFrame = targetCFrame
+                            moveConnection:Disconnect()
+                            
+                            -- Restore original state
+                            workspace.Gravity = originalGravity
+                            humanoid:ChangeState(originalStateType)
+                            humanoidRootPart.CollisionGroupId = oldCollisionGroup
+                            
+                            -- Re-enable character movement
+                            if humanoid then
+                                humanoid.PlatformStand = false
+                            end
+                            
+                            return
+                        end
+                        
+                        -- Move towards target
+                        local moveStep = math.min(speed * game:GetService("RunService").Heartbeat:Wait(), distance)
+                        humanoidRootPart.CFrame = CFrame.new(currentPos + direction * moveStep) * targetCFrame.Rotation
+                    end)
+                end
+                
+                -- Start smooth movement to destination
+                smoothMoveToDestination(player, location.cframe, teleportSpeed)
+            end
+        end)
+        
+        cancelButton.MouseButton1Click:Connect(closeDialog)
+    end)
+    
+    return button
 end
 
 -- Create menu buttons
@@ -814,23 +1205,7 @@ for _, item in ipairs(MENU_ITEMS) do
         
         -- Handle content for each section
         if item.name == "Teleport" then
-            local header = createSectionHeader("🗺️ Teleport Menu")
-            header.Parent = ContentArea
-            
-            local toggleContainer, disableTeleportFunc = createTeleportToggle()
-            toggleContainer.Parent = ContentArea
-            
-            local yOffset = CUSTOM.LAYOUT.BUTTON_HEIGHT * 2 + CUSTOM.LAYOUT.PADDING * 3
-            
-            -- Create dropdowns for each sea
-            local firstSeaSection, firstHeight = createDropdownSection("First Sea", ISLANDS["First Sea"], yOffset)
-            local secondSeaSection, secondHeight = createDropdownSection("Second Sea", ISLANDS["Second Sea"], yOffset + firstHeight + CUSTOM.LAYOUT.PADDING)
-            local thirdSeaSection, thirdHeight = createDropdownSection("Third Sea", ISLANDS["Third Sea"], yOffset + firstHeight + secondHeight + CUSTOM.LAYOUT.PADDING * 2)
-            
-            firstSeaSection.Parent = ContentArea
-            secondSeaSection.Parent = ContentArea
-            thirdSeaSection.Parent = ContentArea
-            
+            createTeleportContent()
         elseif item.name == "Overview" then
             local header = createSectionHeader("Player Info")
             header.Parent = ContentArea
