@@ -117,20 +117,197 @@ local MENU_ITEMS = {
 
 -- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "SuperGui"
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Name = "SuperGUI"
 ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- State management
-local currentState = {
-    size = "Normal",
-    isMinimized = false,
-    width = CONFIG.SIZES.Normal.WIDTH,
-    height = CONFIG.SIZES.Normal.HEIGHT,
-    isDragging = false,
-    dragStart = nil,
-    startPos = nil
+-- Constants for UI styling
+local CONFIG = {
+    TITLE_HEIGHT = 30,
+    MENU_WIDTH = 150,
+    CORNER_RADIUS = 6,
+    COLORS = {
+        VERSION_BLUE = Color3.fromRGB(0, 162, 255),
+        SECONDARY = Color3.fromRGB(45, 45, 45),
+        BACKGROUND = Color3.fromRGB(25, 25, 25),
+        TITLE_BAR = Color3.fromRGB(35, 35, 35)
+    },
+    SIZES = {
+        Normal = {
+            WIDTH = 500,
+            HEIGHT = 400
+        },
+        Minimized = {
+            WIDTH = 200,
+            HEIGHT = 30
+        }
+    }
 }
+
+-- Create main frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, CONFIG.SIZES.Normal.WIDTH, 0, CONFIG.SIZES.Normal.HEIGHT)
+MainFrame.Position = UDim2.new(0.5, -CONFIG.SIZES.Normal.WIDTH/2, 0.5, -CONFIG.SIZES.Normal.HEIGHT/2)
+MainFrame.BackgroundColor3 = CONFIG.COLORS.BACKGROUND
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ScreenGui
+
+-- Add corner rounding
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, CONFIG.CORNER_RADIUS)
+Corner.Parent = MainFrame
+
+-- Create title bar
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Size = UDim2.new(1, 0, 0, CONFIG.TITLE_HEIGHT)
+TitleBar.BackgroundColor3 = CONFIG.COLORS.TITLE_BAR
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+
+-- Add drag handle
+local DragHandle = Instance.new("Frame")
+DragHandle.Size = UDim2.new(1, -70, 1, 0)
+DragHandle.Position = UDim2.new(0, 0, 0, 0)
+DragHandle.BackgroundTransparency = 1
+DragHandle.Parent = TitleBar
+
+-- Make draggable
+local dragging = false
+local dragStart
+local startPos
+
+DragHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+DragHandle.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- Create title text
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1, -80, 1, 0)
+TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "Super"
+TitleLabel.TextColor3 = CONFIG.COLORS.VERSION_BLUE
+TitleLabel.TextSize = 18
+TitleLabel.Font = Enum.Font.SourceSansBold
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = TitleBar
+
+-- Add glow effect
+local TitleGlow = Instance.new("ImageLabel")
+TitleGlow.Size = UDim2.new(1, 20, 1, 20)
+TitleGlow.Position = UDim2.new(0, -10, 0, -10)
+TitleGlow.BackgroundTransparency = 1
+TitleGlow.Image = "rbxassetid://4996891970"
+TitleGlow.ImageColor3 = CONFIG.COLORS.VERSION_BLUE
+TitleGlow.ImageTransparency = 0.9
+TitleGlow.Parent = TitleLabel
+
+-- Create version label
+local VersionLabel = Instance.new("TextLabel")
+VersionLabel.Size = UDim2.new(0, 40, 0, 20)
+VersionLabel.Position = UDim2.new(0, 85, 0.5, -10)
+VersionLabel.BackgroundColor3 = CONFIG.COLORS.SECONDARY
+VersionLabel.BackgroundTransparency = 0.6
+VersionLabel.Text = "v1.0"
+VersionLabel.TextColor3 = CONFIG.COLORS.VERSION_BLUE
+VersionLabel.TextSize = 14
+VersionLabel.Font = Enum.Font.SourceSans
+VersionLabel.Parent = TitleBar
+
+local VersionCorner = Instance.new("UICorner")
+VersionCorner.CornerRadius = UDim.new(0, 6)
+VersionCorner.Parent = VersionLabel
+
+-- Create minimize and close buttons
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+MinimizeButton.Position = UDim2.new(1, -60, 0, 0)
+MinimizeButton.BackgroundTransparency = 1
+MinimizeButton.Text = "−"
+MinimizeButton.TextColor3 = CONFIG.COLORS.VERSION_BLUE
+MinimizeButton.TextSize = 20
+MinimizeButton.Font = Enum.Font.SourceSansBold
+MinimizeButton.Parent = TitleBar
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -30, 0, 0)
+CloseButton.BackgroundTransparency = 1
+CloseButton.Text = "×"
+CloseButton.TextColor3 = CONFIG.COLORS.VERSION_BLUE
+CloseButton.TextSize = 20
+CloseButton.Font = Enum.Font.SourceSansBold
+CloseButton.Parent = TitleBar
+
+-- Handle minimize button
+MinimizeButton.MouseButton1Click:Connect(function()
+    local isMinimized = MainFrame.Size.Y.Offset <= CONFIG.TITLE_HEIGHT
+    local targetSize, targetWidth
+    
+    if isMinimized then
+        targetSize = UDim2.new(0, CONFIG.SIZES.Normal.WIDTH, 0, CONFIG.SIZES.Normal.HEIGHT)
+    else
+        targetSize = UDim2.new(0, CONFIG.SIZES.Minimized.WIDTH, 0, CONFIG.TITLE_HEIGHT)
+    end
+    
+    -- Animate the size change
+    game:GetService("TweenService"):Create(MainFrame, TweenInfo.new(0.3), {
+        Size = targetSize
+    }):Play()
+end)
+
+-- Handle close button
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- Create content area
+local ContentArea = Instance.new("ScrollingFrame")
+ContentArea.Name = "ContentArea"
+ContentArea.Size = UDim2.new(1, -(CONFIG.MENU_WIDTH + 20), 1, -(CONFIG.TITLE_HEIGHT + 20))
+ContentArea.Position = UDim2.new(0, CONFIG.MENU_WIDTH + 10, 0, CONFIG.TITLE_HEIGHT + 10)
+ContentArea.BackgroundColor3 = CONFIG.COLORS.BACKGROUND
+ContentArea.BackgroundTransparency = 0.5
+ContentArea.BorderSizePixel = 0
+ContentArea.ScrollBarThickness = 4
+ContentArea.ScrollBarImageColor3 = CONFIG.COLORS.VERSION_BLUE
+ContentArea.Parent = MainFrame
+
+-- Create menu area
+local MenuArea = Instance.new("ScrollingFrame")
+MenuArea.Name = "MenuArea"
+MenuArea.Size = UDim2.new(0, CONFIG.MENU_WIDTH, 1, -(CONFIG.TITLE_HEIGHT + 10))
+MenuArea.Position = UDim2.new(0, 10, 0, CONFIG.TITLE_HEIGHT + 10)
+MenuArea.BackgroundTransparency = 1
+MenuArea.ScrollBarThickness = 4
+MenuArea.ScrollBarImageColor3 = CONFIG.COLORS.VERSION_BLUE
+MenuArea.Parent = MainFrame
 
 -- Teleport state and settings
 local isTeleportEnabled = false
@@ -644,124 +821,6 @@ local function makeDraggable(dragElement, dragTarget)
         end
     end)
 end
-
--- Create main frame
-local MainFrame = createUIElement("Frame", {
-    Name = "MainFrame",
-    Size = UDim2.new(0, CONFIG_UI.NORMAL_WIDTH, 0, CONFIG.SIZES.Normal.HEIGHT),
-    Position = UDim2.new(0.5, -CONFIG_UI.NORMAL_WIDTH/2, 0.5, -CONFIG.SIZES.Normal.HEIGHT/2),
-    BackgroundColor3 = CUSTOM.THEME.BACKGROUND,
-    BorderSizePixel = 0
-}, ScreenGui)
-
--- Create title bar
-local TitleBar = createUIElement("Frame", {
-    Name = "TitleBar",
-    Size = UDim2.new(1, 0, 0, CONFIG_UI.TITLE_HEIGHT),
-    BackgroundColor3 = CUSTOM.THEME.TITLE_BAR,
-    BorderSizePixel = 0
-}, MainFrame)
-
--- Create drag handle
-local DragHandle = createUIElement("Frame", {
-    Size = UDim2.new(1, -70, 0, 30),
-    Position = UDim2.new(0, 0, 0, 0),
-    BackgroundTransparency = 1
-}, TitleBar)
-
--- Make the frame draggable
-makeDraggable(DragHandle, MainFrame)
-
--- Create title with glow effect
-local TitleLabel = createUIElement("TextLabel", {
-    Size = UDim2.new(1, -80, 0, 30),
-    Position = UDim2.new(0, CONFIG_UI.SIDE_GAP + 5, 0, 5),
-    Text = " Super",
-    TextColor3 = CONFIG_UI.COLORS.VERSION_BLUE,
-    Font = Enum.Font.SourceSansBold,
-    TextSize = CONFIG_UI.TEXT_SIZES.HEADER,
-    TextXAlignment = Enum.TextXAlignment.Left,
-    BackgroundTransparency = 1
-}, TitleBar)
-
--- Add glow effect to title
-local titleGlow = createUIElement("ImageLabel", {
-    Size = UDim2.new(1, 20, 1, 20),
-    Position = UDim2.new(0, -10, 0, -10),
-    BackgroundTransparency = 1,
-    Image = "rbxassetid://4996891970",
-    ImageColor3 = CONFIG_UI.COLORS.VERSION_BLUE,
-    ImageTransparency = 0.9
-}, TitleLabel)
-
--- Create version bubble
-local VersionBubble = createUIElement("TextButton", {
-    Size = UDim2.new(0, 40, 0, 20),
-    Position = UDim2.new(0, TitleLabel.Position.X.Offset + 75, 0, 10),
-    Text = "v1.0",
-    TextColor3 = CONFIG_UI.COLORS.VERSION_BLUE,
-    Font = Enum.Font.SourceSans,
-    TextSize = CONFIG_UI.TEXT_SIZES.BODY,
-    BackgroundColor3 = CONFIG_UI.COLORS.SECONDARY,
-    BackgroundTransparency = 0.6,
-    AutoButtonColor = false
-}, MainFrame)
-
-createUIElement("UICorner", { CornerRadius = UDim.new(0, 6) }, VersionBubble)
-
--- Create minimize button (moved to right)
-local MinimizeButton = Instance.new("TextButton")
-MinimizeButton.Name = "MinimizeButton"
-MinimizeButton.Size = UDim2.new(0, CUSTOM.LAYOUT.BUTTON_HEIGHT, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-MinimizeButton.Position = UDim2.new(1, -CUSTOM.LAYOUT.BUTTON_HEIGHT*2, 0, 0)
-MinimizeButton.BackgroundTransparency = 1
-MinimizeButton.Text = "─"
-MinimizeButton.TextColor3 = CONFIG.THEME.TEXT_SECONDARY
-MinimizeButton.TextSize = 16
-MinimizeButton.Font = CUSTOM.FONTS.BUTTON
-MinimizeButton.Parent = TitleBar
-
-MinimizeButton.MouseButton1Click:Connect(function()
-    currentState.isMinimized = not currentState.isMinimized
-    
-    local targetSize, targetPosition
-    local currentWidth = currentState.isMinimized and CONFIG_UI.MIN_WIDTH or CONFIG_UI.NORMAL_WIDTH
-    
-    if currentState.isMinimized then
-        targetSize = UDim2.new(0, currentWidth, 0, CONFIG_UI.TITLE_HEIGHT)
-    else
-        targetSize = UDim2.new(0, currentWidth, 0, CONFIG.SIZES.Normal.HEIGHT)
-    end
-    
-    targetPosition = UDim2.new(
-        0.5,
-        -currentWidth/2,
-        MainFrame.Position.Y.Scale,
-        MainFrame.Position.Y.Offset
-    )
-    
-    -- Animate the size and position changes
-    TweenService:Create(MainFrame, TweenInfo.new(CUSTOM.ANIMATION.TWEEN_SPEED, CUSTOM.ANIMATION.TWEEN_STYLE), {
-        Size = targetSize,
-        Position = targetPosition
-    }):Play()
-end)
-
--- Create close button
-local CloseButton = Instance.new("TextButton")
-CloseButton.Name = "CloseButton"
-CloseButton.Size = UDim2.new(0, CUSTOM.LAYOUT.BUTTON_HEIGHT, 0, CUSTOM.LAYOUT.BUTTON_HEIGHT)
-CloseButton.Position = UDim2.new(1, -CUSTOM.LAYOUT.BUTTON_HEIGHT, 0, 0)
-CloseButton.BackgroundTransparency = 1
-CloseButton.Text = "×"
-CloseButton.TextColor3 = CONFIG.THEME.CLOSE_BUTTON
-CloseButton.TextSize = 20
-CloseButton.Font = CUSTOM.FONTS.BUTTON
-CloseButton.Parent = TitleBar
-
-CloseButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
 
 -- Create ScrollingFrame for menu items
 local MenuScroll = Instance.new("ScrollingFrame")
@@ -1787,6 +1846,12 @@ TitleBar.InputBegan:Connect(function(input)
         currentState.isDragging = true
         currentState.dragStart = input.Position
         currentState.startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                currentState.isDragging = false
+            end
+        end)
     end
 end)
 
