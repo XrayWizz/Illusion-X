@@ -1,65 +1,71 @@
--- FULL SCRIPT: Mobile Elite Fireball + Flying + Modern UI -- Place this as a LocalScript in StarterPlayerScripts
+-- MOBILE FIREBALL & FLY SYSTEM - FINAL CLEAN VERSION -- Place this LocalScript into StarterPlayer > StarterPlayerScripts
 
--- SERVICES local Players = game:GetService("Players") local UserInputService = game:GetService("UserInputService") local RunService = game:GetService("RunService") local Debris = game:GetService("Debris")
+local Players = game:GetService("Players") local RunService = game:GetService("RunService") local UserInputService = game:GetService("UserInputService") local Debris = game:GetService("Debris")
 
-local player = Players.LocalPlayer local playerGui = player:WaitForChild("PlayerGui")
+local player = Players.LocalPlayer repeat wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart") local character = player.Character local humanoidRootPart = character:WaitForChild("HumanoidRootPart") local playerGui = player:WaitForChild("PlayerGui")
 
--- MAIN UI local screenGui = Instance.new("ScreenGui", playerGui) screenGui.Name = "ShadedShadowUI" screenGui.ResetOnSpawn = false screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+-- UI SETUP local gui = Instance.new("ScreenGui") gui.Name = "ShadedShadowUI" gui.ResetOnSpawn = false gui.Parent = playerGui
 
--- UI FRAME local uiFrame = Instance.new("Frame", screenGui) uiFrame.Size = UDim2.new(0, 260, 0, 200) uiFrame.Position = UDim2.new(0, 20, 0.5, -100) uiFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15) uiFrame.BackgroundTransparency = 0.1 uiFrame.BorderSizePixel = 0 uiFrame.ClipsDescendants = true uiFrame.Active = true uiFrame.Draggable = true local corner = Instance.new("UICorner", uiFrame) corner.CornerRadius = UDim.new(0, 16)
+local frame = Instance.new("Frame") frame.Size = UDim2.new(0, 250, 0, 180) frame.Position = UDim2.new(0, 20, 0.5, -90) frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20) frame.BackgroundTransparency = 0.1 frame.Parent = gui Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 16)
 
--- TITLE local title = Instance.new("TextLabel", uiFrame) title.Size = UDim2.new(1, -20, 0, 40) title.Position = UDim2.new(0, 10, 0, 10) title.Text = "Shaded Shadow" title.TextColor3 = Color3.fromRGB(255, 255, 255) title.Font = Enum.Font.GothamBold title.TextSize = 22 title.BackgroundTransparency = 1 title.TextXAlignment = Enum.TextXAlignment.Left
+local title = Instance.new("TextLabel") title.Text = "Shaded Shadow" title.Size = UDim2.new(1, -20, 0, 40) title.Position = UDim2.new(0, 10, 0, 10) title.BackgroundTransparency = 1 title.TextColor3 = Color3.new(1, 1, 1) title.Font = Enum.Font.GothamBold title.TextSize = 22 title.TextXAlignment = Enum.TextXAlignment.Left title.Parent = frame
 
--- UI BUTTON TEMPLATE local function makeButton(name, text, position) local button = Instance.new("TextButton") button.Name = name button.Size = UDim2.new(0.8, 0, 0, 40) button.Position = position button.Text = text button.BackgroundColor3 = Color3.fromRGB(50, 50, 50) button.TextColor3 = Color3.new(1,1,1) button.Font = Enum.Font.GothamBold button.TextSize = 18 button.AutoButtonColor = true local corner = Instance.new("UICorner", button) corner.CornerRadius = UDim.new(0, 12) return button end
+local function makeButton(name, text, pos) local btn = Instance.new("TextButton") btn.Name = name btn.Size = UDim2.new(0.8, 0, 0, 40) btn.Position = pos btn.Text = text btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50) btn.TextColor3 = Color3.new(1, 1, 1) btn.Font = Enum.Font.GothamBold btn.TextSize = 18 Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 12) btn.Parent = frame return btn end
 
--- FIRE BUTTONS local fireBtn = makeButton("FireBtn", "Enable Fire Power", UDim2.new(0.1, 0, 0.4, 0)) fireBtn.Parent = uiFrame
+local fireBtn = makeButton("FireBtn", "Enable Fire", UDim2.new(0.1, 0, 0.4, 0)) local throwBtn = makeButton("ThrowBtn", "Throw Fireball", UDim2.new(0.1, 0, 0.65, 0)) local flyBtn = makeButton("FlyBtn", "Toggle Fly", UDim2.new(0.1, 0, 0.88, 0)) throwBtn.Visible = false flyBtn.Visible = false
 
-local throwBtn = makeButton("ThrowBtn", "Throw Fireball", UDim2.new(0.1, 0, 0.65, 0)) throwBtn.Parent = uiFrame throwBtn.Visible = false
+-- FX HELPERS local function twirlingFlames(att) local p = Instance.new("ParticleEmitter", att) p.Texture = "rbxassetid://4844380622" p.Lifetime = NumberRange.new(0.4, 0.7) p.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.5), NumberSequenceKeypoint.new(1, 0)}) p.Speed = NumberRange.new(2, 4) p.Rotation = NumberRange.new(0, 360) p.RotSpeed = NumberRange.new(80, 120) p.Rate = 120 p.Color = ColorSequence.new(Color3.new(1, 0.6, 0), Color3.new(1, 1, 0)) end
 
-local flyBtn = makeButton("FlyBtn", "Toggle Fly", UDim2.new(0.1, 0, 0.88, 0)) flyBtn.Parent = uiFrame flyBtn.Visible = false
+local function darkSmoke(att) local s = Instance.new("ParticleEmitter", att) s.Texture = "rbxassetid://771221224" s.Lifetime = NumberRange.new(0.6, 1.2) s.Size = NumberSequence.new(0.6) s.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.4), NumberSequenceKeypoint.new(1, 1)}) s.Speed = NumberRange.new(0.3, 1) s.Rate = 30 s.Color = ColorSequence.new(Color3.fromRGB(30, 30, 30)) end
 
--- FIRE MECHANICS local canUseFire = false local isFlying = false local bodyVelocity = nil
+local function attachHandFX() for _, limb in {"LeftHand", "RightHand"} do local part = character:FindFirstChild(limb) if part then local a = Instance.new("Attachment", part) twirlingFlames(a) darkSmoke(a) end end end
 
--- FIRE PARTICLE HELPERS local function createTwirlingFlame(attachment) local p = Instance.new("ParticleEmitter", attachment) p.Texture = "rbxassetid://4844380622" -- realistic fire swirl p.Lifetime = NumberRange.new(0.3, 0.5) p.Speed = NumberRange.new(2, 4) p.Rate = 120 p.Rotation = NumberRange.new(0, 360) p.RotSpeed = NumberRange.new(50, 80) p.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.6), NumberSequenceKeypoint.new(1, 0.1)}) p.Color = ColorSequence.new(Color3.new(1, 0.5, 0), Color3.new(1, 1, 0)) end
+-- FIREBALL THROW local function throwFireball() local head = character:FindFirstChild("Head") if not head then return end
 
-local function createSmokeTrail(attachment) local smoke = Instance.new("ParticleEmitter", attachment) smoke.Texture = "rbxassetid://771221224" smoke.Lifetime = NumberRange.new(0.6, 1.2) smoke.Size = NumberSequence.new(1) smoke.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(1, 1)}) smoke.Speed = NumberRange.new(0.5, 1) smoke.Rate = 30 smoke.Color = ColorSequence.new(Color3.new(0.1,0.1,0.1)) end
+local ball = Instance.new("Part")
+ball.Shape = Enum.PartType.Ball
+ball.Size = Vector3.new(0.6, 0.6, 0.6)
+ball.Material = Enum.Material.Neon
+ball.BrickColor = BrickColor.new("Bright orange")
+ball.CFrame = head.CFrame * CFrame.new(0, 0, -2)
+ball.Velocity = head.CFrame.LookVector * 100
+ball.CanCollide = false
+ball.Parent = workspace
 
-local function applyHandFX() local char = player.Character or player.CharacterAdded:Wait() for _, handName in {"LeftHand", "RightHand"} do local hand = char:FindFirstChild(handName) if hand then local attach = Instance.new("Attachment", hand) createTwirlingFlame(attach) createSmokeTrail(attach) end end end
+local a = Instance.new("Attachment", ball)
+twirlingFlames(a)
+darkSmoke(a)
 
-local function throwFireball() if not canUseFire then return end local char = player.Character or player.CharacterAdded:Wait() local head = char:FindFirstChild("Head") if not head then return end
-
-local fireball = Instance.new("Part")
-fireball.Size = Vector3.new(1,1,1)
-fireball.Shape = Enum.PartType.Ball
-fireball.Material = Enum.Material.Neon
-fireball.BrickColor = BrickColor.new("Bright orange")
-fireball.CFrame = head.CFrame * CFrame.new(0, 0, -2)
-fireball.Velocity = head.CFrame.LookVector * 100
-fireball.CanCollide = false
-fireball.Anchored = false
-fireball.Parent = workspace
-
-local a = Instance.new("Attachment", fireball)
-createTwirlingFlame(a)
-createSmokeTrail(a)
-
-local sound = Instance.new("Sound", fireball)
+local sound = Instance.new("Sound", ball)
 sound.SoundId = "rbxassetid://1840882422"
-sound.Volume = 0.8
-sound.Looped = true
+sound.Volume = 0.6
 sound:Play()
 
-Debris:AddItem(fireball, 3)
+Debris:AddItem(ball, 3)
 
 end
 
-local function enableFly() local char = player.Character or player.CharacterAdded:Wait() local root = char:WaitForChild("HumanoidRootPart") if not bodyVelocity then bodyVelocity = Instance.new("BodyVelocity") bodyVelocity.MaxForce = Vector3.new(1e5,1e5,1e5) bodyVelocity.Velocity = Vector3.new(0,0,0) bodyVelocity.Parent = root end RunService:BindToRenderStep("FlyControl", Enum.RenderPriority.Input.Value, function() local move = Vector3.zero if UserInputService:IsKeyDown(Enum.KeyCode.W) then move += Vector3.new(0,0,-1) end if UserInputService:IsKeyDown(Enum.KeyCode.S) then move += Vector3.new(0,0,1) end if UserInputService:IsKeyDown(Enum.KeyCode.A) then move += Vector3.new(-1,0,0) end if UserInputService:IsKeyDown(Enum.KeyCode.D) then move += Vector3.new(1,0,0) end if UserInputService:IsKeyDown(Enum.KeyCode.Space) then move += Vector3.new(0,1,0) end bodyVelocity.Velocity = (char.HumanoidRootPart.CFrame:VectorToWorldSpace(move)) * 50 end) end
+-- FLYING SYSTEM local flying = false local bv = nil
 
-local function disableFly() RunService:UnbindFromRenderStep("FlyControl") if bodyVelocity then bodyVelocity:Destroy() bodyVelocity = nil end end
+local function toggleFly(on) if on then bv = Instance.new("BodyVelocity") bv.MaxForce = Vector3.new(1e5,1e5,1e5) bv.Velocity = Vector3.zero bv.Parent = humanoidRootPart
 
--- BUTTON CONNECTIONS fireBtn.MouseButton1Click:Connect(function() if not canUseFire then canUseFire = true throwBtn.Visible = true flyBtn.Visible = true applyHandFX() fireBtn.Text = "Fire Power: ENABLED" end end)
+RunService:BindToRenderStep("MobileFly", Enum.RenderPriority.Input.Value, function()
+		local dir = Vector3.zero
+		if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir += Vector3.new(0,0,-1) end
+		if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir += Vector3.new(0,0,1) end
+		if UserInputService:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.new(0,1,0) end
+		bv.Velocity = (humanoidRootPart.CFrame:VectorToWorldSpace(dir)).Unit * 50
+	end)
+else
+	RunService:UnbindFromRenderStep("MobileFly")
+	if bv then bv:Destroy() bv = nil end
+end
+
+end
+
+-- BUTTON LOGIC local fireOn = false fireBtn.MouseButton1Click:Connect(function() if not fireOn then fireOn = true attachHandFX() fireBtn.Text = "Fire: ENABLED" throwBtn.Visible = true flyBtn.Visible = true end end)
 
 throwBtn.MouseButton1Click:Connect(throwFireball)
 
-flyBtn.MouseButton1Click:Connect(function() isFlying = not isFlying if isFlying then enableFly() flyBtn.Text = "Flying: ON" else disableFly() flyBtn.Text = "Flying: OFF" end end)
+flyBtn.MouseButton1Click:Connect(function() flying = not flying toggleFly(flying) flyBtn.Text = flying and "Flying: ON" or "Flying: OFF" end)
 
