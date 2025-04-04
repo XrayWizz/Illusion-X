@@ -1,12 +1,22 @@
--- UI Setup
+--[[
+    SHADOWED SHADOW UI + FIREBALL SYSTEM
+    - Fire in both hands
+    - Fireball throw with key (F)
+    - Modern dark UI
+    - Fire sounds + particle FX
+]]
+
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+local userInput = game:GetService("UserInputService")
+local debris = game:GetService("Debris")
 
+-- Screen UI
 local screenGui = Instance.new("ScreenGui", playerGui)
 screenGui.Name = "ShadedShadowUI"
 screenGui.ResetOnSpawn = false
 
--- Main Frame
+-- Main UI Frame
 local mainFrame = Instance.new("Frame", screenGui)
 mainFrame.Size = UDim2.new(0, 250, 0, 300)
 mainFrame.Position = UDim2.new(0, 20, 0.3, 0)
@@ -18,10 +28,7 @@ mainFrame.Name = "MainFrame"
 mainFrame.Active = true
 mainFrame.Draggable = true
 mainFrame.AnchorPoint = Vector2.new(0, 0.5)
-mainFrame.AutomaticSize = Enum.AutomaticSize.None
 mainFrame.Visible = true
-mainFrame.Parent = screenGui
-mainFrame:TweenSize(mainFrame.Size, "Out", "Sine", 0.3)
 
 local uiCorner = Instance.new("UICorner", mainFrame)
 uiCorner.CornerRadius = UDim.new(0, 12)
@@ -37,7 +44,7 @@ titleLabel.BackgroundTransparency = 1
 titleLabel.Position = UDim2.new(0, 10, 0, 5)
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Minimize & Close
+-- Utility function
 local function createButton(name, pos, txt)
 	local btn = Instance.new("TextButton")
 	btn.Name = name
@@ -46,15 +53,17 @@ local function createButton(name, pos, txt)
 	btn.Position = pos
 	btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.Parent = mainFrame
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 14
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+	btn.Parent = mainFrame
 	return btn
 end
 
+-- Close & Minimize
 local closeBtn = createButton("CloseBtn", UDim2.new(1, -30, 0, 5), "X")
 local minimizeBtn = createButton("MinimizeBtn", UDim2.new(1, -60, 0, 5), "-")
 
--- Toggle visibility
 local minimized = false
 minimizeBtn.MouseButton1Click:Connect(function()
 	minimized = not minimized
@@ -76,54 +85,87 @@ fireBtn.Font = Enum.Font.GothamBold
 fireBtn.TextSize = 18
 Instance.new("UICorner", fireBtn).CornerRadius = UDim.new(0, 10)
 
--- Fireball Setup
-local function createFireball()
+-- Fire system logic
+local handFires = {}
+local canThrow = false
+
+local function addHandFire()
 	local char = player.Character or player.CharacterAdded:Wait()
-	local fireball = Instance.new("Part")
-	fireball.Size = Vector3.new(1.5, 1.5, 1.5)
-	fireball.Shape = Enum.PartType.Ball
-	fireball.Material = Enum.Material.Neon
-	fireball.Color = Color3.fromRGB(255, 80, 0)
-	fireball.Anchored = false
-	fireball.CanCollide = false
+	local hands = {"LeftHand", "RightHand"}
 
-	local att = Instance.new("Attachment", fireball)
-	local fire = Instance.new("ParticleEmitter", att)
-	fire.Texture = "rbxassetid://244221613"
-	fire.Lifetime = NumberRange.new(0.4, 0.6)
-	fire.Speed = NumberRange.new(0, 0)
-	fire.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 1.5), NumberSequenceKeypoint.new(1, 0)})
-	fire.Rate = 30
-	fire.LightEmission = 1
-	fire.Color = ColorSequence.new(Color3.new(1, 0.4, 0))
+	for _, handName in ipairs(hands) do
+		local hand = char:FindFirstChild(handName)
+		if hand then
+			local att = Instance.new("Attachment", hand)
 
-	local sound = Instance.new("Sound", fireball)
-	sound.SoundId = "rbxassetid://203691822" -- Fire loop
-	sound.Volume = 0.5
-	sound.Looped = true
-	sound:Play()
+			local fire = Instance.new("ParticleEmitter", att)
+			fire.Texture = "rbxassetid://244221613"
+			fire.Lifetime = NumberRange.new(0.3, 0.6)
+			fire.Speed = NumberRange.new(2, 5)
+			fire.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 2), NumberSequenceKeypoint.new(1, 0)})
+			fire.Rate = 100
+			fire.LightEmission = 1
+			fire.Color = ColorSequence.new(Color3.new(1, 0.3, 0), Color3.new(1, 1, 0))
 
-	fireball.Parent = workspace
+			local light = Instance.new("PointLight", hand)
+			light.Color = Color3.fromRGB(255, 100, 0)
+			light.Range = 6
+			light.Brightness = 2
 
-	local alignPos = Instance.new("AlignPosition", fireball)
-	alignPos.MaxForce = 20000
-	alignPos.Responsiveness = 100
-	alignPos.RigidityEnabled = false
+			table.insert(handFires, att)
+		end
+	end
 
-	local attach0 = Instance.new("Attachment", fireball)
-	local attach1 = Instance.new("Attachment", char:WaitForChild("Head"))
-	alignPos.Attachment0 = attach0
-	alignPos.Attachment1 = attach1
-	alignPos.Position = Vector3.new(1.5, 1.5, 0)
-
-	return fireball
+	canThrow = true
 end
 
+local function throwFireball()
+	if not canThrow then return end
+	local char = player.Character or player.CharacterAdded:Wait()
+	local head = char:FindFirstChild("Head")
+	if not head then return end
+
+	local fireball = Instance.new("Part")
+	fireball.Size = Vector3.new(2, 2, 2)
+	fireball.Shape = Enum.PartType.Ball
+	fireball.Material = Enum.Material.Neon
+	fireball.BrickColor = BrickColor.new("Bright orange")
+	fireball.CFrame = head.CFrame * CFrame.new(0, 0, -2)
+	fireball.Velocity = head.CFrame.LookVector * 80
+	fireball.CanCollide = false
+	fireball.Anchored = false
+	fireball.Parent = workspace
+
+	local fire = Instance.new("ParticleEmitter", fireball)
+	fire.Texture = "rbxassetid://244221613"
+	fire.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 3), NumberSequenceKeypoint.new(1, 0)})
+	fire.Lifetime = NumberRange.new(0.3, 0.5)
+	fire.Rate = 150
+	fire.LightEmission = 1
+	fire.Color = ColorSequence.new(Color3.new(1, 0.5, 0), Color3.new(1, 1, 0))
+
+	local sound = Instance.new("Sound", fireball)
+	sound.SoundId = "rbxassetid://203691822"
+	sound.Volume = 1
+	sound:Play()
+
+	debris:AddItem(fireball, 3)
+end
+
+-- Key bind: Press F to throw fireball
+userInput.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.KeyCode == Enum.KeyCode.F then
+		throwFireball()
+	end
+end)
+
+-- Fire button clicked
 local fireballSpawned = false
 fireBtn.MouseButton1Click:Connect(function()
 	if not fireballSpawned then
-		createFireball()
-		fireBtn.Text = "Fireball Enabled"
+		addHandFire()
+		fireBtn.Text = "Fire Ready - Press F"
 		fireballSpawned = true
 	end
 end)
