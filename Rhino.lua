@@ -1,11 +1,13 @@
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 
 -- UI Sound
 local clickSound = Instance.new("Sound")
-clickSound.SoundId = "rbxassetid://12221967" -- UI click sound
+clickSound.SoundId = "rbxassetid://12221967"
 clickSound.Volume = 0.7
 clickSound.Parent = workspace
 
@@ -17,19 +19,22 @@ screenGui.ResetOnSpawn = false
 -- Main Frame
 local mainFrame = Instance.new("Frame", screenGui)
 mainFrame.Size = UDim2.new(0, 420, 0, 260)
-mainFrame.Position = UDim2.new(0.5, -210, 0.5, -130)
-mainFrame.BackgroundTransparency = 0.2
+mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.BackgroundTransparency = 1
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.BorderSizePixel = 0
-mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 mainFrame.Active = true
 mainFrame.Draggable = false
 mainFrame.ClipsDescendants = true
-
+mainFrame.Visible = false
 Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 12)
 
--- Drag support for mobile
-local UserInputService = game:GetService("UserInputService")
+-- Fade-in effect
+mainFrame.Visible = true
+TweenService:Create(mainFrame, TweenInfo.new(0.5), {BackgroundTransparency = 0.2}):Play()
+
+-- Drag support
 local dragging, dragInput, dragStart, startPos
 
 mainFrame.InputBegan:Connect(function(input)
@@ -71,37 +76,36 @@ title.Font = Enum.Font.GothamBold
 title.TextSize = 20
 title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Close Button with icon
+-- Close Button
 local closeBtn = Instance.new("ImageButton", mainFrame)
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -35, 0, 5)
-closeBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-closeBtn.Image = "rbxassetid://6031094678" -- Red glowing X icon
+closeBtn.Size = UDim2.new(0, 24, 0, 24)
+closeBtn.Position = UDim2.new(1, -30, 0, 8)
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 30, 30)
+closeBtn.Image = "rbxassetid://6031094678"
 closeBtn.ImageColor3 = Color3.new(1, 1, 1)
 closeBtn.ScaleType = Enum.ScaleType.Fit
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 8)
-
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1, 0)
 local uiStroke = Instance.new("UIStroke", closeBtn)
-uiStroke.Thickness = 1.5
+uiStroke.Thickness = 1.2
 uiStroke.Color = Color3.fromRGB(255, 0, 0)
 
--- Sidebar (Tab Menu)
+-- Sidebar
 local sidebar = Instance.new("Frame", mainFrame)
 sidebar.Size = UDim2.new(0, 100, 1, 0)
 sidebar.Position = UDim2.new(0, 0, 0, 0)
 sidebar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 Instance.new("UICorner", sidebar).CornerRadius = UDim.new(0, 12)
 
--- Tab Button: Overview
+-- Overview Button
 local overviewBtn = Instance.new("TextButton", sidebar)
-overviewBtn.Size = UDim2.new(1, 0, 0, 40)
-overviewBtn.Position = UDim2.new(0, 0, 0, 10)
+overviewBtn.Size = UDim2.new(1, -10, 0, 36)
+overviewBtn.Position = UDim2.new(0, 5, 0, 10)
 overviewBtn.Text = "Overview"
-overviewBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-overviewBtn.Font = Enum.Font.GothamMedium
-overviewBtn.TextSize = 16
-overviewBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Instance.new("UICorner", overviewBtn).CornerRadius = UDim.new(0, 6)
+overviewBtn.TextColor3 = Color3.fromRGB(240, 240, 240)
+overviewBtn.Font = Enum.Font.Gotham
+overviewBtn.TextSize = 15
+overviewBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Instance.new("UICorner", overviewBtn).CornerRadius = UDim.new(0, 8)
 
 -- Content Frame
 local contentFrame = Instance.new("Frame", mainFrame)
@@ -110,7 +114,7 @@ contentFrame.Size = UDim2.new(1, -100, 1, -40)
 contentFrame.Position = UDim2.new(0, 100, 0, 40)
 contentFrame.BackgroundTransparency = 1
 
--- Overview Tab Content
+-- Overview Tab
 local overviewTab = Instance.new("Frame", contentFrame)
 overviewTab.Size = UDim2.new(1, 0, 1, 0)
 overviewTab.BackgroundTransparency = 1
@@ -132,8 +136,7 @@ local statusLabel = healthLabel:Clone()
 statusLabel.Parent = overviewTab
 statusLabel.Position = UDim2.new(0, 10, 0, 90)
 
--- Logic
-
+-- Tab System
 local function switchTab(tab)
 	for _, child in pairs(contentFrame:GetChildren()) do
 		if child:IsA("Frame") then
@@ -156,5 +159,5 @@ closeBtn.MouseButton1Click:Connect(function()
 	mainFrame.Visible = false
 end)
 
--- Show default tab on load
+-- Show default tab
 switchTab(overviewTab)
